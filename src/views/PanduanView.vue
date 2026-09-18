@@ -114,7 +114,11 @@ const handleOpenAI = (context = '') => {
       <div class="nav-content">
         <div class="nav-left">
           <a href="/" class="brand-logo" @click.prevent="navigateTo('/')">
-            <span class="logo-icon" aria-hidden="true">🌱</span>
+            <svg class="brand-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 7v10"/>
+              <path d="m8 11 4-4 4 4"/>
+            </svg>
             <span class="brand-text">
               <span class="brand-name">Pilahki</span>
               <span class="brand-tagline">Panduan Pemilahan</span>
@@ -183,7 +187,10 @@ const handleOpenAI = (context = '') => {
 
         <!-- Search Bar Panduan -->
         <div class="panduan-search-box">
-          <span class="search-icon" aria-hidden="true">🔍</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-svg">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
           <input
             v-model="searchQuery"
             type="text"
@@ -220,7 +227,8 @@ const handleOpenAI = (context = '') => {
             :class="['tab-' + kat.warna, { active: selectedKategoriTab === kat.id }]"
             @click="selectedKategoriTab = kat.id"
           >
-            {{ kat.icon }} {{ kat.nama }}
+            <span class="tab-dot" :class="'dot-' + kat.warna"></span>
+            <span>{{ kat.nama }}</span>
           </button>
         </div>
       </section>
@@ -249,9 +257,7 @@ const handleOpenAI = (context = '') => {
             :class="'card-theme-' + k.warna"
           >
             <div class="card-header">
-              <div class="icon-wrap">
-                <span class="icon-emoji">{{ k.icon }}</span>
-              </div>
+              <span class="kategori-indicator-dot" :class="'dot-' + k.warna"></span>
               <div class="header-titles">
                 <h3 class="kategori-name">{{ k.nama }}</h3>
                 <span class="kategori-tagline">{{ k.tagline }}</span>
@@ -298,7 +304,11 @@ const handleOpenAI = (context = '') => {
 
             <!-- Tips Khas Bu Rina -->
             <div class="tips-box">
-              <span class="tips-icon">💡</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tips-svg">
+                <path d="M9 18h6"/>
+                <path d="M10 22h4"/>
+                <path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7z"/>
+              </svg>
               <div class="tips-text">
                 <strong>Tips Warga:</strong> {{ k.tipsRina }}
               </div>
@@ -379,7 +389,15 @@ const handleOpenAI = (context = '') => {
 
       <!-- Banner PilahAI Shortcut -->
       <section class="pilahai-helper-banner">
-        <div class="helper-icon">🤖</div>
+        <div class="helper-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="helper-svg">
+            <rect x="3" y="11" width="18" height="10" rx="2"/>
+            <circle cx="12" cy="5" r="2"/>
+            <path d="M12 7v4"/>
+            <line x1="8" y1="16" x2="8.01" y2="16"/>
+            <line x1="16" y1="16" x2="16.01" y2="16"/>
+          </svg>
+        </div>
         <div class="helper-content">
           <h3 class="helper-title">Punya Sampah yang Tidak Ada di Panduan?</h3>
           <p class="helper-desc">
@@ -505,8 +523,11 @@ const handleOpenAI = (context = '') => {
   color: inherit;
 }
 
-.logo-icon {
-  font-size: 1.4rem;
+.brand-svg {
+  width: 26px;
+  height: 26px;
+  color: var(--pk-primary);
+  flex-shrink: 0;
 }
 
 .brand-text {
@@ -729,8 +750,11 @@ const handleOpenAI = (context = '') => {
   box-shadow: 0 0 0 3px var(--pk-primary-border);
 }
 
-.search-icon {
-  font-size: 1rem;
+.search-svg {
+  width: 18px;
+  height: 18px;
+  color: var(--pk-text-subtle);
+  flex-shrink: 0;
 }
 
 .search-input {
@@ -770,8 +794,24 @@ const handleOpenAI = (context = '') => {
   padding: 6px 14px;
   border-radius: var(--pk-radius-full);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   transition: all 0.15s;
 }
+
+.tab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.dot-green { background-color: #16a34a; }
+.dot-blue { background-color: #2563eb; }
+.dot-amber { background-color: #d97706; }
+.dot-slate { background-color: #64748b; }
 
 .tab-btn:hover {
   border-color: #cbd5e1;
@@ -832,26 +872,16 @@ const handleOpenAI = (context = '') => {
 .card-header {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
-.icon-wrap {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--pk-radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--pk-border-subtle);
-  font-size: 1.4rem;
+.kategori-indicator-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
   flex-shrink: 0;
 }
-
-.card-theme-green .icon-wrap { background-color: #f0fdf4; }
-.card-theme-blue .icon-wrap { background-color: #eff6ff; }
-.card-theme-amber .icon-wrap { background-color: #fffbeb; }
-.card-theme-slate .icon-wrap { background-color: #f1f5f9; }
 
 .kategori-name {
   font-size: 1.15rem;
@@ -960,9 +990,12 @@ const handleOpenAI = (context = '') => {
   line-height: 1.4;
 }
 
-.tips-icon {
-  font-size: 0.95rem;
+.tips-svg {
+  width: 16px;
+  height: 16px;
+  color: #d97706;
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
 /* ==========================================================================
@@ -1103,8 +1136,20 @@ const handleOpenAI = (context = '') => {
 }
 
 .helper-icon {
-  font-size: 2rem;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--pk-radius-md);
+  background-color: var(--pk-primary-light);
+  color: var(--pk-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+}
+
+.helper-svg {
+  width: 24px;
+  height: 24px;
 }
 
 .helper-content {

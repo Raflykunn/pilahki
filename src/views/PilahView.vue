@@ -171,7 +171,13 @@ const handleQuickChip = (chip) => {
       <div class="nav-content">
         <div class="nav-left">
           <a href="/" class="brand-logo" @click.prevent="navigateTo('/')">
-            <span class="logo-icon" aria-hidden="true">🌱</span>
+            <span class="logo-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="brand-svg">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v10" />
+                <path d="m8 11 4-4 4 4" />
+              </svg>
+            </span>
             <span class="brand-text">
               <span class="brand-name">Pilahki</span>
               <span class="brand-tagline">Pilah Sampah</span>
@@ -245,7 +251,10 @@ const handleQuickChip = (chip) => {
         <!-- Search Bar Interaktif -->
         <form class="search-form-wrap" @submit.prevent="executeSearch()">
           <div class="input-with-icon">
-            <span class="input-search-icon" aria-hidden="true">🔍</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="input-search-svg" aria-hidden="true">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
             <input
               v-model="searchQuery"
               type="text"
@@ -295,7 +304,11 @@ const handleQuickChip = (chip) => {
               class="recent-item-btn"
               @click="handleQuickChip(item)"
             >
-              🕐 {{ item }}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="recent-svg" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>{{ item }}</span>
             </button>
           </div>
         </div>
@@ -308,11 +321,32 @@ const handleQuickChip = (chip) => {
           <div v-if="selectedItemDetail" class="detail-card" :class="'detail-theme-' + selectedItemDetail.kategori">
             <div class="detail-top-bar">
               <div class="item-title-wrap">
-                <span class="item-main-icon" aria-hidden="true">{{ selectedItemDetail.icon }}</span>
+                <div class="category-icon-box" :class="'cat-box-' + selectedItemDetail.kategori" aria-hidden="true">
+                  <svg v-if="selectedItemDetail.kategori === 'organik'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cat-svg">
+                    <path d="M12 22v-9" />
+                    <path d="M12 13a7 7 0 0 0 7-7c0-2-2-3-4-3-4 0-7 4-7 8" />
+                    <path d="M12 13a7 7 0 0 1-7-7c0-2 2-3 4-3 4 0 7 4 7 8" />
+                  </svg>
+                  <svg v-else-if="selectedItemDetail.kategori === 'anorganik'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cat-svg">
+                    <polyline points="21 8 21 21 3 21 3 8" />
+                    <rect x="1" y="3" width="22" height="5" />
+                    <line x1="10" y1="12" x2="14" y2="12" />
+                  </svg>
+                  <svg v-else-if="selectedItemDetail.kategori === 'b3'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cat-svg">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                  <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cat-svg">
+                    <path d="M3 6h18" />
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                  </svg>
+                </div>
                 <div>
                   <h2 class="item-main-name">{{ selectedItemDetail.nama }}</h2>
                   <span class="category-badge-pill" :class="'pill-' + selectedItemDetail.kategori">
-                    {{ kategoriConfig[selectedItemDetail.kategori].icon }} {{ kategoriConfig[selectedItemDetail.kategori].label.toUpperCase() }}
+                    {{ kategoriConfig[selectedItemDetail.kategori].label.toUpperCase() }}
                   </span>
                 </div>
               </div>
@@ -328,7 +362,7 @@ const handleQuickChip = (chip) => {
             <!-- Langkah Penanganan Aman -->
             <div class="handling-steps-box">
               <h3 class="steps-heading">
-                <span>📋</span> Langkah Penanganan Aman:
+                Langkah Penanganan Aman:
               </h3>
               <ol class="handling-list">
                 <li v-for="(step, sIdx) in selectedItemDetail.penanganan" :key="sIdx">
@@ -339,7 +373,10 @@ const handleQuickChip = (chip) => {
 
             <!-- Tujuan Penyaluran -->
             <div class="destination-box">
-              <span class="destination-icon">📍</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="destination-svg" aria-hidden="true">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
               <div class="destination-content">
                 <strong>Tujuan Penyaluran:</strong>
                 <p>{{ selectedItemDetail.tujuanPenyaluran }}</p>
@@ -348,7 +385,11 @@ const handleQuickChip = (chip) => {
 
             <!-- Tips Tambahan -->
             <div class="practical-tips-box">
-              <span class="tips-emoji">💡</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tips-svg" aria-hidden="true">
+                <path d="M9 18h6" />
+                <path d="M10 22h4" />
+                <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.76.76 1.23 1.52 1.41 2.5" />
+              </svg>
               <div class="tips-content">
                 <strong>Tips Warga:</strong> {{ selectedItemDetail.tipsPraktis }}
               </div>
@@ -368,7 +409,9 @@ const handleQuickChip = (chip) => {
                   class="ask-ai-context-btn"
                   @click="handleAskAIWithContext(selectedItemDetail)"
                 >
-                  <span class="ai-sparkle">✨</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
                   Tanya PilahAI Langsung
                 </button>
                 <button
@@ -376,7 +419,13 @@ const handleQuickChip = (chip) => {
                   class="check-schedule-btn"
                   @click="navigateTo('/jadwal')"
                 >
-                  📅 Cek Jadwal Angkut
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  Cek Jadwal Angkut
                 </button>
               </div>
             </div>
@@ -412,7 +461,8 @@ const handleQuickChip = (chip) => {
                 :class="{ active: activeCategoryFilter === 'organik' }"
                 @click="activeCategoryFilter = 'organik'"
               >
-                🍃 Organik
+                <span class="tab-dot dot-green" aria-hidden="true"></span>
+                Organik
               </button>
               <button
                 type="button"
@@ -420,7 +470,8 @@ const handleQuickChip = (chip) => {
                 :class="{ active: activeCategoryFilter === 'anorganik' }"
                 @click="activeCategoryFilter = 'anorganik'"
               >
-                📦 Anorganik
+                <span class="tab-dot dot-blue" aria-hidden="true"></span>
+                Anorganik
               </button>
               <button
                 type="button"
@@ -428,7 +479,8 @@ const handleQuickChip = (chip) => {
                 :class="{ active: activeCategoryFilter === 'b3' }"
                 @click="activeCategoryFilter = 'b3'"
               >
-                ⚠️ Limbah B3
+                <span class="tab-dot dot-amber" aria-hidden="true"></span>
+                Limbah B3
               </button>
               <button
                 type="button"
@@ -436,7 +488,8 @@ const handleQuickChip = (chip) => {
                 :class="{ active: activeCategoryFilter === 'residu' }"
                 @click="activeCategoryFilter = 'residu'"
               >
-                🗑️ Residu
+                <span class="tab-dot dot-slate" aria-hidden="true"></span>
+                Residu
               </button>
             </div>
           </div>
@@ -468,7 +521,7 @@ const handleQuickChip = (chip) => {
               @click="selectItem(item)"
             >
               <div class="card-item-left">
-                <span class="item-thumb-icon" aria-hidden="true">{{ item.icon }}</span>
+                <span class="item-cat-dot" :class="'dot-' + item.kategori" aria-hidden="true"></span>
                 <div class="item-text-info">
                   <h4 class="item-card-name">{{ item.nama }}</h4>
                   <span class="item-badge-mini" :class="'badge-' + item.kategori">
@@ -477,7 +530,7 @@ const handleQuickChip = (chip) => {
                 </div>
               </div>
               <span class="view-detail-hint">
-                Lihat →
+                Lihat &rarr;
               </span>
             </article>
           </div>
@@ -950,21 +1003,81 @@ const handleQuickChip = (chip) => {
   margin-bottom: 12px;
 }
 
-.item-title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+.brand-svg {
+  width: 24px;
+  height: 24px;
+  color: var(--pk-primary);
 }
 
-.item-main-icon {
-  font-size: 2.2rem;
-  background-color: var(--pk-border-subtle);
-  width: 54px;
-  height: 54px;
+.input-search-svg {
+  width: 18px;
+  height: 18px;
+  color: var(--pk-text-subtle);
+  flex-shrink: 0;
+}
+
+.recent-svg {
+  width: 13px;
+  height: 13px;
+  color: var(--pk-text-subtle);
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 3px;
+}
+
+.category-icon-box {
+  width: 48px;
+  height: 48px;
   border-radius: var(--pk-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.cat-box-organik { background-color: #dcfce7; color: #166534; }
+.cat-box-anorganik { background-color: #dbeafe; color: #1e40af; }
+.cat-box-b3 { background-color: #fef3c7; color: #b45309; }
+.cat-box-residu { background-color: #f1f5f9; color: #475569; }
+
+.cat-svg {
+  width: 24px;
+  height: 24px;
+}
+
+.destination-svg {
+  width: 18px;
+  height: 18px;
+  color: #2563eb;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.tips-svg {
+  width: 18px;
+  height: 18px;
+  color: #d97706;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.tab-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.dot-green { background-color: #16a34a; }
+.dot-blue { background-color: #2563eb; }
+.dot-amber { background-color: #d97706; }
+.dot-slate { background-color: #64748b; }
+
+.item-cat-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   flex-shrink: 0;
 }
 

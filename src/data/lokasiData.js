@@ -6,28 +6,24 @@ export const jenisFasilitasConfig = {
     label: 'Bank Sampah',
     warna: 'blue',
     badgeClass: 'badge-blue',
-    icon: '🏦',
     desc: 'Menerima sampah anorganik kering terpilah yang ditimbang dan dapat dicairkan menjadi tabungan rupiah.'
   },
   'tps-3r': {
     label: 'TPS 3R (Reuse, Reduce, Recycle)',
     warna: 'green',
     badgeClass: 'badge-green',
-    icon: '♻️',
     desc: 'Pusat daur ulang wilayah yang mengolah sampah organik menjadi kompos dan memilah anorganik.'
   },
   'dropbox-b3': {
     label: 'Drop Box E-Waste & B3',
     warna: 'amber',
     badgeClass: 'badge-amber',
-    icon: '⚠️',
     desc: 'Titik penampungan khusus baterai, lampu, dan limbah elektronik rumah tangga.'
   },
   'tps': {
     label: 'TPS Reguler',
     warna: 'slate',
     badgeClass: 'badge-slate',
-    icon: '🚛',
     desc: 'Tempat Penampungan Sementara untuk sampah residu harian sebelum diangkut ke TPA.'
   }
 }

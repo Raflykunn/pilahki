@@ -457,7 +457,12 @@ const openLoginModal = () => {
 
         <!-- Guest Notice Banner Ringkas -->
         <div v-if="!isAuthenticated" class="guest-auth-hint">
-          <span>💡 <strong>Catatan Tamu:</strong> Masuk atau daftar akun untuk mengakses rincian pemilahan lengkap, peta TPS, dan jadwal wilayah Anda.</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="hint-svg" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          <span><strong>Akses Tamu:</strong> Masuk atau buat akun untuk mengakses rincian pemilahan, navigasi TPS, dan jadwal wilayah Anda.</span>
         </div>
 
         <!-- Contoh Pencarian Cepat -->
@@ -633,7 +638,13 @@ const openLoginModal = () => {
       <div class="footer-content">
         <div class="footer-brand">
           <div class="footer-logo">
-            <span class="footer-icon" aria-hidden="true">🌱</span>
+            <span class="footer-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="footer-svg">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v10" />
+                <path d="m8 11 4-4 4 4" />
+              </svg>
+            </span>
             <strong>Pilahki</strong>
           </div>
           <p class="footer-tagline">

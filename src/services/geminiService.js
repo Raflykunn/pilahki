@@ -271,11 +271,11 @@ const SYSTEM_INSTRUCTION = `Anda adalah "PilahAI", asisten cerdas resmi dari pla
 ATURAN DOMAIN & FORMAT KETAT:
 1. Anda HANYA membantu seputar pemilahan sampah, kategori sampah (Organik, Anorganik, B3, Residu), fasilitas penerima (Bank Sampah, TPS 3R, Drop Box B3), jadwal angkut, dan panduan edukasi sampah rumah tangga.
 2. JANGAN PERNAH MENGGUNAKAN FORMAT TABEL (| kolom 1 | kolom 2 |). Tabel terlihat sangat buruk di bubble chat.
-3. Untuk menyampaikan jadwal angkut atau daftar fasilitas, WAJIB gunakan format daftar poin ringkas berjarak (bullet points • atau angka 1, 2, 3) dengan ikon yang menarik.
+3. Untuk menyampaikan jadwal angkut atau daftar fasilitas, WAJIB gunakan format daftar poin ringkas berjarak (bullet points • atau angka 1, 2, 3) yang jelas dan bersih tanpa menggunakan spam emoji.
    Contoh format jadwal yang benar:
-   🗓️ **Senin** (06:30 - 08:30 WIB)
-   • Jenis: Organik (Sisa Makanan)
-   • Catatan: Taruh di depan pagar sebelum jam 06:30.
+   • **Senin** (06:30 - 08:30 WIB)
+   - Jenis: Organik (Sisa Makanan)
+   - Catatan: Taruh di depan pagar sebelum jam 06:30.
 4. Jika pengguna bertanya di luar topik sampah (misalnya politik, sains rumit, kode pemrograman, resep masak umum), tolak dengan sangat sopan bahwa Anda hanya bisa membantu seputar pemilahan dan pengelolaan sampah rumah tangga.
 5. Selalu gunakan perkakas fungsi (function calling) yang disediakan (cekKategoriSampah, cariFasilitas, cekJadwal, cariPanduan) saat pengguna bertanya hal yang relevan untuk memberikan informasi akurat dari database Pilahki.
 6. Jangan gunakan istilah teknis rumit. Gunakan bahasa yang mudah dipahami warga biasa, to-the-point, dan ramah.`
@@ -429,11 +429,11 @@ function formatFunctionResultAsText(funcName, res) {
   }
 
   if (funcName === 'cariFasilitas') {
-    return `Berikut fasilitas terdekat yang tersedia:\n\n` + res.fasilitas.map(f => `📍 **${f.nama}** (${f.jenis})\nAlamat: ${f.alamat} (${f.jarak})\nJam Buka: ${f.jamBuka}\nSampah diterima: ${f.sampahDiterima.join(', ')}`).join('\n\n')
+    return `Berikut fasilitas terdekat yang tersedia:\n\n` + res.fasilitas.map(f => `• **${f.nama}** (${f.jenis})\nAlamat: ${f.alamat} (${f.jarak})\nJam Buka: ${f.jamBuka}\nSampah diterima: ${f.sampahDiterima.join(', ')}`).join('\n\n')
   }
 
   if (funcName === 'cekJadwal') {
-    return `Jadwal pengangkutan sampah di **${res.wilayah}**:\n\n` + res.jadwal.map(j => `🗓️ **${j.hari}** (${j.waktu})\nJenis: ${j.jenisSampah}\nCatatan: ${j.catatan}`).join('\n\n')
+    return `Jadwal pengangkutan sampah di **${res.wilayah}**:\n\n` + res.jadwal.map(j => `• **${j.hari}** (${j.waktu})\nJenis: ${j.jenisSampah}\nCatatan: ${j.catatan}`).join('\n\n')
   }
 
   if (funcName === 'cariPanduan') {
@@ -442,20 +442,20 @@ function formatFunctionResultAsText(funcName, res) {
     }
     if (res?.panduanKategori) {
       return `Berikut panduan pemilahan untuk **${res.panduanKategori.nama}**:\n\n` +
-        `📌 *${res.panduanKategori.ringkasan}*\n\n` +
+        `*${res.panduanKategori.ringkasan}*\n\n` +
         `**Langkah Praktis:**\n` +
         res.panduanKategori.langkah.map((l, i) => `${i + 1}. ${l}`).join('\n') +
-        `\n\n💡 *Tips Bu Rina:* ${res.panduanKategori.tips}`
+        `\n\n*Tips Praktis:* ${res.panduanKategori.tips}`
     }
     if (res?.artikel) {
-      return `Berikut panduan praktis dari Pilahki:\n\n📖 **${res.artikel.judul}**\n\n` +
+      return `Berikut panduan praktis dari Pilahki:\n\n**${res.artikel.judul}**\n\n` +
         res.artikel.langkah.map((l, i) => `${i + 1}. ${l}`).join('\n')
     }
     return `Kunci pemilahan sampah di rumah tangga:\n\n` +
-      `🍃 **Organik (Mudah Membusuk):** Sisa makanan, sayur, buah, daun. Kumpulkan terpisah tanpa plastik dan tiriskan airnya.\n\n` +
-      `📦 **Anorganik (Daur Ulang):** Botol plastik, kardus, kaleng, kaca. Cuci bilas hingga bersih dan keringkan.\n\n` +
-      `🔋 **B3 (Berbahaya):** Baterai bekas, bohlam, obat kadaluarsa. Pisahkan khusus untuk Drop Box B3.\n\n` +
-      `🗑️ **Residu:** Popok, pembalut, sachet kotor. Buang ke tempat sampah umum/TPS.`
+      `• **Organik (Mudah Membusuk):** Sisa makanan, sayur, buah, daun. Kumpulkan terpisah tanpa plastik dan tiriskan airnya.\n\n` +
+      `• **Anorganik (Daur Ulang):** Botol plastik, kardus, kaleng, kaca. Cuci bilas hingga bersih dan keringkan.\n\n` +
+      `• **B3 (Berbahaya):** Baterai bekas, bohlam, obat kadaluarsa. Pisahkan khusus untuk Drop Box B3.\n\n` +
+      `• **Residu:** Popok, pembalut, sachet kotor. Buang ke tempat sampah umum/TPS.`
   }
 
   return 'Informasi telah ditemukan di sistem Pilahki.'
@@ -487,8 +487,8 @@ function handleLocalSmartAssistant(messagesHistory) {
     const res = toolCekJadwal({ wilayah: targetWilayah })
     return {
       text: `Halo! Berdasarkan data jadwal wilayah **${res.wilayah}**:\n\n` +
-        res.jadwal.map(j => `🗓️ **${j.hari}** (${j.waktu})\n• **${j.jenisSampah}**\n• *Catatan:* ${j.catatan}`).join('\n\n') +
-        `\n\n📌 *TPS Terdekat:* ${res.tpsTerdekat}\nJangan lupa taruh wadah di depan pagar sebelum jam pengangkutan ya!`,
+        res.jadwal.map(j => `• **${j.hari}** (${j.waktu})\n• **${j.jenisSampah}**\n• *Catatan:* ${j.catatan}`).join('\n\n') +
+        `\n\n*TPS Terdekat:* ${res.tpsTerdekat}\nJangan lupa taruh wadah di depan pagar sebelum jam pengangkutan ya!`,
       toolUsed: 'cekJadwal',
       toolData: res
     }

@@ -176,7 +176,7 @@ const formatMarkdown = (text) => {
             const h = tableHeaders[idx + 1] ? `• ${tableHeaders[idx + 1]}: ` : '• '
             return `${h}${val}`
           }).join('\n')
-          cleanLines.push(`🗓️ **${mainTitle}**\n${otherDetails}\n`)
+          cleanLines.push(`**${mainTitle}**\n${otherDetails}\n`)
         } else if (cells.length === 1) {
           cleanLines.push(`• ${cells[0]}`)
         }
@@ -214,7 +214,11 @@ const formatMarkdown = (text) => {
       <div class="nav-content">
         <div class="nav-left">
           <a href="/" class="brand-logo" @click.prevent="navigateTo('/')">
-            <span class="logo-icon" aria-hidden="true">🌱</span>
+            <svg class="brand-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 7v10"/>
+              <path d="m8 11 4-4 4 4"/>
+            </svg>
             <span class="brand-text">
               <span class="brand-name">Pilahki</span>
               <span class="brand-tagline">PilahAI Chatbot</span>
@@ -285,7 +289,15 @@ const formatMarkdown = (text) => {
       <!-- Header Info Singkat -->
       <section class="chat-header-banner">
         <div class="bot-profile-badge">
-          <span class="bot-avatar-large">🤖</span>
+          <div class="bot-avatar-large" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="avatar-large-svg">
+              <rect x="3" y="11" width="18" height="10" rx="2"/>
+              <circle cx="12" cy="5" r="2"/>
+              <path d="M12 7v4"/>
+              <line x1="8" y1="16" x2="8.01" y2="16"/>
+              <line x1="16" y1="16" x2="16.01" y2="16"/>
+            </svg>
+          </div>
           <div>
             <h1 class="chat-title">Tanya PilahAI</h1>
             <p class="chat-desc">
@@ -294,7 +306,11 @@ const formatMarkdown = (text) => {
           </div>
         </div>
         <button type="button" class="clear-chat-btn" @click="handleClearChat">
-          🗑️ Bersihkan Chat
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="clear-btn-svg">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+          <span>Bersihkan Chat</span>
         </button>
       </section>
 
@@ -308,9 +324,18 @@ const formatMarkdown = (text) => {
             :class="msg.role === 'user' ? 'message-user' : 'message-ai'"
           >
             <!-- Avatar -->
-            <div class="msg-avatar" aria-hidden="true">
-              <span v-if="msg.role === 'user'">👤</span>
-              <span v-else>🤖</span>
+            <div class="msg-avatar" :class="msg.role === 'user' ? 'msg-avatar-user' : 'msg-avatar-ai'" aria-hidden="true">
+              <svg v-if="msg.role === 'user'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="msg-avatar-svg">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="msg-avatar-svg">
+                <rect x="3" y="11" width="18" height="10" rx="2"/>
+                <circle cx="12" cy="5" r="2"/>
+                <path d="M12 7v4"/>
+                <line x1="8" y1="16" x2="8.01" y2="16"/>
+                <line x1="16" y1="16" x2="16.01" y2="16"/>
+              </svg>
             </div>
 
             <!-- Bubble Teks -->
@@ -323,10 +348,11 @@ const formatMarkdown = (text) => {
 
               <!-- Tool Badge Jika Function Calling Dipanggil -->
               <div v-if="msg.toolUsed" class="tool-badge-pill">
-                <span v-if="msg.toolUsed === 'cekKategoriSampah'">🔍 Mengakses Database Kategori Sampah</span>
-                <span v-else-if="msg.toolUsed === 'cariFasilitas'">📍 Mengakses Database Fasilitas & Bank Sampah</span>
-                <span v-else-if="msg.toolUsed === 'cekJadwal'">🗓️ Mengakses Database Jadwal Angkut Wilayah</span>
-                <span v-else-if="msg.toolUsed === 'cariPanduan'">📖 Mengakses Modul Panduan Praktis</span>
+                <span class="tool-badge-dot"></span>
+                <span v-if="msg.toolUsed === 'cekKategoriSampah'">Database Kategori Sampah</span>
+                <span v-else-if="msg.toolUsed === 'cariFasilitas'">Database Fasilitas &amp; Bank Sampah</span>
+                <span v-else-if="msg.toolUsed === 'cekJadwal'">Database Jadwal Angkut Wilayah</span>
+                <span v-else-if="msg.toolUsed === 'cariPanduan'">Modul Panduan Praktis</span>
               </div>
 
               <!-- Teks Kandungan (dengan Markdown Formatting) -->
@@ -340,7 +366,7 @@ const formatMarkdown = (text) => {
                   class="tool-shortcut-btn"
                   @click="navigateTo('/pilah')"
                 >
-                  <span>🔍 Buka Fitur Pilah Sampah</span>
+                  <span>Buka Fitur Pilah Sampah</span>
                   <span aria-hidden="true">&rarr;</span>
                 </button>
                 <button
@@ -349,7 +375,7 @@ const formatMarkdown = (text) => {
                   class="tool-shortcut-btn"
                   @click="navigateTo('/lokasi')"
                 >
-                  <span>📍 Buka Peta & Lokasi Bank Sampah</span>
+                  <span>Buka Peta &amp; Lokasi Bank Sampah</span>
                   <span aria-hidden="true">&rarr;</span>
                 </button>
                 <button
@@ -358,7 +384,7 @@ const formatMarkdown = (text) => {
                   class="tool-shortcut-btn"
                   @click="navigateTo('/jadwal')"
                 >
-                  <span>🗓️ Lihat Jadwal Wilayah Lengkap</span>
+                  <span>Lihat Jadwal Wilayah Lengkap</span>
                   <span aria-hidden="true">&rarr;</span>
                 </button>
                 <button
@@ -367,7 +393,7 @@ const formatMarkdown = (text) => {
                   class="tool-shortcut-btn"
                   @click="navigateTo('/panduan')"
                 >
-                  <span>📖 Buka Panduan Edukasi Lengkap</span>
+                  <span>Buka Panduan Edukasi Lengkap</span>
                   <span aria-hidden="true">&rarr;</span>
                 </button>
               </div>
@@ -376,7 +402,15 @@ const formatMarkdown = (text) => {
 
           <!-- Typing Indicator -->
           <div v-if="isLoading" class="message-row message-ai">
-            <div class="msg-avatar" aria-hidden="true">🤖</div>
+            <div class="msg-avatar msg-avatar-ai" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="msg-avatar-svg">
+                <rect x="3" y="11" width="18" height="10" rx="2"/>
+                <circle cx="12" cy="5" r="2"/>
+                <path d="M12 7v4"/>
+                <line x1="8" y1="16" x2="8.01" y2="16"/>
+                <line x1="16" y1="16" x2="16.01" y2="16"/>
+              </svg>
+            </div>
             <div class="msg-bubble-wrap">
               <div class="typing-indicator">
                 <span>PilahAI sedang mencari data dan mengetik...</span>
@@ -512,8 +546,11 @@ const formatMarkdown = (text) => {
   color: inherit;
 }
 
-.logo-icon {
-  font-size: 1.4rem;
+.brand-svg {
+  width: 26px;
+  height: 26px;
+  color: var(--pk-primary);
+  flex-shrink: 0;
 }
 
 .brand-text {
@@ -734,8 +771,13 @@ const formatMarkdown = (text) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
   flex-shrink: 0;
+}
+
+.avatar-large-svg {
+  width: 26px;
+  height: 26px;
+  color: var(--pk-primary);
 }
 
 .chat-title {
@@ -753,6 +795,9 @@ const formatMarkdown = (text) => {
 }
 
 .clear-chat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: none;
   border: 1px solid var(--pk-border);
   padding: 6px 12px;
@@ -761,6 +806,11 @@ const formatMarkdown = (text) => {
   color: var(--pk-text-muted);
   cursor: pointer;
   transition: all 0.15s;
+}
+
+.clear-btn-svg {
+  width: 14px;
+  height: 14px;
 }
 
 .clear-chat-btn:hover {
@@ -813,9 +863,13 @@ const formatMarkdown = (text) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
   flex-shrink: 0;
   background-color: var(--pk-border-subtle);
+}
+
+.msg-avatar-svg {
+  width: 18px;
+  height: 18px;
 }
 
 .message-ai .msg-avatar {
@@ -823,9 +877,17 @@ const formatMarkdown = (text) => {
   border: 1px solid var(--pk-primary-border);
 }
 
+.message-ai .msg-avatar-svg {
+  color: var(--pk-primary);
+}
+
 .message-user .msg-avatar {
   background-color: #eff6ff;
   border: 1px solid #bfdbfe;
+}
+
+.message-user .msg-avatar-svg {
+  color: #2563eb;
 }
 
 .msg-bubble-wrap {
@@ -856,10 +918,20 @@ const formatMarkdown = (text) => {
   color: #166534;
   background-color: #dcfce7;
   border: 1px solid #bbf7d0;
-  padding: 2px 8px;
+  padding: 3px 9px;
   border-radius: var(--pk-radius-full);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tool-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #16a34a;
 }
 
 .tool-action-bar {

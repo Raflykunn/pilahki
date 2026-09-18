@@ -147,7 +147,13 @@ const handleOpenAI = (context = '') => {
       <div class="nav-content">
         <div class="nav-left">
           <a href="/" class="brand-logo" @click.prevent="navigateTo('/')">
-            <span class="logo-icon" aria-hidden="true">🌱</span>
+            <span class="logo-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="brand-svg">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v10" />
+                <path d="m8 11 4-4 4 4" />
+              </svg>
+            </span>
             <span class="brand-text">
               <span class="brand-name">Pilahki</span>
               <span class="brand-tagline">Cari Lokasi</span>
@@ -162,6 +168,10 @@ const handleOpenAI = (context = '') => {
 
           <button type="button" class="nav-link-btn" @click="navigateTo('/jadwal')">
             <span>Jadwal Angkut</span>
+          </button>
+
+          <button type="button" class="nav-link-btn" @click="navigateTo('/panduan')">
+            <span>Panduan</span>
           </button>
 
           <button type="button" class="back-home-btn" @click="navigateTo('/')">
@@ -206,16 +216,16 @@ const handleOpenAI = (context = '') => {
     </header>
 
     <main class="main-container">
-      <!-- Hero Section & Pencari Lokasi -->
-      <section class="lokasi-hero">
+      <!-- Header Tajuk & Kawalan Lokasi -->
+      <section class="lokasi-header-section">
         <div class="breadcrumb-nav">
           <a href="/" @click.prevent="navigateTo('/')">Beranda</a>
           <span class="sep">/</span>
           <span class="current">Cari Lokasi</span>
         </div>
-        <h1 class="page-title">Temukan Bank Sampah & TPS Terdekat</h1>
+        <h1 class="page-title">Lokasi Bank Sampah & TPS Terdekat</h1>
         <p class="page-subtitle">
-          Ketahui ke mana harus membawa sampah Anda tanpa perlu bertanya "kata orang" — lengkap dengan jam buka dan jenis sampah yang diterima.
+          Temukan titik penyaluran sampah terpilah resmi di sekitar Anda, jam operasional, dan kontak pengelola.
         </p>
 
         <!-- Kawalan Lokasi & GPS Bar -->
@@ -229,13 +239,22 @@ const handleOpenAI = (context = '') => {
               :disabled="isLocating"
               @click="handleActivateGps"
             >
-              <span class="gps-icon" aria-hidden="true">📍</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="gps-svg" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="22" y1="12" x2="18" y2="12" />
+                <line x1="6" y1="12" x2="2" y2="12" />
+                <line x1="12" y1="6" x2="12" y2="2" />
+                <line x1="12" y1="22" x2="12" y2="18" />
+              </svg>
               <span>{{ isLocating ? 'Mencari...' : isGpsActive ? 'Lokasi Terdeteksi' : 'Gunakan Lokasi GPS Saya' }}</span>
             </button>
 
             <!-- Kotak Carian Input -->
             <div class="search-input-group">
-              <span class="search-icon" aria-hidden="true">🔍</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="search-svg" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
               <input
                 v-model="searchQuery"
                 type="text"
@@ -257,7 +276,12 @@ const handleOpenAI = (context = '') => {
 
           <!-- Mesej Maklum Balas GPS -->
           <div v-if="gpsMessage" class="gps-status-notice">
-            <span>ℹ️ {{ gpsMessage }}</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="info-notice-svg" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <span>{{ gpsMessage }}</span>
           </div>
 
           <!-- Pemilih Wilayah Manual & Mod Tampilan -->
@@ -285,7 +309,7 @@ const handleOpenAI = (context = '') => {
                 :class="{ active: viewMode === 'list' }"
                 @click="viewMode = 'list'"
               >
-                <span>📋 Daftar</span>
+                <span>Daftar</span>
               </button>
               <button
                 type="button"
@@ -293,7 +317,7 @@ const handleOpenAI = (context = '') => {
                 :class="{ active: viewMode === 'map' }"
                 @click="viewMode = 'map'"
               >
-                <span>🗺️ Peta Wilayah</span>
+                <span>Peta Wilayah</span>
               </button>
             </div>
           </div>
@@ -315,7 +339,8 @@ const handleOpenAI = (context = '') => {
             :class="{ active: selectedJenis === 'bank-sampah' }"
             @click="selectedJenis = 'bank-sampah'"
           >
-            🏦 Bank Sampah
+            <span class="tab-dot dot-blue" aria-hidden="true"></span>
+            Bank Sampah
           </button>
           <button
             type="button"
@@ -323,7 +348,8 @@ const handleOpenAI = (context = '') => {
             :class="{ active: selectedJenis === 'tps-3r' }"
             @click="selectedJenis = 'tps-3r'"
           >
-            ♻️ TPS 3R (Kompos)
+            <span class="tab-dot dot-green" aria-hidden="true"></span>
+            TPS 3R (Kompos)
           </button>
           <button
             type="button"
@@ -331,7 +357,8 @@ const handleOpenAI = (context = '') => {
             :class="{ active: selectedJenis === 'dropbox-b3' }"
             @click="selectedJenis = 'dropbox-b3'"
           >
-            ⚠️ Drop Box B3 / E-Waste
+            <span class="tab-dot dot-amber" aria-hidden="true"></span>
+            Drop Box B3 / E-Waste
           </button>
           <button
             type="button"
@@ -339,7 +366,8 @@ const handleOpenAI = (context = '') => {
             :class="{ active: selectedJenis === 'tps' }"
             @click="selectedJenis = 'tps'"
           >
-            🚛 TPS Reguler
+            <span class="tab-dot dot-slate" aria-hidden="true"></span>
+            TPS Reguler
           </button>
         </div>
       </section>
@@ -348,13 +376,13 @@ const handleOpenAI = (context = '') => {
       <section v-if="viewMode === 'list'" class="facility-list-section">
         <div class="section-meta-bar">
           <span class="found-text">Menemukan <strong>{{ filteredFasilitas.length }} fasilitas</strong> di sekitar Anda</span>
-          <span v-if="isGpsActive" class="sorted-hint">Terurut berdasarkan jarak terdekat</span>
+          <span class="sort-text">Diurutkan berdasarkan jarak terdekat</span>
         </div>
 
-        <div v-if="filteredFasilitas.length === 0" class="empty-state">
-          <p>Tidak ditemukan fasilitas yang sesuai dengan kriteria pencarian Anda.</p>
-          <button type="button" class="reset-search-btn" @click="() => { searchQuery = ''; selectedWilayah = 'semua'; selectedJenis = 'semua'; }">
-            Reset Pencarian
+        <div v-if="filteredFasilitas.length === 0" class="no-facility-box">
+          <p>Tidak ada fasilitas yang sesuai dengan filter atau kata kunci "{{ searchQuery }}".</p>
+          <button type="button" class="reset-filter-btn" @click="selectedJenis = 'semua'; selectedWilayah = 'semua'; searchQuery = ''">
+            Reset Semua Filter
           </button>
         </div>
 
@@ -363,20 +391,24 @@ const handleOpenAI = (context = '') => {
             v-for="item in filteredFasilitas"
             :key="item.id"
             class="facility-card"
-            :class="'card-border-' + jenisFasilitasConfig[item.jenis].warna"
+            :class="'card-border-' + item.jenis"
           >
-            <!-- Top Header Kad -->
-            <div class="card-header-row">
+            <!-- Badge Jenis & Jarak -->
+            <div class="card-top-row">
               <div class="badge-group">
                 <span class="facility-type-badge" :class="jenisFasilitasConfig[item.jenis].badgeClass">
-                  {{ jenisFasilitasConfig[item.jenis].icon }} {{ jenisFasilitasConfig[item.jenis].label }}
+                  {{ jenisFasilitasConfig[item.jenis].label }}
                 </span>
                 <span v-if="item.bisaTukarUang" class="reward-badge">
-                  💰 Bisa Jadi Uang
+                  Bernilai Rupiah
                 </span>
               </div>
               <span class="distance-pill">
-                📍 {{ item.jarakMeter < 1000 ? `${item.jarakMeter} m` : `${(item.jarakMeter / 1000).toFixed(1)} km` }}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="pin-svg" aria-hidden="true">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                <span>{{ item.jarakMeter < 1000 ? `${item.jarakMeter} m` : `${(item.jarakMeter / 1000).toFixed(1)} km` }}</span>
               </span>
             </div>
 
@@ -388,7 +420,10 @@ const handleOpenAI = (context = '') => {
 
             <!-- Jam Operasional -->
             <div class="info-row operational-hours-box">
-              <span class="info-icon" aria-hidden="true">⏰</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="clock-svg" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
               <div class="info-text">
                 <strong>Jam Operasional:</strong>
                 <p>{{ item.jamOperasional }}</p>
@@ -421,7 +456,7 @@ const handleOpenAI = (context = '') => {
 
             <!-- Catatan Warga -->
             <div class="facility-note">
-              <span>💡 <strong>Catatan:</strong> {{ item.catatan }}</span>
+              <span><strong>Catatan:</strong> {{ item.catatan }}</span>
             </div>
 
             <!-- Tindakan Kad: Buka Peta & Hubungi WA -->
@@ -431,14 +466,20 @@ const handleOpenAI = (context = '') => {
                 class="action-map-btn"
                 @click="openMaps(item)"
               >
-                <span>🗺️ Petunjuk Arah</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-svg" aria-hidden="true">
+                  <polygon points="3 11 22 2 13 21 11 13 3 11" />
+                </svg>
+                <span>Petunjuk Arah</span>
               </button>
               <button
                 type="button"
                 class="action-wa-btn"
                 @click="contactManager(item)"
               >
-                <span>💬 WhatsApp Pengurus</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-svg" aria-hidden="true">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                </svg>
+                <span>WhatsApp Pengurus</span>
               </button>
             </div>
           </article>
@@ -454,9 +495,9 @@ const handleOpenAI = (context = '') => {
               <p class="map-sub">Klik salah satu titik pin di peta untuk melihat alamat dan jam buka langsung.</p>
             </div>
             <span class="map-pin-legend">
-              <span>🔵 Bank Sampah</span>
-              <span>🟢 TPS 3R</span>
-              <span>🟠 Drop Box B3</span>
+              <span class="legend-item"><span class="legend-dot dot-blue"></span> Bank Sampah</span>
+              <span class="legend-item"><span class="legend-dot dot-green"></span> TPS 3R</span>
+              <span class="legend-item"><span class="legend-dot dot-amber"></span> Drop Box B3</span>
             </span>
           </div>
 
@@ -471,7 +512,6 @@ const handleOpenAI = (context = '') => {
                 :title="item.nama"
                 @click="openMaps(item)"
               >
-                <span class="pin-icon">{{ jenisFasilitasConfig[item.jenis].icon }}</span>
                 <span class="pin-popup-label">{{ item.nama }}</span>
               </div>
             </div>
@@ -482,7 +522,11 @@ const handleOpenAI = (context = '') => {
       <!-- Bantuan PilahAI untuk Penyaluran Khas -->
       <section class="facility-ai-helper">
         <div class="helper-box">
-          <div class="helper-icon">🤖</div>
+          <div class="helper-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="helper-svg">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </div>
           <div class="helper-content">
             <h3 class="helper-title">Ragu Apakah Sampah Anda Diterima di Fasilitas Ini?</h3>
             <p class="helper-desc">

@@ -3,7 +3,6 @@ export const kategoriConfig = {
   organik: {
     label: 'Organik',
     warna: 'green',
-    icon: '🍃',
     warnaBg: '#f0fdf4',
     warnaBorder: '#bbf7d0',
     warnaText: '#15803d',
@@ -12,7 +11,6 @@ export const kategoriConfig = {
   anorganik: {
     label: 'Anorganik',
     warna: 'blue',
-    icon: '📦',
     warnaBg: '#eff6ff',
     warnaBorder: '#bfdbfe',
     warnaText: '#1d4ed8',
@@ -21,7 +19,6 @@ export const kategoriConfig = {
   b3: {
     label: 'Limbah B3',
     warna: 'amber',
-    icon: '⚠️',
     warnaBg: '#fffbeb',
     warnaBorder: '#fde68a',
     warnaText: '#b45309',
@@ -30,7 +27,6 @@ export const kategoriConfig = {
   residu: {
     label: 'Residu',
     warna: 'slate',
-    icon: '🗑️',
     warnaBg: '#f8fafc',
     warnaBorder: '#e2e8f0',
     warnaText: '#475569',
@@ -43,7 +39,6 @@ export const daftarSampah = [
     id: 's-1',
     nama: 'Botol Plastik Air Mineral (PET)',
     kategori: 'anorganik',
-    icon: '🍾',
     alias: ['botol aqua', 'botol plastik', 'pet', 'botol mineral', 'plastik bening'],
     penanganan: [
       'Kosongkan cairan di dalam botol hingga tuntas.',
@@ -58,7 +53,6 @@ export const daftarSampah = [
     id: 's-2',
     nama: 'Baterai Bekas (AA, AAA, Kancing, HP)',
     kategori: 'b3',
-    icon: '🔋',
     alias: ['baterai', 'batu baterai', 'aki kecil', 'batre', 'battery'],
     penanganan: [
       'Jangan sekali-kali membakar atau membuang baterai ke tanah/got.',
@@ -73,7 +67,6 @@ export const daftarSampah = [
     id: 's-3',
     nama: 'Kemasan Sachet Kopi / Bumbu (Multilayer)',
     kategori: 'residu',
-    icon: '☕',
     alias: ['sachet', 'bungkus royco', 'saset', 'bungkus kopi', 'foil plastik', 'kemasan mie instan'],
     penanganan: [
       'Kosongkan sisa serbuk atau bumbu di dalamnya.',
@@ -88,7 +81,6 @@ export const daftarSampah = [
     id: 's-4',
     nama: 'Sisa Sayur & Kulit Buah',
     kategori: 'organik',
-    icon: '🥬',
     alias: ['kulit buah', 'sayur busuk', 'sisa sayuran', 'kulit pisang', 'potongan wortel'],
     penanganan: [
       'Tiriskan sisa air cucian atau kuah sayur.',
@@ -102,7 +94,6 @@ export const daftarSampah = [
     id: 's-5',
     nama: 'Nasi Basi & Sisa Makanan Berkuah',
     kategori: 'organik',
-    icon: '🍚',
     alias: ['nasi sisa', 'makanan sisa', 'lauk basi', 'kuah gulai'],
     penanganan: [
       'Saring kuah/cairan ke saringan wastafel (jangan buang minyak pekat).',
@@ -116,7 +107,6 @@ export const daftarSampah = [
     id: 's-6',
     nama: 'Minyak Goreng Bekas (Minyak Jelantah)',
     kategori: 'anorganik',
-    icon: '🍳',
     alias: ['jelantah', 'minyak bekas', 'minyak goreng bekas', 'oli bekas'],
     penanganan: [
       'Tunggu hingga minyak dingin sehabis memasak.',
@@ -131,7 +121,6 @@ export const daftarSampah = [
     id: 's-7',
     nama: 'Kardus Paket & Box Makanan',
     kategori: 'anorganik',
-    icon: '📦',
     alias: ['kardus', 'karton', 'box paket', 'kardus sepatu', 'kotak kardus'],
     penanganan: [
       'Lepaskan lakban cokelat dan stiker resi pengiriman plastik.',
@@ -145,7 +134,6 @@ export const daftarSampah = [
     id: 's-8',
     nama: 'Kaleng Minuman & Susu (Aluminium/Besi)',
     kategori: 'anorganik',
-    icon: '🥫',
     alias: ['kaleng', 'kaleng soda', 'kaleng susu', 'seng', 'kaleng biskuit'],
     penanganan: [
       'Bilas sisa minuman manis atau susu kental dengan air agar tidak dikerubungi semut.',
@@ -159,7 +147,6 @@ export const daftarSampah = [
     id: 's-9',
     nama: 'Lampu Neon / Bohlam TL / LED Rusak',
     kategori: 'b3',
-    icon: '💡',
     alias: ['lampu', 'bohlam', 'lampu neon', 'lampu philips', 'tl', 'neon'],
     penanganan: [
       'Bungkus lampu dengan kardus aslinya atau koran agar tidak pecah.',
@@ -173,7 +160,6 @@ export const daftarSampah = [
     id: 's-10',
     nama: 'Popok Bayi (Pampers) & Pembalut Wanita',
     kategori: 'residu',
-    icon: '👶',
     alias: ['popok', 'pampers', 'pembalut', 'diapers', 'pampers bekas'],
     penanganan: [
       'Keluarkan kotoran padat ke kloset dan siram.',
@@ -188,7 +174,6 @@ export const daftarSampah = [
     id: 's-11',
     nama: 'Tisu Bekas Pakai & Tisu Basah',
     kategori: 'residu',
-    icon: '🧻',
     alias: ['tisu', 'tissue', 'tisu basah', 'tisu makan'],
     penanganan: [
       'Jangan masukkan ke saluran kloset karena serat tisu basah tidak mudah hancur dan membuat pipa tersumbat.',
@@ -201,7 +186,6 @@ export const daftarSampah = [
     id: 's-12',
     nama: 'Botol Kaca Sirup / Kecap / Selai',
     kategori: 'anorganik',
-    icon: '🍾',
     alias: ['botol kaca', 'beling', 'toples kaca', 'botol kecap', 'botol sirup'],
     penanganan: [
       'Cuci bersih sisa kecap atau sirup.',
@@ -215,7 +199,6 @@ export const daftarSampah = [
     id: 's-13',
     nama: 'Kantong Plastik Kresek Kotor / Tipis',
     kategori: 'residu',
-    icon: '🛍️',
     alias: ['kresek', 'plastik belanja', 'kresek hitam', 'kantong kresek'],
     penanganan: [
       'Bila masih bersih, simpan dan gunakan kembali untuk berbelanja.',
@@ -228,7 +211,6 @@ export const daftarSampah = [
     id: 's-14',
     nama: 'Gelas Plastik Air Mineral (PP)',
     kategori: 'anorganik',
-    icon: '🥤',
     alias: ['gelas aqua', 'cup plastik', 'gelas plastik', 'gelas pop ice'],
     penanganan: [
       'Cabut tutup sedotan plastik lid bagian atas.',
@@ -242,7 +224,6 @@ export const daftarSampah = [
     id: 's-15',
     nama: 'Obat Kedaluwarsa & Sirup Obat Sisa',
     kategori: 'b3',
-    icon: '💊',
     alias: ['obat', 'obat basi', 'obat kedaluwarsa', 'sirup obat', 'kapsul bekas'],
     penanganan: [
       'Untuk obat tablet: keluarkan dari blister, hancurkan, dan campur dengan bubuk kopi/tanah agar tidak diminum hewan/orang lain.',
@@ -256,7 +237,6 @@ export const daftarSampah = [
     id: 's-16',
     nama: 'Kaleng Semprotan Nyamuk / Aerosol / Deodoran',
     kategori: 'b3',
-    icon: '🧴',
     alias: ['baygon', 'semprotan nyamuk', 'hit', 'pilox', 'aerosol'],
     penanganan: [
       'Pastikan gas di dalam kaleng sudah habis terpakai.',
@@ -270,7 +250,6 @@ export const daftarSampah = [
     id: 's-17',
     nama: 'Kulit Telur Ayam / Bebek',
     kategori: 'organik',
-    icon: '🥚',
     alias: ['cangkang telur', 'kulit telor', 'kulit telur'],
     penanganan: [
       'Bilas sedikit bila berlendir putih telur.',
@@ -284,7 +263,6 @@ export const daftarSampah = [
     id: 's-18',
     nama: 'Ampas Kopi & Teh Celup',
     kategori: 'organik',
-    icon: '☕',
     alias: ['ampas kopi', 'ampas teh', 'kantong teh celup', 'teh basi'],
     penanganan: [
       'Lepaskan benang dan isi kantong teh bila kantongnya terbuat dari serat plastik jaring.',
@@ -297,7 +275,6 @@ export const daftarSampah = [
     id: 's-19',
     nama: 'Wadah Styrofoam Makanan Kotor',
     kategori: 'residu',
-    icon: '🍱',
     alias: ['styrofoam', 'sterofoam', 'gabus makanan', 'wadah seblak'],
     penanganan: [
       'Buang sisa makanan kuah ke tempat organik.',
@@ -311,7 +288,6 @@ export const daftarSampah = [
     id: 's-20',
     nama: 'Kertas HVS / Buku / Koran Bekas',
     kategori: 'anorganik',
-    icon: '📄',
     alias: ['kertas', 'hvs', 'buku bekas', 'koran', 'majalah', 'kertas ujian'],
     penanganan: [
       'Pisahkan kertas dari klip kertas besi atau map plastik.',
@@ -325,7 +301,6 @@ export const daftarSampah = [
     id: 's-21',
     nama: 'Pecahan Keramik / Genteng / Kaca Cermin',
     kategori: 'residu',
-    icon: '🍽️',
     alias: ['piring pecah', 'cermin pecah', 'keramik', 'genteng'],
     penanganan: [
       'Bungkus pecahan tajam dengan koran tebal atau kardus bekas berlapis.',
@@ -339,7 +314,6 @@ export const daftarSampah = [
     id: 's-22',
     nama: 'Dedaunan Kering & Ranting Pangkasan Kebun',
     kategori: 'organik',
-    icon: '🍂',
     alias: ['daun kering', 'ranting', 'rumput', 'pangkasan taman'],
     penanganan: [
       'Kumpulkan dalam karung goni atau karung beras bekas.',

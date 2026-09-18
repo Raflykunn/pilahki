@@ -80,7 +80,11 @@ const handleSubmit = async () => {
 
       <div class="modal-header">
         <div class="modal-icon-badge" aria-hidden="true">
-          🌱
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="modal-badge-svg">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 7v10"/>
+            <path d="m8 11 4-4 4 4"/>
+          </svg>
         </div>
         <h2 id="auth-modal-title" class="modal-title">
           {{ isRegisterMode ? 'Buat Akun Pilahki' : title }}
@@ -195,8 +199,16 @@ const handleSubmit = async () => {
 }
 
 .modal-icon-badge {
-  font-size: 1.6rem;
-  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.modal-badge-svg {
+  width: 36px;
+  height: 36px;
+  color: #15803d;
 }
 
 .modal-title {

@@ -150,7 +150,11 @@ const handleOpenAI = (customContext = '') => {
       <div class="nav-content">
         <div class="nav-left">
           <a href="/" class="brand-logo" @click.prevent="navigateTo('/')">
-            <span class="logo-icon" aria-hidden="true">🌱</span>
+            <svg class="brand-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 7v10"/>
+              <path d="m8 11 4-4 4 4"/>
+            </svg>
             <span class="brand-text">
               <span class="brand-name">Pilahki</span>
               <span class="brand-tagline">Jadwal Angkut</span>
@@ -219,8 +223,11 @@ const handleOpenAI = (customContext = '') => {
         <div class="wilayah-card">
           <div class="wilayah-field-group">
             <label for="select-wilayah" class="field-label">
-              <span class="label-icon">📍</span>
-              Pilih Wilayah Tempat Tinggal Anda:
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="field-icon-svg">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <span>Pilih Wilayah Tempat Tinggal Anda:</span>
             </label>
             <div class="select-wrapper">
               <select
@@ -251,9 +258,10 @@ const handleOpenAI = (customContext = '') => {
       <!-- Banner Status Pengangkutan Terdekat -->
       <section v-if="nextUpcomingPickup" class="upcoming-alert-banner">
         <div class="alert-icon-box" :class="'icon-bg-' + nextUpcomingPickup.kategori">
-          <span v-if="nextUpcomingPickup.kategori === 'organik'">🍃</span>
-          <span v-else-if="nextUpcomingPickup.kategori === 'anorganik'">📦</span>
-          <span v-else>🗑️</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-svg">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
         </div>
         <div class="alert-text-content">
           <div class="alert-tagline">
@@ -386,12 +394,20 @@ const handleOpenAI = (customContext = '') => {
 
             <div class="schedule-meta">
               <div class="meta-row">
-                <span class="meta-icon">⏰</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="meta-svg">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
                 <strong>Jam Angkut:</strong>
                 <span>{{ item.waktu }}</span>
               </div>
               <div class="meta-row">
-                <span class="meta-icon">🚛</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="meta-svg">
+                  <rect x="1" y="3" width="15" height="13"/>
+                  <polygon points="16 8 20 8 23 11 23 16 16 16 8"/>
+                  <circle cx="5.5" cy="18.5" r="2.5"/>
+                  <circle cx="18.5" cy="18.5" r="2.5"/>
+                </svg>
                 <strong>Armada:</strong>
                 <span>{{ item.petugas }}</span>
               </div>
@@ -400,7 +416,12 @@ const handleOpenAI = (customContext = '') => {
             <!-- Petunjuk Persiapan Praktis untuk Warga -->
             <div class="prep-instructions">
               <p class="prep-note">
-                💡 <strong>Catatan:</strong> {{ item.catatan }}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="note-svg">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+                <span><strong>Catatan:</strong> {{ item.catatan }}</span>
               </p>
               <div class="acceptable-tags">
                 <span class="tags-label">Diterima:</span>
@@ -457,7 +478,15 @@ const handleOpenAI = (customContext = '') => {
       <!-- Bahagian Sokongan PilahAI untuk Jadual Khas -->
       <section class="special-pickup-help">
         <div class="help-box">
-          <div class="help-icon" aria-hidden="true">🤖</div>
+          <div class="help-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="help-svg">
+              <rect x="3" y="11" width="18" height="10" rx="2"/>
+              <circle cx="12" cy="5" r="2"/>
+              <path d="M12 7v4"/>
+              <line x1="8" y1="16" x2="8.01" y2="16"/>
+              <line x1="16" y1="16" x2="16.01" y2="16"/>
+            </svg>
+          </div>
           <div class="help-content">
             <h3 class="help-title">Punya Sampah Besar atau Berbahaya?</h3>
             <p class="help-desc">
@@ -557,8 +586,11 @@ const handleOpenAI = (customContext = '') => {
   color: inherit;
 }
 
-.logo-icon {
-  font-size: 1.4rem;
+.brand-svg {
+  width: 26px;
+  height: 26px;
+  color: var(--pk-primary);
+  flex-shrink: 0;
 }
 
 .brand-text {
@@ -762,7 +794,14 @@ const handleOpenAI = (customContext = '') => {
   color: var(--pk-text-main);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.field-icon-svg {
+  width: 16px;
+  height: 16px;
+  color: var(--pk-primary);
+  flex-shrink: 0;
 }
 
 .wilayah-select {
@@ -824,13 +863,17 @@ const handleOpenAI = (customContext = '') => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
   flex-shrink: 0;
 }
 
-.icon-bg-organik { background-color: #f0fdf4; }
-.icon-bg-anorganik { background-color: #eff6ff; }
-.icon-bg-residu { background-color: #f1f5f9; }
+.alert-svg {
+  width: 22px;
+  height: 22px;
+}
+
+.icon-bg-organik { background-color: #f0fdf4; color: #166534; }
+.icon-bg-anorganik { background-color: #eff6ff; color: #1d4ed8; }
+.icon-bg-residu { background-color: #f1f5f9; color: #475569; }
 
 .alert-text-content {
   flex: 1;
@@ -1057,13 +1100,16 @@ const handleOpenAI = (customContext = '') => {
 .meta-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 0.84rem;
   color: var(--pk-text-muted);
 }
 
-.meta-icon {
-  font-size: 0.95rem;
+.meta-svg {
+  width: 15px;
+  height: 15px;
+  color: var(--pk-text-subtle);
+  flex-shrink: 0;
 }
 
 .prep-instructions {
@@ -1077,6 +1123,17 @@ const handleOpenAI = (customContext = '') => {
   margin: 0;
   color: var(--pk-text-muted);
   line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.note-svg {
+  width: 15px;
+  height: 15px;
+  color: #d97706;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .acceptable-tags,
@@ -1242,8 +1299,20 @@ const handleOpenAI = (customContext = '') => {
 }
 
 .help-icon {
-  font-size: 1.8rem;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--pk-radius-md);
+  background-color: var(--pk-primary-light);
+  color: var(--pk-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+}
+
+.help-svg {
+  width: 24px;
+  height: 24px;
 }
 
 .help-content {
