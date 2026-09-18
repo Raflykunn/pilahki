@@ -149,17 +149,17 @@ export function toolCariPanduan(args) {
     return {
       status: 'success',
       ringkasanEdukasi: `Membedakan sampah organik dan anorganik (non-organik) itu sangat mudah, kuncinya ada pada **sumbernya** dan **bisa membusuk atau tidak**:\n\n` +
-        `🍃 **1. Sampah Organik (Bisa Membusuk)**\n` +
+        `**1. Sampah Organik (Bisa Membusuk)**\n` +
         `• **Asal:** Sisa makhluk hidup (tumbuhan, hewan, dapur).\n` +
         `• **Ciri:** Mudah hancur secara alami dalam hitungan hari/minggu dan berbau bila dibiarkan lembap.\n` +
         `• **Contoh:** Sisa sayur & buah, sisa makanan/nasi, daun rontok, kulit telur, ampas kopi/teh, tulang ayam/ikan.\n` +
         `• **Pengelolaan:** Tiriskan airnya, simpan di wadah tertutup, bisa diolah jadi kompos atau pakan maggot.\n\n` +
-        `📦 **2. Sampah Non-Organik / Anorganik (Tidak Bisa Membusuk)**\n` +
+        `**2. Sampah Non-Organik / Anorganik (Tidak Bisa Membusuk)**\n` +
         `• **Asal:** Buatan manusia atau proses industri sintetis.\n` +
         `• **Ciri:** Kering, awet, butuh puluhan hingga ratusan tahun untuk terurai di alam.\n` +
         `• **Contoh:** Botol plastik, kantong kresek, kardus, kaleng minuman, wadah kaca, styrofoam.\n` +
         `• **Pengelolaan:** Cuci bilas bersih dari minyak/sisa isi, keringkan, remas/lipat agar ringkas, lalu kumpulkan untuk disetor ke Bank Sampah terdekat.\n\n` +
-        `💡 *Rumus Cepat:* Tanyakan ke diri sendiri: *"Apakah benda ini bakal membusuk dan hancur sendiri dalam 1-2 minggu?"*\n` +
+        `*Rumus Cepat:* Tanyakan ke diri sendiri: *"Apakah benda ini bakal membusuk dan hancur sendiri dalam 1-2 minggu?"*\n` +
         `• Kalau **Iya** &rarr; Masuk **Organik**\n` +
         `• Kalau **Tidak** &rarr; Masuk **Anorganik**`
     }
@@ -278,7 +278,8 @@ ATURAN DOMAIN & FORMAT KETAT:
    - Catatan: Taruh di depan pagar sebelum jam 06:30.
 4. Jika pengguna bertanya di luar topik sampah (misalnya politik, sains rumit, kode pemrograman, resep masak umum), tolak dengan sangat sopan bahwa Anda hanya bisa membantu seputar pemilahan dan pengelolaan sampah rumah tangga.
 5. Selalu gunakan perkakas fungsi (function calling) yang disediakan (cekKategoriSampah, cariFasilitas, cekJadwal, cariPanduan) saat pengguna bertanya hal yang relevan untuk memberikan informasi akurat dari database Pilahki.
-6. Jangan gunakan istilah teknis rumit. Gunakan bahasa yang mudah dipahami warga biasa, to-the-point, dan ramah.`
+6. Jangan gunakan istilah teknis rumit. Gunakan bahasa yang mudah dipahami warga biasa, to-the-point, dan ramah.
+7. DILARANG KERAS MENGGUNAKAN EMOJI. Jangan pernah menyisipkan emoji apapun (seperti 🌱, 🤖, 💡, 📍, 📦, 🍃, 🗑️, dsb). Tulis semua respon dalam teks bahasa Indonesia yang bersih, formal-santun, dan profesional.`
 
 // ============================================================================
 // 3. Penghantaran Mesej ke Gemini API
@@ -423,7 +424,7 @@ export async function sendChatMessageToPilahAI(messagesHistory) {
 function formatFunctionResultAsText(funcName, res) {
   if (funcName === 'cekKategoriSampah') {
     if (res.status === 'found') {
-      return `Sampah **${res.nama}** masuk ke dalam kategori **${res.kategoriLabel}**.\n\n**Langkah Penanganan:**\n${res.penanganan.map((p, i) => `${i + 1}. ${p}`).join('\n')}\n\n**Tujuan Penyaluran:** ${res.tujuanPenyaluran}\n💡 *Tips: ${res.tipsPraktis}*`
+      return `Sampah **${res.nama}** masuk ke dalam kategori **${res.kategoriLabel}**.\n\n**Langkah Penanganan:**\n${res.penanganan.map((p, i) => `${i + 1}. ${p}`).join('\n')}\n\n**Tujuan Penyaluran:** ${res.tujuanPenyaluran}\n*Tips: ${res.tipsPraktis}*`
     }
     return res.pesan
   }
@@ -503,7 +504,7 @@ function handleLocalSmartAssistant(messagesHistory) {
     const res = toolCariFasilitas({ jenisFasilitas: jenisF })
     return {
       text: `Berikut rekomendasi tempat penyaluran terdekat di wilayah percontohan:\n\n` +
-        res.fasilitas.slice(0, 2).map(f => `🏢 **${f.nama}** (${f.jenis})\n📍 ${f.alamat} (sekitar ${f.jarak})\n⏰ **Jam Buka:** ${f.jamBuka}\n📦 **Menerima:** ${f.sampahDiterima.join(', ')}\n💡 *Info:* ${f.catatan}`).join('\n\n') +
+        res.fasilitas.slice(0, 2).map(f => `• **${f.nama}** (${f.jenis})\n  Alamat: ${f.alamat} (sekitar ${f.jarak})\n  Jam Buka: ${f.jamBuka}\n  Menerima: ${f.sampahDiterima.join(', ')}\n  Catatan: ${f.catatan}`).join('\n\n') +
         `\n\nAnda juga bisa membuka menu **Cari Lokasi** untuk petunjuk arah langsung via Google Maps.`,
       toolUsed: 'cariFasilitas',
       toolData: res
@@ -521,7 +522,7 @@ function handleLocalSmartAssistant(messagesHistory) {
     return {
       text: `Untuk **${kategoriResult.nama}**, barang ini masuk kategori **${kategoriResult.kategoriLabel.toUpperCase()}**.\n\n**Langkah Penanganan Praktis:**\n` +
         kategoriResult.penanganan.map((step, idx) => `${idx + 1}. ${step}`).join('\n') +
-        `\n\n📍 **Tujuan Penyaluran:** ${kategoriResult.tujuanPenyaluran}\n💡 *Tips Tambahan:* ${kategoriResult.tipsPraktis}`,
+        `\n\n**Tujuan Penyaluran:** ${kategoriResult.tujuanPenyaluran}\n*Tips Tambahan:* ${kategoriResult.tipsPraktis}`,
       toolUsed: 'cekKategoriSampah',
       toolData: kategoriResult
     }
@@ -547,13 +548,13 @@ function handleLocalSmartAssistant(messagesHistory) {
     if (panduanRes.ringkasanEdukasi) {
       answerText = panduanRes.ringkasanEdukasi
     } else if (panduanRes.artikel) {
-      answerText = `📖 **${panduanRes.artikel.judul}**\n\n` + panduanRes.artikel.langkah.map((l, i) => `${i + 1}. ${l}`).join('\n')
+      answerText = `**${panduanRes.artikel.judul}**\n\n` + panduanRes.artikel.langkah.map((l, i) => `${i + 1}. ${l}`).join('\n')
     } else if (panduanRes.panduanKategori) {
       answerText = `Berikut panduan pemilahan untuk **${panduanRes.panduanKategori.nama}**:\n\n` +
-        `📌 *${panduanRes.panduanKategori.ringkasan}*\n\n` +
+        `*${panduanRes.panduanKategori.ringkasan}*\n\n` +
         `**Langkah Praktis:**\n` +
         panduanRes.panduanKategori.langkah.map((l, i) => `${i + 1}. ${l}`).join('\n') +
-        `\n\n💡 *Tips Bu Rina:* ${panduanRes.panduanKategori.tips}`
+        `\n\n*Tips Praktis:* ${panduanRes.panduanKategori.tips}`
     } else {
       answerText = `Kuncinya di rumah tangga adalah selalu memisahkan sampah basah organik dan sampah kering anorganik. Tiriskan air sisa makanan agar tempat sampah tidak mudah berbau, dan bilas botol/wadah plastik sebelum dikumpulkan!`
     }
