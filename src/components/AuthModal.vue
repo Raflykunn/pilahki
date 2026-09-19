@@ -1,20 +1,24 @@
 <script setup>
 import { ref } from 'vue'
-import { useAuth } from '../composables/useAuth'
+import { useAuth } from '@/composables/useAuth'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { LogIn, UserPlus, AlertCircle, CheckCircle2, Lock, Mail, Loader2, Sparkles } from 'lucide-vue-next'
 
 const props = defineProps({
   isOpen: {
     type: Boolean,
-    default: false
+    default: false,
   },
   title: {
     type: String,
-    default: 'Masuk ke Pilahki'
+    default: 'Masuk ke Pilahki',
   },
   subtitle: {
     type: String,
-    default: 'Masuk dengan email dan kata sandi untuk mengakses fitur lengkap Pilahki.'
-  }
+    default: 'Masuk dengan email dan kata sandi untuk mengakses fitur lengkap Pilahki.',
+  },
 })
 
 const emit = defineEmits(['close', 'auth-success'])
@@ -23,7 +27,7 @@ const {
   loading,
   authError,
   signInWithEmail,
-  signUpWithEmail
+  signUpWithEmail,
 } = useAuth()
 
 const isRegisterMode = ref(false)
@@ -54,7 +58,7 @@ const handleSubmit = async () => {
   if (isRegisterMode.value) {
     const res = await signUpWithEmail(email.value, password.value)
     if (res.success) {
-      successMessage.value = 'Pendaftaran berhasil! Silakan periksa email Anda atau langsung masuk jika konfirmasi otomatis aktif.'
+      successMessage.value = 'Pendaftaran berhasil! Silakan periksa email Anda atau langsung masuk.'
       setTimeout(() => {
         emit('auth-success')
         handleClose()
@@ -71,259 +75,102 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div v-if="isOpen" class="auth-modal-overlay" @click.self="handleClose">
-    <div class="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
-      <!-- Tombol Tutup -->
-      <button type="button" class="modal-close-btn" aria-label="Tutup modal" @click="handleClose">
-        &times;
-      </button>
-
-      <div class="modal-header">
-        <div class="modal-icon-badge" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="modal-badge-svg">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M12 7v10"/>
-            <path d="m8 11 4-4 4 4"/>
-          </svg>
+  <Dialog :open="isOpen" @update:open="(val) => !val && handleClose()">
+    <DialogContent class="max-w-md p-6 sm:p-8">
+      <DialogHeader class="text-left mb-6 space-y-2">
+        <div class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 mb-1">
+          <Sparkles class="h-5 w-5" />
         </div>
-        <h2 id="auth-modal-title" class="modal-title">
+        <DialogTitle class="text-xl font-bold text-zinc-900">
           {{ isRegisterMode ? 'Buat Akun Pilahki' : title }}
-        </h2>
-        <p class="modal-subtitle">
-          {{ subtitle }}
-        </p>
+        </DialogTitle>
+        <DialogDescription class="text-sm text-zinc-500">
+          {{ isRegisterMode ? 'Daftar sekarang untuk menyimpan riwayat pemilahan dan jadwal angkut.' : subtitle }}
+        </DialogDescription>
+      </DialogHeader>
+
+      <!-- Alert Error -->
+      <div
+        v-if="authError"
+        class="mb-4 flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 leading-relaxed"
+        role="alert"
+      >
+        <AlertCircle class="h-4 w-4 shrink-0 text-red-600 mt-0.5" />
+        <span>{{ authError }}</span>
       </div>
 
-      <!-- Notifikasi Ralat & Kejayaan -->
-      <div v-if="authError" class="auth-alert auth-alert-error" role="alert">
-        {{ authError }}
-      </div>
-      <div v-if="successMessage" class="auth-alert auth-alert-success" role="alert">
-        {{ successMessage }}
+      <!-- Alert Success -->
+      <div
+        v-if="successMessage"
+        class="mb-4 flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-700 leading-relaxed"
+        role="status"
+      >
+        <CheckCircle2 class="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
+        <span>{{ successMessage }}</span>
       </div>
 
-      <!-- Borang Email & Kata Laluan -->
-      <form class="auth-form" @submit.prevent="handleSubmit">
-        <div class="form-group">
-          <label for="auth-email" class="form-label">Alamat Email</label>
-          <input
-            id="auth-email"
-            v-model="email"
-            type="email"
-            required
-            class="form-input"
-            placeholder="nama@email.com"
-            :disabled="loading"
-          />
+      <!-- Form -->
+      <form @submit.prevent="handleSubmit" class="space-y-4">
+        <div class="space-y-1.5">
+          <label for="auth-email" class="text-xs font-semibold text-zinc-700">Email</label>
+          <div class="relative">
+            <Mail class="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
+            <Input
+              id="auth-email"
+              v-model="email"
+              type="email"
+              placeholder="nama@email.com"
+              class="pl-9"
+              required
+              :disabled="loading"
+            />
+          </div>
         </div>
 
-        <div class="form-group">
-          <label for="auth-password" class="form-label">Kata Sandi</label>
-          <input
-            id="auth-password"
-            v-model="password"
-            type="password"
-            required
-            minlength="6"
-            class="form-input"
-            placeholder="Minimal 6 karakter"
-            :disabled="loading"
-          />
+        <div class="space-y-1.5">
+          <label for="auth-password" class="text-xs font-semibold text-zinc-700">Kata Sandi</label>
+          <div class="relative">
+            <Lock class="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
+            <Input
+              id="auth-password"
+              v-model="password"
+              type="password"
+              placeholder="Minimal 6 karakter"
+              class="pl-9"
+              required
+              minlength="6"
+              :disabled="loading"
+            />
+          </div>
         </div>
 
-        <button type="submit" class="submit-auth-btn" :disabled="loading">
-          <span v-if="!loading">
-            {{ isRegisterMode ? 'Daftar Sekarang' : 'Masuk' }}
-          </span>
-          <span v-else>Memproses...</span>
-        </button>
+        <div class="pt-2">
+          <Button
+            type="submit"
+            class="w-full h-11 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-600/30"
+            :disabled="loading"
+          >
+            <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
+            <LogIn v-else-if="!isRegisterMode" class="mr-2 h-4 w-4" />
+            <UserPlus v-else class="mr-2 h-4 w-4" />
+            <span>{{ isRegisterMode ? 'Daftar Akun Baru' : 'Masuk Sekarang' }}</span>
+          </Button>
+        </div>
       </form>
 
-      <!-- Toggle Mod Masuk / Daftar -->
-      <div class="modal-footer-toggle">
-        <span>{{ isRegisterMode ? 'Sudah punya akun?' : 'Belum punya akun?' }}</span>
-        <button type="button" class="toggle-mode-btn" @click="toggleMode">
-          {{ isRegisterMode ? 'Masuk di sini' : 'Daftar akun baru' }}
-        </button>
+      <!-- Switch Mode Footer -->
+      <div class="mt-6 border-t border-zinc-100 pt-4 text-center">
+        <p class="text-xs text-zinc-500">
+          {{ isRegisterMode ? 'Sudah memiliki akun Pilahki?' : 'Belum memiliki akun?' }}
+          <button
+            type="button"
+            class="ml-1 font-semibold text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer"
+            @click="toggleMode"
+          >
+            {{ isRegisterMode ? 'Masuk di sini' : 'Daftar sekarang' }}
+          </button>
+        </p>
       </div>
-    </div>
-  </div>
+    </DialogContent>
+  </Dialog>
 </template>
-
-<style scoped>
-.auth-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background-color: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-
-.auth-modal-card {
-  position: relative;
-  background-color: #ffffff;
-  border-radius: 14px;
-  width: 100%;
-  max-width: 400px;
-  padding: 32px 28px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e2e8f0;
-}
-
-.modal-close-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #64748b;
-  cursor: pointer;
-  line-height: 1;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: color 0.15s;
-}
-
-.modal-close-btn:hover {
-  color: #0f172a;
-}
-
-.modal-header {
-  text-align: center;
-  margin-bottom: 22px;
-}
-
-.modal-icon-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
-}
-
-.modal-badge-svg {
-  width: 36px;
-  height: 36px;
-  color: #15803d;
-}
-
-.modal-title {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 6px;
-  letter-spacing: -0.02em;
-}
-
-.modal-subtitle {
-  font-size: 0.88rem;
-  color: #64748b;
-  margin: 0;
-  line-height: 1.45;
-}
-
-.auth-alert {
-  font-size: 0.85rem;
-  padding: 10px 14px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  line-height: 1.4;
-}
-
-.auth-alert-error {
-  background-color: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
-
-.auth-alert-success {
-  background-color: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: left;
-}
-
-.form-label {
-  font-size: 0.84rem;
-  font-weight: 600;
-  color: #334155;
-}
-
-.form-input {
-  padding: 10px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 0.92rem;
-  color: #0f172a;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.form-input:focus {
-  border-color: #16a34a;
-  box-shadow: 0 0 0 3px #dcfce7;
-}
-
-.submit-auth-btn {
-  margin-top: 4px;
-  padding: 11px;
-  background-color: #15803d;
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.92rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.submit-auth-btn:hover:not(:disabled) {
-  background-color: #166534;
-}
-
-.submit-auth-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.modal-footer-toggle {
-  margin-top: 20px;
-  text-align: center;
-  font-size: 0.85rem;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.toggle-mode-btn {
-  background: none;
-  border: none;
-  color: #15803d;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 0.85rem;
-  padding: 0;
-}
-
-.toggle-mode-btn:hover {
-  text-decoration: underline;
-}
-</style>
