@@ -1,4 +1,4 @@
-// Database jenis sampah umum rumah tangga (mengikut PRD Seksyen 7.1 — minimal 20 item)
+// Database jenis sampah umum rumah tangga (mengikut PRD Seksyen 7.1, minimal 20 item)
 export const kategoriConfig = {
   organik: {
     label: 'Organik',

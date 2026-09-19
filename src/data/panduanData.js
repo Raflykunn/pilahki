@@ -7,6 +7,7 @@ export const kategoriEdukasiList = [
     nama: 'Sampah Organik',
     tagline: 'Mudah Membusuk & Jadi Kompos',
     warna: 'green',
+    warnaWadah: 'Wadah Hijau',
     ringkasan: 'Semua sisa bahan makanan dan tumbuhan yang bisa terurai secara alami oleh tanah.',
     contoh: ['Sisa sayur & buah', 'Nasi basi & sisa lauk', 'Ampas kelapa & teh/kopi', 'Kulit telur', 'Dedaunan kering'],
     janganCampur: ['Plastik pembungkus sisa makanan', 'Minyak jelantah berlebih', 'Tisu basah sintetis'],
@@ -22,6 +23,7 @@ export const kategoriEdukasiList = [
     nama: 'Sampah Anorganik',
     tagline: 'Bisa Didaur Ulang & Bernilai',
     warna: 'blue',
+    warnaWadah: 'Wadah Biru / Kuning',
     ringkasan: 'Barang kering non-hayati yang tidak mudah membusuk dan dapat disetorkan ke Bank Sampah.',
     contoh: ['Botol plastik bening (PET)', 'Gelas air mineral', 'Kardus & karton telur', 'Kertas HVS/koran', 'Kaleng susu & minuman'],
     janganCampur: ['Kardus basah terkena minyak pekat', 'Botol plastik berisi sisa saus/minuman', 'Pecahan kaca campur'],
@@ -37,6 +39,7 @@ export const kategoriEdukasiList = [
     nama: 'Limbah B3 (Berbahaya)',
     tagline: 'Racun & Zat Berbahaya',
     warna: 'amber',
+    warnaWadah: 'Wadah Khusus Merah / Drop Box',
     ringkasan: 'Barang yang mengandung zat kimia beracun, mudah meledak, atau berisiko melukai petugas.',
     contoh: ['Baterai bekas (jam, remote, HP)', 'Lampu neon & bohlam TL', 'Wadah aerosol/semprotan nyamuk', 'Obat kedaluwarsa', 'Cairan pembersih lantai'],
     janganCampur: ['JANGAN dibakar', 'JANGAN dibuang ke saluran air/got', 'JANGAN dicampur ke tempat sampah biasa'],
@@ -52,6 +55,7 @@ export const kategoriEdukasiList = [
     nama: 'Sampah Residu',
     tagline: 'Tempat Terakhir ke TPA',
     warna: 'slate',
+    warnaWadah: 'Wadah Abu-abu / Hitam',
     ringkasan: 'Sampah yang sulit didaur ulang dan tidak dapat dikomposkan, sehingga harus diangkut ke TPA.',
     contoh: ['Popok sekali pakai & pembalut', 'Kemasan sachet multilayer (kopi, bumbu)', 'Tisu bekas pakai', 'Puntung rokok', 'Styrofoam kotor'],
     janganCampur: ['Limbah jarum suntik/medis tajam', 'Baterai bekas', 'Kardus bersih'],
@@ -60,7 +64,7 @@ export const kategoriEdukasiList = [
       'Bungkus dalam kantong tertutup agar tidak tercecer atau diacak-acak hewan liar.',
       'Keluarkan saat jadwal pengangkutan residu wilayah Anda tiba.'
     ],
-    tipsRina: 'Usahakan membawa kantong belanja kain saat ke pasar untuk memangkas timbunan kantong kresek kresek residu di rumah.'
+    tipsRina: 'Usahakan membawa kantong belanja kain saat ke pasar untuk memangkas timbunan kantong kresek residu di rumah.'
   }
 ]
 
@@ -68,9 +72,10 @@ export const artikelPanduan = [
   {
     id: 'art-1',
     kategoriId: 'organik',
+    kategori: 'Organik & Dapur',
     judul: '3 Langkah Memulai Pilah Sampah di Dapur Sempit',
     ringkasan: 'Tidak perlu beli tong mahal. Cukup sediakan 2 wadah sederhana di bawah bak cuci piring.',
-    waktuBaca: '2 menit baca',
+    estimasiBaca: '2 mnt',
     isi: [
       'Banyak ibu rumah tangga ragu memilah karena merasa dapurnya sempit dan takut repot. Padahal kuncinya cuma memisahkan yang basah (organik) dan yang kering (anorganik).',
       'Langkah 1: Siapkan ember kecil bekas cat atau toples bekas berpenutup untuk sisa dapur harian.',
@@ -81,9 +86,10 @@ export const artikelPanduan = [
   {
     id: 'art-2',
     kategoriId: 'anorganik',
+    kategori: 'Anorganik & Daur Ulang',
     judul: 'Cara Mencuci Botol & Wadah Plastik Tanpa Boros Air',
     ringkasan: 'Wadah minyak atau kecap kotor sering bikin bingung. Ini trik mencucinya dalam hitungan detik.',
-    waktuBaca: '3 menit baca',
+    estimasiBaca: '3 mnt',
     isi: [
       'Bank sampah dan pemulung sering menolak botol yang masih ada sisa minyak atau sirup lengket karena mengundang semut dan busuk.',
       'Trik hemat air: Gunakan sisa air bilasan cucian piring terakhir untuk mengocok bagian dalam botol.',
@@ -94,29 +100,60 @@ export const artikelPanduan = [
   {
     id: 'art-3',
     kategoriId: 'b3',
+    kategori: 'Limbah Berbahaya (B3)',
     judul: 'Di Mana Menyerahkan Baterai & Lampu Bekas?',
-    ringkasan: 'Zat merkuri dan timbal pada baterai bocor bisa mencemari air sumur jika dibuang ke pekarangan.',
-    waktuBaca: '2 menit baca',
+    ringkasan: 'Zat merkuri dan timbal pada baterai bocor bisa mencemari air tanah bila dibuang sembarangan.',
+    estimasiBaca: '2 mnt',
     isi: [
       'Baterai bekas remote atau mainan anak sering kali tercecer di laci rumah. Padahal bila lapisan luarnya berkarat, racun kimianya berbahaya bila terkena tangan.',
       'Sediakan satu kotak plastik kecil khusus di rumah bertuliskan "Limbah Baterai".',
-      'Saat kotak sudah terkumpul 5-10 buah, bawa ke kotak penampungan E-Waste yang sekarang ada di sebagian besar kantor kelurahan, halte bus kota, atau TPS 3R wilayah.',
-      'Jika ragu lokasi drop box terdekat, Anda bisa menanyakannya langsung lewat PilahAI!'
+      'Saat kotak sudah terkumpul 5-10 buah, bawa ke kotak penampungan E-Waste di kantor kecamatan/kelurahan terdekat atau TPS 3R.',
+      'Jika ragu lokasi drop box terdekat di Makassar, Anda bisa menanyakannya langsung lewat PilahAI!'
     ]
   }
 ]
 
 export const faqPanduan = [
   {
+    id: 'faq-1',
     q: 'Bolehkah minyak sisa menggoreng (jelantah) dibuang ke saluran wastafel?',
-    a: 'Jangan pernah dibuang ke wastafel karena minyak akan membeku dan menyumbat pipa got rumah. Kumpulkan minyak jelantah dingin dalam botol tertutup — saat ini banyak komunitas Bank Sampah yang membeli minyak jelantah per liter untuk biofuel.'
+    tanya: 'Bolehkah minyak sisa menggoreng (jelantah) dibuang ke saluran wastafel?',
+    a: 'Jangan pernah dibuang ke wastafel atau got! Minyak akan membeku dan menyumbat pipa got rumah serta mencemari air tanah. Sebaiknya kumpulkan minyak jelantah dingin dalam botol tertutup, banyak bank sampah unit di Makassar yang menerima dan membeli minyak jelantah per liter untuk diolah jadi biodiesel.',
+    jawab: 'Jangan pernah dibuang ke wastafel atau got! Minyak akan membeku dan menyumbat pipa got rumah serta mencemari air tanah. Sebaiknya kumpulkan minyak jelantah dingin dalam botol tertutup, banyak bank sampah unit di Makassar yang menerima dan membeli minyak jelantah per liter untuk diolah jadi biodiesel.'
   },
   {
-    q: 'Apakah kertas bungkus nasi cokelat masuk kertas daur ulang?',
-    a: 'Tidak, kertas bungkus nasi cokelat dilapisi lapisan plastik tipis kedap air dan terkena minyak makanan, sehingga masuk kategori Residu.'
+    id: 'faq-2',
+    q: 'Apakah kertas bungkus nasi cokelat bisa disetor ke Bank Sampah?',
+    tanya: 'Apakah kertas bungkus nasi cokelat bisa disetor ke Bank Sampah?',
+    a: 'Tidak bisa. Kertas bungkus nasi cokelat dilapisi lapisan plastik tipis laminasi (kedap air) dan sudah terkena noda minyak makanan. Kertas ini masuk kategori Residu dan tidak dapat dilebur menjadi bubur kertas daur ulang biasa.',
+    jawab: 'Tidak bisa. Kertas bungkus nasi cokelat dilapisi lapisan plastik tipis laminasi (kedap air) dan sudah terkena noda minyak makanan. Kertas ini masuk kategori Residu dan tidak dapat dilebur menjadi bubur kertas daur ulang biasa.'
   },
   {
+    id: 'faq-3',
     q: 'Bagaimana kalau tetangga atau keluarga saya belum mau ikut memilah?',
-    a: 'Mulai dari dapur sendiri secara bertahap. Cukup bedakan sampah basah dan kering dulu. Saat tempat sampah rumah Anda terbebas dari bau belatung dan kucing liar, tetangga biasanya akan tertarik meniru.'
+    tanya: 'Bagaimana kalau tetangga atau keluarga saya belum mau ikut memilah?',
+    a: 'Mulai dari dapur sendiri secara bertahap. Cukup pisahkan sisa basah (makanan) dan kering (botol/kardus). Saat tempat sampah rumah Anda terbukti tidak bau busuk dan tidak lagi diacak-acak kucing liar, keluarga dan tetangga biasanya akan lebih mudah terinspirasi untuk meniru.',
+    jawab: 'Mulai dari dapur sendiri secara bertahap. Cukup pisahkan sisa basah (makanan) dan kering (botol/kardus). Saat tempat sampah rumah Anda terbukti tidak bau busuk dan tidak lagi diacak-acak kucing liar, keluarga dan tetangga biasanya akan lebih mudah terinspirasi untuk meniru.'
+  },
+  {
+    id: 'faq-4',
+    q: 'Apakah botol plastik harus dicopot label merknya sebelum disetor ke Bank Sampah?',
+    tanya: 'Apakah botol plastik harus dicopot label merknya sebelum disetor ke Bank Sampah?',
+    a: 'Sangat dianjurkan! Botol plastik bening (PET) yang sudah dicopot labelnya dan dilepas tutupnya memiliki nilai jual daur ulang yang lebih tinggi di Bank Sampah karena pabrik daur ulang tidak perlu memilah plastik jenis lain lagi.',
+    jawab: 'Sangat dianjurkan! Botol plastik bening (PET) yang sudah dicopot labelnya dan dilepas tutupnya memiliki nilai jual daur ulang yang lebih tinggi di Bank Sampah karena pabrik daur ulang tidak perlu memilah plastik jenis lain lagi.'
+  },
+  {
+    id: 'faq-5',
+    q: 'Bagaimana cara membuang pecahan beling atau piring kaca dengan aman?',
+    tanya: 'Bagaimana cara membuang pecahan beling atau piring kaca dengan aman?',
+    a: 'Bungkus pecahan kaca tebal-tebal dengan koran atau masukkan ke dalam kardus kecil/botol plastik tebal, lalu beri selotip rapat. Beri tulisan spidol "Awas Pecahan Kaca" agar tidak melukai tangan petugas kebersihan saat mengangkut sampah.',
+    jawab: 'Bungkus pecahan kaca tebal-tebal dengan koran atau masukkan ke dalam kardus kecil/botol plastik tebal, lalu beri selotip rapat. Beri tulisan spidol "Awas Pecahan Kaca" agar tidak melukai tangan petugas kebersihan saat mengangkut sampah.'
+  },
+  {
+    id: 'faq-6',
+    q: 'Kemasan kopi sachet dan bungkus mi instan masuk kategori apa?',
+    tanya: 'Kemasan kopi sachet dan bungkus mi instan masuk kategori apa?',
+    a: 'Kemasan sachet multilayer (campuran plastik foil metalizer) saat ini masuk kategori Sampah Residu karena sangat sulit dipisahkan lapisannya untuk didaur ulang konvensional.',
+    jawab: 'Kemasan sachet multilayer (campuran plastik foil metalizer) saat ini masuk kategori Sampah Residu karena sangat sulit dipisahkan lapisannya untuk didaur ulang konvensional.'
   }
 ]

@@ -1,76 +1,42 @@
 <script setup>
-import { ref, onMounted, onUnmounted, getCurrentInstance } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuth } from '../composables/useAuth'
-import AuthModal from '../components/AuthModal.vue'
+import { useAuth } from '@/composables/useAuth'
+import AuthModal from '@/components/AuthModal.vue'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
+import {
+  Search,
+  Sparkles,
+  ArrowRight,
+  Recycle,
+  MapPin,
+  Calendar,
+  BookOpen,
+  CheckCircle2,
+  AlertTriangle,
+  Flame,
+  Apple,
+  Box,
+  Layers,
+  HelpCircle,
+  Clock,
+  ShieldCheck,
+  ChevronRight
+} from 'lucide-vue-next'
 
-const emit = defineEmits(['navigate', 'search-trash', 'open-ai'])
-
-// Dapatkan router secara selamat jika vue-router dipasang
-const instance = getCurrentInstance()
-let router = null
-if (instance?.appContext?.config?.globalProperties?.$router) {
-  router = instance.appContext.config.globalProperties.$router
-} else {
-  try {
-    router = useRouter()
-  } catch {
-    router = null
-  }
-}
-
-// Pengesahan Pengguna (Supabase)
-const { user, isAuthenticated, userEmail, initAuth, signOut } = useAuth()
-
-// Pengurusan Dropdown Profil Pengguna
-const userMenuRef = ref(null)
-const isProfileDropdownOpen = ref(false)
-
-const toggleProfileDropdown = () => {
-  isProfileDropdownOpen.value = !isProfileDropdownOpen.value
-}
-
-const closeProfileDropdown = () => {
-  isProfileDropdownOpen.value = false
-}
-
-const handleClickOutside = (e) => {
-  if (userMenuRef.value && !userMenuRef.value.contains(e.target)) {
-    isProfileDropdownOpen.value = false
-  }
-}
-
-const handleLogout = async () => {
-  closeProfileDropdown()
-  isMobileMenuOpen.value = false
-  await signOut()
-}
-
-const handleProfileClick = () => {
-  closeProfileDropdown()
-  isMobileMenuOpen.value = false
-  navigateTo('/profil')
-}
-
-onMounted(() => {
-  initAuth()
-  document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
+const router = useRouter()
+const { isAuthenticated } = useAuth()
 
 const searchQuery = ref('')
-const isMobileMenuOpen = ref(false)
-
-// Pengurusan Modal Log Masuk untuk Guest
 const isAuthModalOpen = ref(false)
 const modalTitle = ref('Masuk ke Pilahki')
 const modalSubtitle = ref('Masuk untuk mengakses fitur lengkap pemilahan, fasilitas, dan jadwal angkut.')
 const pendingAction = ref(null)
 
-// Contoh sampah rumah tangga umum membingungkan warga
+// Contoh sampah rumah tangga umum
 const quickExamples = [
   'Baterai Bekas',
   'Botol Minyak',
@@ -87,15 +53,19 @@ const features = [
     badge: 'Kategori & Solusi',
     desc: 'Cek apakah sampah masuk organik, anorganik, B3, atau residu serta cara penanganannya.',
     path: '/pilah',
-    actionText: 'Cek Kategori'
+    actionText: 'Cek Kategori',
+    icon: Search,
+    color: 'emerald'
   },
   {
     id: 'lokasi',
     title: 'Cari Lokasi',
     badge: 'Bank Sampah & TPS',
-    desc: 'Temukan fasilitas penerima sampah terdekat, jam operasional, dan jenis yang diterima.',
+    desc: 'Temukan fasilitas penerima sampah terdekat di Makassar, jam operasional, dan jenis yang diterima.',
     path: '/lokasi',
-    actionText: 'Cari Fasilitas'
+    actionText: 'Cari Fasilitas',
+    icon: MapPin,
+    color: 'blue'
   },
   {
     id: 'jadwal',
@@ -103,28 +73,78 @@ const features = [
     badge: 'Waktu Pengutipan',
     desc: 'Ketahui hari pengangkutan sampah di wilayah Anda agar tidak terlewat dan menumpuk.',
     path: '/jadwal',
-    actionText: 'Lihat Jadwal'
+    actionText: 'Lihat Jadwal',
+    icon: Calendar,
+    color: 'amber'
   },
   {
     id: 'panduan',
     title: 'Panduan Praktis',
     badge: 'Edukasi Warga',
-    desc: 'Tips ringkas memilah sampah rumah tangga dengan bahasa sederhana tanpa istilah rumit.',
+    desc: 'Tips ringkas memilah sampah rumah tangga dengan bahasa sederhana tanpa istilah teknis.',
     path: '/panduan',
-    actionText: 'Baca Panduan'
+    actionText: 'Baca Panduan',
+    icon: BookOpen,
+    color: 'purple'
   }
 ]
 
-// Navigasi langsung
-const navigateTo = (path, query = {}) => {
-  isMobileMenuOpen.value = false
-  emit('navigate', { path, query })
-  if (router) {
-    router.push({ path, query }).catch(() => {})
+// 4 Kategori Sampah
+const categories = [
+  {
+    id: 'organik',
+    name: 'Organik',
+    desc: 'Bahan alami yang mudah terurai hayati seperti sisa makanan, daun, dan sayuran.',
+    examples: ['Sisa Sayuran', 'Kulit Buah', 'Dedaunan', 'Nasi Sisa'],
+    solution: 'Dibuat kompos atau pakan maggot',
+    badgeVariant: 'organik',
+    icon: Apple,
+    borderColor: 'border-emerald-200 hover:border-emerald-400',
+    bgBadge: 'bg-emerald-50 text-emerald-800'
+  },
+  {
+    id: 'anorganik',
+    name: 'Anorganik',
+    desc: 'Barang tidak mudah terurai namun bernilai ekonomi jika didaur ulang dengan bersih.',
+    examples: ['Botol Plastik PET', 'Kardus & Kertas', 'Kaleng Minuman', 'Kaca'],
+    solution: 'Cuci bersih, keringkan, lalu setor ke Bank Sampah',
+    badgeVariant: 'anorganik',
+    icon: Box,
+    borderColor: 'border-blue-200 hover:border-blue-400',
+    bgBadge: 'bg-blue-50 text-blue-800'
+  },
+  {
+    id: 'b3',
+    name: 'B3 Rumah Tangga',
+    desc: 'Bahan Berbahaya dan Beracun yang memerlukan penanganan khusus demi keamanan lingkungan.',
+    examples: ['Baterai Bekas', 'Lampu Neon / LED', 'Kaleng Obat Serangga', 'Obat Kedaluwarsa'],
+    solution: 'Pisahkan dalam wadah tertutup aman, bawa ke drop point B3',
+    badgeVariant: 'b3',
+    icon: AlertTriangle,
+    borderColor: 'border-amber-200 hover:border-amber-400',
+    bgBadge: 'bg-amber-50 text-amber-800'
+  },
+  {
+    id: 'residu',
+    name: 'Residu',
+    desc: 'Sampah yang sulit atau tidak dapat didaur ulang dan harus berakhir di TPA terkontrol.',
+    examples: ['Kemasan Sachet Foil', 'Popok Sekali Pakai', 'Puntung Rokok', 'Tisu Kotor'],
+    solution: 'Kemas rapat dan buang ke tempat penampungan TPS resmi',
+    badgeVariant: 'residu',
+    icon: Layers,
+    borderColor: 'border-zinc-200 hover:border-zinc-400',
+    bgBadge: 'bg-zinc-100 text-zinc-800'
   }
-}
+]
 
-// Kawalan keselamatan akses guest: Semak status log masuk sebelum membenarkan akses fitur lanjut
+// Sample PilahAI Questions
+const aiPrompts = [
+  'Baterai jam dinding bekas harus dibuang ke mana?',
+  'Kemasan kopi sachet masuk kategori apa?',
+  'Kapan jadwal pengangkutan sampah di Rappocini?',
+  'Di mana bank sampah terdekat dari Tamalanrea?'
+]
+
 const executeWithAuth = (actionCallback, featureTitle = 'Fitur Pilahki') => {
   if (!isAuthenticated.value) {
     modalTitle.value = `Masuk untuk akses ${featureTitle}`
@@ -136,14 +156,6 @@ const executeWithAuth = (actionCallback, featureTitle = 'Fitur Pilahki') => {
   actionCallback()
 }
 
-// Navigasi ke fitur khusus dengan semakan auth
-const handleFeatureClick = (feature) => {
-  executeWithAuth(() => {
-    navigateTo(feature.path)
-  }, feature.title)
-}
-
-// Menangani carian dari hero bar dengan semakan auth
 const handleSearch = (overrideQuery = null) => {
   if (overrideQuery !== null) {
     searchQuery.value = overrideQuery
@@ -152,20 +164,22 @@ const handleSearch = (overrideQuery = null) => {
   if (!query) return
 
   executeWithAuth(() => {
-    emit('search-trash', query)
-    navigateTo('/pilah', { q: query })
+    router.push({ path: '/pilah', query: { q: query } })
   }, `Pilah Sampah "${query}"`)
 }
 
-// Membuka PilahAI dengan semakan auth
-const handleOpenAI = () => {
+const handleFeatureClick = (feature) => {
   executeWithAuth(() => {
-    emit('open-ai', { query: searchQuery.value.trim() })
-    navigateTo('/pilah-ai', searchQuery.value.trim() ? { q: searchQuery.value.trim() } : {})
+    router.push(feature.path)
+  }, feature.title)
+}
+
+const handleOpenAIWithPrompt = (promptText = '') => {
+  executeWithAuth(() => {
+    router.push({ path: '/pilah-ai', query: promptText ? { q: promptText } : {} })
   }, 'PilahAI')
 }
 
-// Teruskan tindakan tertunda setelah berjaya log masuk
 const handleAuthSuccess = () => {
   if (pendingAction.value) {
     const action = pendingAction.value
@@ -173,500 +187,329 @@ const handleAuthSuccess = () => {
     action()
   }
 }
-
-const openLoginModal = () => {
-  modalTitle.value = 'Masuk ke Pilahki'
-  modalSubtitle.value = 'Masuk untuk mengakses fitur lengkap pemilahan, fasilitas, dan jadwal angkut.'
-  pendingAction.value = null
-  isAuthModalOpen.value = true
-}
 </script>
 
 <template>
-  <div class="pilahki-container">
-    <!-- 1. Header / Navigasi -->
-    <header class="navbar">
-      <div class="nav-content">
-        <a href="/" class="brand-logo" @click.prevent="navigateTo('/')">
-          <span class="logo-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5" />
-              <path d="M11 19h8.2a1.8 1.8 0 0 0 1.54-.86 1.78 1.78 0 0 0 .02-1.78L16.8 9.5" />
-              <path d="M11 5h2" />
-              <path d="M12 2v3" />
-              <path d="m14 14-2 5-2-5" />
-              <circle cx="12" cy="12" r="9" />
-            </svg>
-          </span>
-          <span class="brand-text">
-            <span class="brand-name">Pilahki</span>
-            <span class="brand-tagline">Kelola Sampah Tanpa Bingung</span>
-          </span>
-        </a>
-
-        <!-- Menu Desktop -->
-        <nav class="nav-links desktop-nav" aria-label="Navigasi Utama">
-          <a
-            v-for="item in features"
-            :key="item.id"
-            :href="item.path"
-            class="nav-item"
-            @click.prevent="handleFeatureClick(item)"
-          >
-            {{ item.title }}
-          </a>
-
-          <button type="button" class="nav-ai-btn" @click="handleOpenAI">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-            Tanya PilahAI
-          </button>
-
-          <!-- Status Autentikasi Pengguna -->
-          <div class="auth-section">
-            <template v-if="isAuthenticated">
-              <div ref="userMenuRef" class="user-menu-wrapper">
-                <button
-                  type="button"
-                  class="user-account-btn"
-                  :class="{ 'user-account-active': isProfileDropdownOpen }"
-                  :aria-expanded="isProfileDropdownOpen"
-                  aria-haspopup="true"
-                  aria-label="Menu akun pengguna"
-                  @click="toggleProfileDropdown"
-                >
-                  <span class="user-avatar-circle" aria-hidden="true">
-                    {{ userEmail ? userEmail.charAt(0).toUpperCase() : 'U' }}
-                  </span>
-                  <span class="user-display-name">
-                    {{ userEmail ? userEmail.split('@')[0] : 'Akun' }}
-                  </span>
-                  <svg
-                    class="dropdown-chevron"
-                    :class="{ 'chevron-rotate': isProfileDropdownOpen }"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                </button>
-
-                <!-- Dropdown Card -->
-                <div v-show="isProfileDropdownOpen" class="user-dropdown-card" role="menu">
-                  <div class="dropdown-user-header">
-                    <div class="dropdown-avatar-large">
-                      {{ userEmail ? userEmail.charAt(0).toUpperCase() : 'U' }}
-                    </div>
-                    <div class="dropdown-user-details">
-                      <span class="dropdown-user-name">
-                        {{ userEmail ? userEmail.split('@')[0] : 'Warga' }}
-                      </span>
-                      <span class="dropdown-user-email" :title="userEmail">
-                        {{ userEmail }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div class="dropdown-divider"></div>
-
-                  <div class="dropdown-menu-list">
-                    <button
-                      type="button"
-                      class="dropdown-item"
-                      role="menuitem"
-                      @click="handleProfileClick"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="item-icon">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
-                      <span>Profil Saya</span>
-                    </button>
-                    <button
-                      type="button"
-                      class="dropdown-item"
-                      role="menuitem"
-                      @click="() => { closeProfileDropdown(); navigateTo('/jadwal') }"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="item-icon">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
-                      <span>Jadwal Wilayah</span>
-                    </button>
-                  </div>
-
-                  <div class="dropdown-divider"></div>
-
-                  <button
-                    type="button"
-                    class="dropdown-item dropdown-item-danger"
-                    role="menuitem"
-                    @click="handleLogout"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="item-icon">
-                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                      <polyline points="16 17 21 12 16 7" />
-                      <line x1="21" y1="12" x2="9" y2="12" />
-                    </svg>
-                    <span>Keluar</span>
-                  </button>
-                </div>
-              </div>
-            </template>
-            <template v-else>
-              <button type="button" class="login-btn" @click="openLoginModal">
-                Masuk
-              </button>
-            </template>
-          </div>
-        </nav>
-
-        <!-- Tombol Menu Mobile -->
-        <button
-          type="button"
-          class="mobile-menu-toggle"
-          :aria-expanded="isMobileMenuOpen"
-          aria-label="Buka menu navigasi"
-          @click="isMobileMenuOpen = !isMobileMenuOpen"
-        >
-          <svg v-if="!isMobileMenuOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-      </div>
-
-      <!-- Menu Dropdown Mobile -->
-      <div v-show="isMobileMenuOpen" class="mobile-nav-menu">
-        <a
-          v-for="item in features"
-          :key="'m-' + item.id"
-          :href="item.path"
-          class="mobile-nav-item"
-          @click.prevent="handleFeatureClick(item)"
-        >
-          {{ item.title }}
-        </a>
-        <button type="button" class="mobile-ai-btn" @click="handleOpenAI">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-          Tanya PilahAI
-        </button>
-
-        <!-- Mobile Auth State -->
-        <div class="mobile-auth-section">
-          <template v-if="isAuthenticated">
-            <div class="mobile-user-profile-header">
-              <div class="dropdown-avatar-large">
-                {{ userEmail ? userEmail.charAt(0).toUpperCase() : 'U' }}
-              </div>
-              <div class="dropdown-user-details">
-                <span class="dropdown-user-name">
-                  {{ userEmail ? userEmail.split('@')[0] : 'Warga' }}
-                </span>
-                <span class="dropdown-user-email">
-                  {{ userEmail }}
-                </span>
-              </div>
-            </div>
-            <button type="button" class="mobile-menu-link" @click="handleProfileClick">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="item-icon">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              <span>Profil Saya</span>
-            </button>
-            <button type="button" class="mobile-logout-btn" @click="handleLogout">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="item-icon">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-              <span>Keluar</span>
-            </button>
-          </template>
-          <template v-else>
-            <button type="button" class="mobile-login-btn" @click="openLoginModal">
-              Masuk / Daftar
-            </button>
-          </template>
-        </div>
-      </div>
-    </header>
-
-    <!-- 2. Hero Section -->
-    <main class="main-content">
-      <section class="hero-section">
-        <div class="hero-badge">
-          <span class="badge-dot"></span>
-          Solusi Praktis Sampah Rumah Tangga
+  <div class="space-y-16 sm:space-y-24 pb-20">
+    <!-- 1. Hero Section -->
+    <section class="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 bg-gradient-to-b from-emerald-50/40 via-white to-white border-b border-zinc-100">
+      <div class="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+        <!-- Pill Badge -->
+        <div class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/90 px-3.5 py-1 text-xs font-semibold text-emerald-800 shadow-2xs mb-6">
+          <Sparkles class="h-3.5 w-3.5 text-emerald-600" />
+          <span>Inisiatif Bersih Kota Makassar &bull; Terintegrasi PilahAI</span>
         </div>
 
-        <h1 class="hero-title">
-          Bingung Sampah Ini Masuk Kategori Apa & Dibuang ke Mana?
+        <!-- Headline -->
+        <h1 class="text-3xl font-extrabold tracking-tight text-zinc-900 sm:text-5xl lg:text-6xl max-w-3xl mx-auto leading-tight sm:leading-none">
+          Pilah Sampah Jadi Gampang, Warga Makassar Nyaman.
         </h1>
 
-        <p class="hero-desc">
-          Ketik nama barang yang sedang Anda pegang. Dapatkan kategori pemilahan, cara penanganan praktis, serta lokasi Bank Sampah atau TPS terdekat tanpa ragu.
+        <p class="mt-5 text-base sm:text-lg text-zinc-600 max-w-2xl mx-auto leading-relaxed">
+          Hilangkan keraguan memilah sampah rumah tangga. Cek kategori secara instan, temukan bank sampah terdekat, pantau jadwal angkut, atau tanyakan langsung pada AI.
         </p>
 
-        <!-- Search Bar Interaktif -->
-        <form class="search-box-form" @submit.prevent="handleSearch()">
-          <div class="search-input-wrapper">
-            <span class="search-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </span>
-            <input
-              v-model="searchQuery"
-              type="text"
-              class="search-input"
-              placeholder="Ketik nama sampah (misal: botol plastik, baterai, styrofoam...)"
-              aria-label="Cari jenis sampah"
-            />
-            <button
-              v-if="searchQuery"
-              type="button"
-              class="clear-search-btn"
-              aria-label="Hapus teks"
-              @click="searchQuery = ''"
+        <!-- Search Bar Input -->
+        <div class="mt-8 max-w-2xl mx-auto">
+          <form @submit.prevent="handleSearch()" class="flex flex-col sm:flex-row items-center gap-2 p-1.5 rounded-2xl bg-white border border-zinc-200 shadow-lg shadow-zinc-200/50 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all">
+            <div class="relative flex-1 w-full">
+              <Search class="absolute left-3.5 top-3.5 h-4 w-4 text-zinc-400" />
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Punya sampah apa? Ketik cth: 'Baterai bekas', 'Botol minyak'..."
+                class="w-full h-11 pl-10 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 bg-transparent border-none outline-none focus:ring-0"
+              />
+            </div>
+            <Button
+              type="submit"
+              size="lg"
+              class="w-full sm:w-auto h-11 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs font-semibold gap-2"
             >
-              ×
-            </button>
-          </div>
-          <button type="submit" class="search-submit-btn">
-            Pilah Sekarang
-          </button>
-        </form>
+              <Search class="h-4 w-4" />
+              <span>Cari Solusi</span>
+            </Button>
+          </form>
 
-        <!-- Guest Notice Banner Ringkas -->
-        <div v-if="!isAuthenticated" class="guest-auth-hint">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="hint-svg" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="16" x2="12" y2="12" />
-            <line x1="12" y1="8" x2="12.01" y2="8" />
-          </svg>
-          <span><strong>Akses Tamu:</strong> Masuk atau buat akun untuk mengakses rincian pemilahan, navigasi TPS, dan jadwal wilayah Anda.</span>
-        </div>
-
-        <!-- Contoh Pencarian Cepat -->
-        <div class="quick-examples">
-          <span class="quick-label">Sering dicari:</span>
-          <div class="chips-group">
+          <!-- Quick Examples -->
+          <div class="mt-3.5 flex flex-wrap items-center justify-center gap-2 text-xs">
+            <span class="text-zinc-400 font-medium">Contoh cepat:</span>
             <button
-              v-for="chip in quickExamples"
-              :key="chip"
+              v-for="example in quickExamples"
+              :key="example"
               type="button"
-              class="chip-btn"
-              @click="handleSearch(chip)"
+              class="rounded-full bg-zinc-100 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 border border-zinc-200/60 px-2.5 py-1 text-zinc-600 transition-colors cursor-pointer"
+              @click="handleSearch(example)"
             >
-              {{ chip }}
+              {{ example }}
             </button>
           </div>
         </div>
 
-        <!-- Pautan Alternatif ke PilahAI -->
-        <div class="ai-alternative-prompt">
-          <span>Masih ragu atau barangnya berlapis?</span>
-          <button type="button" class="ai-text-link" @click="handleOpenAI">
-            Tanya PilahAI langsung
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline-arrow">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
-          </button>
+        <!-- Action Buttons -->
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Button
+            size="lg"
+            class="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+            @click="handleFeatureClick(features[0])"
+          >
+            <span>Buka Katalog Sampah</span>
+            <ArrowRight class="h-4 w-4" />
+          </Button>
+
+          <Button
+            size="lg"
+            variant="outline"
+            class="border-zinc-300 hover:bg-zinc-100 text-zinc-700 gap-2"
+            @click="handleOpenAIWithPrompt('')"
+          >
+            <Sparkles class="h-4 w-4 text-emerald-600" />
+            <span>Konsultasi PilahAI</span>
+          </Button>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- 3. Grid 4 Fitur Utama -->
-      <section class="features-section" aria-labelledby="features-heading">
-        <div class="section-header">
-          <h2 id="features-heading" class="section-title">
-            Layanan Terpadu Pilahki
-          </h2>
-          <p class="section-subtitle">
-            Akses langsung ke setiap kebutuhan pengelolaan sampah di lingkungan Anda
-          </p>
-        </div>
+    <!-- 2. Empat Fitur Utama (PRD Seksyen 7) -->
+    <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-10">
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
+          Solusi Terintegrasi Tanpa Ribet
+        </h2>
+        <p class="mt-2 text-sm text-zinc-500">
+          Dirancang khusus untuk warga kota agar alur dari pegang sampah sampai tempat yang tepat tidak putus di tengah jalan.
+        </p>
+      </div>
 
-        <div class="features-grid">
-          <!-- Kad 1: Pilah Sampah -->
-          <article class="feature-card" @click="handleFeatureClick(features[0])">
-            <div class="card-header">
-              <span class="card-icon card-icon-green" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 6h18" />
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  <line x1="10" y1="11" x2="10" y2="17" />
-                  <line x1="14" y1="11" x2="14" y2="17" />
-                </svg>
-              </span>
-              <span class="card-badge">Kategori & Cara</span>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card
+          v-for="feat in features"
+          :key="feat.id"
+          class="flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border-zinc-200/80 group"
+        >
+          <CardHeader class="pb-3">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-800 group-hover:bg-emerald-100 group-hover:text-emerald-700 transition-colors">
+                <component :is="feat.icon" class="h-5 w-5" />
+              </div>
+              <Badge variant="outline" class="text-[11px] font-medium bg-zinc-50">
+                {{ feat.badge }}
+              </Badge>
             </div>
-            <h3 class="card-title">Pilah Sampah</h3>
-            <p class="card-desc">
-              Ketahui kategori sampah (Organik, Anorganik, B3, Residu) dan instruksi penanganan aman sebelum dibuang.
+            <CardTitle class="text-lg font-bold group-hover:text-emerald-700 transition-colors">
+              {{ feat.title }}
+            </CardTitle>
+            <CardDescription class="mt-1 text-xs sm:text-sm text-zinc-500 line-clamp-3">
+              {{ feat.desc }}
+            </CardDescription>
+          </CardHeader>
+          <CardFooter class="pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              class="w-full justify-between group-hover:border-emerald-600 group-hover:text-emerald-700"
+              @click="handleFeatureClick(feat)"
+            >
+              <span>{{ feat.actionText }}</span>
+              <ChevronRight class="h-3.5 w-3.5 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    </section>
+
+    <!-- 3. Spotlight PilahAI (Chatbot Cerdas) -->
+    <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="relative rounded-3xl border border-emerald-200/80 bg-gradient-to-br from-emerald-900 via-teal-900 to-zinc-950 p-8 sm:p-12 text-white shadow-xl overflow-hidden">
+        <!-- Background accents -->
+        <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
+        <div class="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-teal-500/20 blur-3xl" />
+
+        <div class="relative grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div class="lg:col-span-7 space-y-4">
+            <div class="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300">
+              <Sparkles class="h-3.5 w-3.5" />
+              <span>Titik Akses Tunggal Warga</span>
+            </div>
+            <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight">
+              Tanya Apa Saja Seputar Sampah ke PilahAI
+            </h2>
+            <p class="text-zinc-300 text-sm sm:text-base leading-relaxed">
+              Gak yakin sampah yang Anda pegang itu apa? PilahAI terhubung langsung dengan database kategori, lokasi bank sampah di Makassar, dan jadwal pengangkutan. Cukup tanya dengan gaya bicara sehari-hari.
             </p>
-            <div class="card-footer">
-              <span class="card-action">
-                Buka Pemilahan
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="action-arrow">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </span>
-            </div>
-          </article>
 
-          <!-- Kad 2: Cari Lokasi -->
-          <article class="feature-card" @click="handleFeatureClick(features[1])">
-            <div class="card-header">
-              <span class="card-icon card-icon-blue" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-              </span>
-              <span class="card-badge">Bank Sampah & TPS</span>
+            <!-- Quick AI Prompt Chips -->
+            <div class="pt-2 space-y-2">
+              <p class="text-xs text-emerald-300 font-semibold uppercase tracking-wider">Coba tanyakan langsung:</p>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="prompt in aiPrompts"
+                  :key="prompt"
+                  type="button"
+                  class="text-left text-xs bg-white/10 hover:bg-white/20 border border-white/15 rounded-lg px-3 py-1.5 text-zinc-200 hover:text-white transition-colors cursor-pointer"
+                  @click="handleOpenAIWithPrompt(prompt)"
+                >
+                  "{{ prompt }}"
+                </button>
+              </div>
             </div>
-            <h3 class="card-title">Cari Lokasi</h3>
-            <p class="card-desc">
-              Cari Bank Sampah dan TPS terdekat via GPS atau pilihan wilayah, lengkap dengan jam buka dan jenis sampah yang diterima.
-            </p>
-            <div class="card-footer">
-              <span class="card-action">
-                Cari Lokasi Terdekat
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="action-arrow">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </span>
-            </div>
-          </article>
 
-          <!-- Kad 3: Jadwal Angkut -->
-          <article class="feature-card" @click="handleFeatureClick(features[2])">
-            <div class="card-header">
-              <span class="card-icon card-icon-amber" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                  <line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" />
-                  <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-              </span>
-              <span class="card-badge">Jadwal Wilayah</span>
+            <div class="pt-4">
+              <Button
+                size="lg"
+                class="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold shadow-lg shadow-emerald-500/30"
+                @click="handleOpenAIWithPrompt('')"
+              >
+                <Sparkles class="h-4 w-4 mr-2" />
+                <span>Buka Chat PilahAI Sekarang</span>
+              </Button>
             </div>
-            <h3 class="card-title">Jadwal Angkut</h3>
-            <p class="card-desc">
-              Pantau hari dan jam pengangkutan sampah rutin di wilayah tempat tinggal Anda agar sampah tidak menumpuk di jalan.
-            </p>
-            <div class="card-footer">
-              <span class="card-action">
-                Lihat Jadwal
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="action-arrow">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </span>
-            </div>
-          </article>
-
-          <!-- Kad 4: Panduan -->
-          <article class="feature-card" @click="handleFeatureClick(features[3])">
-            <div class="card-header">
-              <span class="card-icon card-icon-emerald" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                </svg>
-              </span>
-              <span class="card-badge">Edukasi Praktis</span>
-            </div>
-            <h3 class="card-title">Panduan</h3>
-            <p class="card-desc">
-              Baca panduan pemilahan praktis dengan bahasa santun dan mudah dipahami oleh seluruh anggota keluarga.
-            </p>
-            <div class="card-footer">
-              <span class="card-action">
-                Baca Panduan
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="action-arrow">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </span>
-            </div>
-          </article>
-        </div>
-      </section>
-    </main>
-
-    <!-- 4. Floating Action Button PilahAI -->
-    <aside class="floating-ai-wrapper">
-      <button
-        type="button"
-        class="floating-ai-btn"
-        aria-label="Tanya PilahAI sekarang"
-        @click="handleOpenAI"
-      >
-        <span class="floating-ai-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            <circle cx="9" cy="10" r="1" fill="currentColor" />
-            <circle cx="15" cy="10" r="1" fill="currentColor" />
-          </svg>
-        </span>
-        <span class="floating-ai-label">Tanya PilahAI</span>
-      </button>
-    </aside>
-
-    <!-- 5. Footer -->
-    <footer class="site-footer">
-      <div class="footer-content">
-        <div class="footer-brand">
-          <div class="footer-logo">
-            <span class="footer-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="footer-svg">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 7v10" />
-                <path d="m8 11 4-4 4 4" />
-              </svg>
-            </span>
-            <strong>Pilahki</strong>
           </div>
-          <p class="footer-tagline">
-            Platform terpadu untuk membantu warga memilah, menemukan lokasi, dan memantau jadwal sampah rumah tangga.
-          </p>
+
+          <!-- Chat UI Mockup Preview -->
+          <div class="lg:col-span-5 bg-white/95 text-zinc-900 rounded-2xl p-5 shadow-2xl border border-white/20 space-y-3">
+            <div class="flex items-center gap-3 border-b border-zinc-100 pb-3">
+              <div class="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
+                AI
+              </div>
+              <div>
+                <p class="text-xs font-bold text-zinc-900">PilahAI Makassar</p>
+                <p class="text-[10px] text-emerald-600 flex items-center gap-1 font-medium">
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Online & Siap Menjawab
+                </p>
+              </div>
+            </div>
+
+            <div class="space-y-2.5 text-xs">
+              <div class="flex justify-end">
+                <div class="bg-emerald-600 text-white rounded-2xl rounded-tr-none px-3.5 py-2 max-w-[85%] shadow-2xs">
+                  Saya ada baterai remote bekas, buang ke mana ya?
+                </div>
+              </div>
+              <div class="flex justify-start">
+                <div class="bg-zinc-100 text-zinc-800 rounded-2xl rounded-tl-none px-3.5 py-2.5 max-w-[88%] space-y-1.5 border border-zinc-200/60">
+                  <p class="font-medium text-emerald-800">
+                    Baterai bekas masuk kategori <strong>B3 Rumah Tangga</strong> karena mengandung logam berat.
+                  </p>
+                  <p class="text-[11px] text-zinc-600">
+                    Solusi: Jangan buang ke tong sampah biasa. Masukkan ke botol tertutup, lalu bawa ke drop-point B3 di Kantor Camat Rappocini atau Bank Sampah terdekat.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+    </section>
 
-        <nav class="footer-nav" aria-label="Navigasi Footer">
-          <a href="/pilah" @click.prevent="handleFeatureClick(features[0])">Pilah Sampah</a>
-          <a href="/lokasi" @click.prevent="handleFeatureClick(features[1])">Cari Lokasi</a>
-          <a href="/jadwal" @click.prevent="handleFeatureClick(features[2])">Jadwal Angkut</a>
-          <a href="/panduan" @click.prevent="handleFeatureClick(features[3])">Panduan</a>
-          <a href="/pilah-ai" @click.prevent="handleOpenAI">PilahAI</a>
-        </nav>
+    <!-- 4. Kategori Sampah Rumah Tangga -->
+    <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-10">
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
+          4 Kategori Sampah yang Wajib Diketahui
+        </h2>
+        <p class="mt-2 text-sm text-zinc-500">
+          Pemilahan dari sumber adalah kunci. Kenali wadah dan penanganan yang tepat sebelum dibuang.
+        </p>
       </div>
 
-      <div class="footer-bottom">
-        <p>© 2024 Pilahki. Menuju permukiman bersih dan berkelanjutan (SDG 11 & SDG 13).</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card
+          v-for="cat in categories"
+          :key="cat.id"
+          :class="['border transition-all duration-200 hover:shadow-md', cat.borderColor]"
+        >
+          <CardHeader class="pb-3">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-800">
+                <component :is="cat.icon" class="h-4 w-4" />
+              </div>
+              <span :class="['px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider', cat.bgBadge]">
+                {{ cat.name }}
+              </span>
+            </div>
+            <CardTitle class="text-base font-bold text-zinc-900">
+              Sampah {{ cat.name }}
+            </CardTitle>
+            <CardDescription class="text-xs text-zinc-500 leading-relaxed">
+              {{ cat.desc }}
+            </CardDescription>
+          </CardHeader>
+          <CardContent class="space-y-3 text-xs">
+            <div>
+              <p class="font-semibold text-zinc-700 mb-1">Contoh barang:</p>
+              <div class="flex flex-wrap gap-1">
+                <span
+                  v-for="ex in cat.examples"
+                  :key="ex"
+                  class="rounded bg-zinc-100 text-zinc-700 px-1.5 py-0.5 text-[11px]"
+                >
+                  {{ ex }}
+                </span>
+              </div>
+            </div>
+            <div class="border-t border-zinc-100 pt-2.5">
+              <p class="font-semibold text-zinc-700">Cara penanganan:</p>
+              <p class="text-zinc-600 text-[11px] mt-0.5">{{ cat.solution }}</p>
+            </div>
+          </CardContent>
+          <CardFooter class="pt-0">
+            <Button
+              variant="outline"
+              size="sm"
+              class="w-full text-xs"
+              @click="handleSearch(cat.id)"
+            >
+              Lihat Daftar {{ cat.name }}
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
-    </footer>
+    </section>
 
-    <!-- 6. Modal Log Masuk / Daftar Supabase -->
+    <!-- 5. Tiga Langkah Mudah Alur Warga -->
+    <section class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <div class="rounded-2xl border border-zinc-200/80 bg-white p-8 sm:p-10 shadow-xs">
+        <h3 class="text-xl sm:text-2xl font-bold text-zinc-900 text-center mb-8">
+          3 Langkah Nyata Kelola Sampah dari Rumah
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="flex flex-col items-center text-center space-y-3">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 font-extrabold text-lg">
+              1
+            </div>
+            <h4 class="text-sm font-bold text-zinc-900">Identifikasi Jenis Sampah</h4>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+              Cek nama barang di Pilahki atau tanyakan ke PilahAI untuk mengetahui kategori & cara penanganannya.
+            </p>
+          </div>
+
+          <div class="flex flex-col items-center text-center space-y-3">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-700 font-extrabold text-lg">
+              2
+            </div>
+            <h4 class="text-sm font-bold text-zinc-900">Pisahkan Berdasarkan Sifat</h4>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+              Keringkan botol/kardus untuk bank sampah, kumpulkan sisa dapur untuk kompos, dan simpan B3 di wadah terpisah.
+            </p>
+          </div>
+
+          <div class="flex flex-col items-center text-center space-y-3">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 font-extrabold text-lg">
+              3
+            </div>
+            <h4 class="text-sm font-bold text-zinc-900">Salurkan Tepat Waktu</h4>
+            <p class="text-xs text-zinc-500 leading-relaxed">
+              Setor anorganik bernilai ke Bank Sampah terdekat, dan letakkan residu sesuai jadwal pengangkutan resmi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Global Auth Modal -->
     <AuthModal
       :is-open="isAuthModalOpen"
       :title="modalTitle"
@@ -676,1034 +519,3 @@ const openLoginModal = () => {
     />
   </div>
 </template>
-
-<style scoped>
-/* ==========================================================================
-   Design Tokens & CSS Variables Terancang
-   ========================================================================== */
-.pilahki-container {
-  --pk-primary: #15803d;
-  --pk-primary-hover: #166534;
-  --pk-primary-light: #f0fdf4;
-  --pk-primary-border: #bbf7d0;
-  --pk-text-main: #0f172a;
-  --pk-text-muted: #475569;
-  --pk-text-subtle: #64748b;
-  --pk-bg: #fafaf9;
-  --pk-surface: #ffffff;
-  --pk-border: #e2e8f0;
-  --pk-border-subtle: #f1f5f9;
-  --pk-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --pk-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
-  --pk-radius-sm: 6px;
-  --pk-radius-md: 10px;
-  --pk-radius-lg: 14px;
-  --pk-radius-full: 9999px;
-
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  color: var(--pk-text-main);
-  background-color: var(--pk-bg);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-}
-
-.pilahki-container *,
-.pilahki-container *::before,
-.pilahki-container *::after {
-  box-sizing: inherit;
-}
-
-/* ==========================================================================
-   1. Navbar
-   ========================================================================== */
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--pk-border);
-}
-
-.nav-content {
-  max-width: 1140px;
-  margin: 0 auto;
-  padding: 12px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.brand-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: inherit;
-}
-
-.logo-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--pk-radius-md);
-  background-color: var(--pk-primary-light);
-  color: var(--pk-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--pk-primary-border);
-}
-
-.logo-icon svg {
-  width: 22px;
-  height: 22px;
-}
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.brand-name {
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--pk-primary);
-  line-height: 1.15;
-}
-
-.brand-tagline {
-  font-size: 0.72rem;
-  color: var(--pk-text-subtle);
-  font-weight: 500;
-}
-
-.desktop-nav {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.nav-item {
-  color: var(--pk-text-muted);
-  text-decoration: none;
-  font-size: 0.92rem;
-  font-weight: 500;
-  padding: 6px 10px;
-  border-radius: var(--pk-radius-sm);
-  transition: color 0.15s, background-color 0.15s;
-}
-
-.nav-item:hover {
-  color: var(--pk-primary);
-  background-color: var(--pk-primary-light);
-}
-
-.nav-ai-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background-color: var(--pk-primary-light);
-  color: var(--pk-primary);
-  border: 1px solid var(--pk-primary-border);
-  font-size: 0.88rem;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: var(--pk-radius-full);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.nav-ai-btn:hover {
-  background-color: var(--pk-primary);
-  color: #ffffff;
-}
-
-.btn-icon {
-  width: 16px;
-  height: 16px;
-}
-
-/* Auth Desktop Section */
-.auth-section {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-left: 8px;
-  padding-left: 12px;
-  border-left: 1px solid var(--pk-border);
-}
-
-.login-btn {
-  background-color: var(--pk-primary);
-  color: #ffffff;
-  border: none;
-  font-size: 0.88rem;
-  font-weight: 600;
-  padding: 6px 16px;
-  border-radius: var(--pk-radius-sm);
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.login-btn:hover {
-  background-color: var(--pk-primary-hover);
-}
-
-/* User Account Button & Dropdown */
-.user-menu-wrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.user-account-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background-color: var(--pk-surface);
-  border: 1px solid var(--pk-border);
-  border-radius: var(--pk-radius-full);
-  padding: 4px 10px 4px 4px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.user-account-btn:hover,
-.user-account-active {
-  border-color: var(--pk-primary);
-  background-color: var(--pk-primary-light);
-}
-
-.user-avatar-circle {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: var(--pk-primary);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.user-display-name {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--pk-text-main);
-  max-width: 110px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dropdown-chevron {
-  width: 16px;
-  height: 16px;
-  color: var(--pk-text-subtle);
-  transition: transform 0.2s ease;
-}
-
-.chevron-rotate {
-  transform: rotate(180deg);
-}
-
-.user-dropdown-card {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 220px;
-  background-color: #ffffff;
-  border: 1px solid var(--pk-border);
-  border-radius: var(--pk-radius-md);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-  padding: 8px 0;
-  z-index: 60;
-}
-
-.dropdown-user-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 14px 10px;
-}
-
-.dropdown-avatar-large {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background-color: var(--pk-primary);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.dropdown-user-details {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  text-align: left;
-}
-
-.dropdown-user-name {
-  font-size: 0.86rem;
-  font-weight: 700;
-  color: var(--pk-text-main);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dropdown-user-email {
-  font-size: 0.74rem;
-  color: var(--pk-text-subtle);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dropdown-divider {
-  height: 1px;
-  background-color: var(--pk-border-subtle);
-  margin: 6px 0;
-}
-
-.dropdown-menu-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.dropdown-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
-  border: none;
-  background: none;
-  font-size: 0.86rem;
-  color: var(--pk-text-main);
-  cursor: pointer;
-  text-align: left;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.dropdown-item:hover {
-  background-color: var(--pk-border-subtle);
-  color: var(--pk-primary);
-}
-
-.dropdown-item-danger {
-  color: #dc2626;
-}
-
-.dropdown-item-danger:hover {
-  background-color: #fef2f2;
-  color: #b91c1c;
-}
-
-.item-icon {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
-.mobile-menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  padding: 8px;
-  cursor: pointer;
-  color: var(--pk-text-main);
-  border-radius: var(--pk-radius-sm);
-}
-
-.mobile-menu-toggle svg {
-  width: 24px;
-  height: 24px;
-}
-
-.mobile-nav-menu {
-  display: none;
-  flex-direction: column;
-  background-color: var(--pk-surface);
-  border-bottom: 1px solid var(--pk-border);
-  padding: 12px 20px 18px;
-  gap: 8px;
-}
-
-.mobile-nav-item {
-  text-decoration: none;
-  color: var(--pk-text-main);
-  font-size: 0.95rem;
-  font-weight: 500;
-  padding: 10px 12px;
-  border-radius: var(--pk-radius-sm);
-}
-
-.mobile-nav-item:hover {
-  background-color: var(--pk-primary-light);
-  color: var(--pk-primary);
-}
-
-.mobile-ai-btn {
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background-color: var(--pk-primary-light);
-  color: var(--pk-primary);
-  border: 1px solid var(--pk-primary-border);
-  font-size: 0.95rem;
-  font-weight: 600;
-  padding: 10px;
-  border-radius: var(--pk-radius-md);
-  cursor: pointer;
-}
-
-.mobile-auth-section {
-  margin-top: 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--pk-border);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.mobile-login-btn {
-  background-color: var(--pk-primary);
-  color: #ffffff;
-  border: none;
-  font-size: 0.95rem;
-  font-weight: 600;
-  padding: 10px;
-  border-radius: var(--pk-radius-md);
-  cursor: pointer;
-}
-
-.mobile-user-profile-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 4px 10px;
-}
-
-.mobile-menu-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: none;
-  border: none;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--pk-text-main);
-  border-radius: var(--pk-radius-sm);
-  cursor: pointer;
-  text-align: left;
-}
-
-.mobile-menu-link:hover {
-  background-color: var(--pk-primary-light);
-  color: var(--pk-primary);
-}
-
-.mobile-logout-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: none;
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  font-size: 0.92rem;
-  font-weight: 600;
-  padding: 10px;
-  border-radius: var(--pk-radius-md);
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.mobile-logout-btn:hover {
-  background-color: #fef2f2;
-}
-
-/* ==========================================================================
-   2. Main Layout & Hero Section
-   ========================================================================== */
-.main-content {
-  flex: 1;
-  max-width: 1140px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 40px 20px 60px;
-}
-
-.hero-section {
-  text-align: center;
-  max-width: 780px;
-  margin: 0 auto 56px;
-}
-
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--pk-primary);
-  background-color: var(--pk-primary-light);
-  border: 1px solid var(--pk-primary-border);
-  padding: 4px 12px;
-  border-radius: var(--pk-radius-full);
-  margin-bottom: 18px;
-}
-
-.badge-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: var(--pk-primary);
-}
-
-.hero-title {
-  font-size: 2.25rem;
-  font-weight: 800;
-  line-height: 1.25;
-  letter-spacing: -0.03em;
-  color: var(--pk-text-main);
-  margin: 0 0 16px;
-}
-
-.hero-desc {
-  font-size: 1.05rem;
-  color: var(--pk-text-muted);
-  line-height: 1.6;
-  margin: 0 auto 28px;
-  max-width: 660px;
-}
-
-/* Search Box Form */
-.search-box-form {
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-  max-width: 620px;
-  margin: 0 auto 14px;
-  background-color: var(--pk-surface);
-  border: 2px solid var(--pk-border);
-  padding: 4px;
-  border-radius: var(--pk-radius-lg);
-  box-shadow: var(--pk-shadow-sm);
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.search-box-form:focus-within {
-  border-color: var(--pk-primary);
-  box-shadow: 0 0 0 3px var(--pk-primary-border);
-}
-
-.search-input-wrapper {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  padding-left: 12px;
-  gap: 10px;
-}
-
-.search-icon {
-  color: var(--pk-text-subtle);
-  display: flex;
-  align-items: center;
-}
-
-.search-icon svg {
-  width: 19px;
-  height: 19px;
-}
-
-.search-input {
-  border: none;
-  outline: none;
-  font-size: 0.95rem;
-  color: var(--pk-text-main);
-  width: 100%;
-  background: transparent;
-  padding: 10px 0;
-}
-
-.search-input::placeholder {
-  color: #94a3b8;
-  font-size: 0.9rem;
-}
-
-.clear-search-btn {
-  background: none;
-  border: none;
-  font-size: 1.25rem;
-  color: var(--pk-text-subtle);
-  cursor: pointer;
-  padding: 4px 8px;
-  line-height: 1;
-}
-
-.search-submit-btn {
-  background-color: var(--pk-primary);
-  color: #ffffff;
-  border: none;
-  font-size: 0.92rem;
-  font-weight: 600;
-  padding: 10px 20px;
-  border-radius: var(--pk-radius-md);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.15s;
-}
-
-.search-submit-btn:hover {
-  background-color: var(--pk-primary-hover);
-}
-
-/* Guest Hint */
-.guest-auth-hint {
-  max-width: 620px;
-  margin: 0 auto 16px;
-  padding: 8px 14px;
-  background-color: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  border-radius: 8px;
-  font-size: 0.82rem;
-  color: #475569;
-  text-align: center;
-}
-
-/* Quick Examples */
-.quick-examples {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 22px;
-}
-
-.quick-label {
-  font-size: 0.82rem;
-  color: var(--pk-text-subtle);
-  font-weight: 500;
-}
-
-.chips-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-}
-
-.chip-btn {
-  background-color: var(--pk-surface);
-  border: 1px solid var(--pk-border);
-  color: var(--pk-text-muted);
-  font-size: 0.8rem;
-  padding: 3px 10px;
-  border-radius: var(--pk-radius-full);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.chip-btn:hover {
-  border-color: var(--pk-primary);
-  color: var(--pk-primary);
-  background-color: var(--pk-primary-light);
-}
-
-/* Prompt Alternatif AI */
-.ai-alternative-prompt {
-  font-size: 0.88rem;
-  color: var(--pk-text-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.ai-text-link {
-  background: none;
-  border: none;
-  color: var(--pk-primary);
-  font-weight: 600;
-  font-size: 0.88rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0;
-}
-
-.ai-text-link:hover {
-  text-decoration: underline;
-}
-
-.inline-arrow {
-  width: 14px;
-  height: 14px;
-}
-
-/* ==========================================================================
-   3. Grid 4 Fitur
-   ========================================================================== */
-.features-section {
-  margin-top: 10px;
-}
-
-.section-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.section-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--pk-text-main);
-  margin: 0 0 6px;
-}
-
-.section-subtitle {
-  font-size: 0.95rem;
-  color: var(--pk-text-muted);
-  margin: 0;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-
-.feature-card {
-  background-color: var(--pk-surface);
-  border: 1px solid var(--pk-border);
-  border-radius: var(--pk-radius-lg);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  box-shadow: var(--pk-shadow-sm);
-  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--pk-primary);
-  box-shadow: var(--pk-shadow-md);
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-
-.card-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--pk-radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.card-icon svg {
-  width: 22px;
-  height: 22px;
-}
-
-.card-icon-green {
-  background-color: #f0fdf4;
-  color: #16a34a;
-}
-
-.card-icon-blue {
-  background-color: #eff6ff;
-  color: #2563eb;
-}
-
-.card-icon-amber {
-  background-color: #fffbeb;
-  color: #d97706;
-}
-
-.card-icon-emerald {
-  background-color: #ecfdf5;
-  color: #059669;
-}
-
-.card-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--pk-text-subtle);
-  background-color: var(--pk-border-subtle);
-  padding: 3px 8px;
-  border-radius: var(--pk-radius-full);
-}
-
-.card-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--pk-text-main);
-  margin: 0 0 8px;
-}
-
-.card-desc {
-  font-size: 0.9rem;
-  color: var(--pk-text-muted);
-  line-height: 1.5;
-  margin: 0 0 18px;
-  flex: 1;
-}
-
-.card-footer {
-  border-top: 1px solid var(--pk-border-subtle);
-  padding-top: 12px;
-}
-
-.card-action {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--pk-primary);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: gap 0.15s;
-}
-
-.feature-card:hover .card-action {
-  gap: 10px;
-}
-
-.action-arrow {
-  width: 15px;
-  height: 15px;
-}
-
-/* ==========================================================================
-   4. Floating PilahAI Button
-   ========================================================================== */
-.floating-ai-wrapper {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 50;
-}
-
-.floating-ai-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background-color: var(--pk-primary);
-  color: #ffffff;
-  border: none;
-  border-radius: var(--pk-radius-full);
-  padding: 12px 18px;
-  font-size: 0.92rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(21, 128, 61, 0.35);
-  transition: transform 0.15s ease, background-color 0.15s ease;
-}
-
-.floating-ai-btn:hover {
-  background-color: var(--pk-primary-hover);
-  transform: translateY(-2px);
-}
-
-.floating-ai-btn:active {
-  transform: translateY(0);
-}
-
-.floating-ai-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.floating-ai-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* ==========================================================================
-   5. Footer
-   ========================================================================== */
-.site-footer {
-  background-color: #ffffff;
-  border-top: 1px solid var(--pk-border);
-  padding: 40px 20px 24px;
-  margin-top: auto;
-}
-
-.footer-content {
-  max-width: 1140px;
-  margin: 0 auto 28px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 32px;
-  flex-wrap: wrap;
-}
-
-.footer-brand {
-  max-width: 440px;
-}
-
-.footer-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1.15rem;
-  color: var(--pk-primary);
-  margin-bottom: 8px;
-}
-
-.footer-tagline {
-  font-size: 0.88rem;
-  color: var(--pk-text-muted);
-  line-height: 1.5;
-  margin: 0;
-}
-
-.footer-nav {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.footer-nav a {
-  text-decoration: none;
-  color: var(--pk-text-muted);
-  font-size: 0.88rem;
-  font-weight: 500;
-  transition: color 0.15s;
-}
-
-.footer-nav a:hover {
-  color: var(--pk-primary);
-}
-
-.footer-bottom {
-  max-width: 1140px;
-  margin: 0 auto;
-  padding-top: 20px;
-  border-top: 1px solid var(--pk-border-subtle);
-  font-size: 0.8rem;
-  color: var(--pk-text-subtle);
-  text-align: center;
-}
-
-/* ==========================================================================
-   Responsivitas Mobile (Android / Smartphone)
-   ========================================================================== */
-@media (max-width: 768px) {
-  .desktop-nav {
-    display: none;
-  }
-
-  .mobile-menu-toggle {
-    display: block;
-  }
-
-  .mobile-nav-menu {
-    display: flex;
-  }
-
-  .main-content {
-    padding: 24px 16px 40px;
-  }
-
-  .hero-section {
-    margin-bottom: 40px;
-  }
-
-  .hero-title {
-    font-size: 1.65rem;
-  }
-
-  .hero-desc {
-    font-size: 0.95rem;
-    margin-bottom: 20px;
-  }
-
-  .search-box-form {
-    flex-direction: column;
-    padding: 6px;
-    gap: 8px;
-  }
-
-  .search-input-wrapper {
-    padding-left: 8px;
-  }
-
-  .search-submit-btn {
-    width: 100%;
-    padding: 12px;
-  }
-
-  .features-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .feature-card {
-    padding: 18px;
-  }
-
-  .footer-content {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .footer-nav {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .floating-ai-wrapper {
-    bottom: 18px;
-    right: 18px;
-  }
-
-  .floating-ai-btn {
-    padding: 10px 14px;
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-title {
-    font-size: 1.45rem;
-  }
-
-  .floating-ai-label {
-    display: none;
-  }
-
-  .floating-ai-btn {
-    padding: 14px;
-    border-radius: 50%;
-  }
-}
-</style>
