@@ -279,7 +279,8 @@ ATURAN DOMAIN & FORMAT KETAT:
 4. Jika pengguna bertanya di luar topik sampah (misalnya politik, sains rumit, kode pemrograman, resep masak umum), tolak dengan sangat sopan bahwa Anda hanya bisa membantu seputar pemilahan dan pengelolaan sampah rumah tangga.
 5. Selalu gunakan perkakas fungsi (function calling) yang disediakan (cekKategoriSampah, cariFasilitas, cekJadwal, cariPanduan) saat pengguna bertanya hal yang relevan untuk memberikan informasi akurat dari database Pilahki.
 6. Jangan gunakan istilah teknis rumit. Gunakan bahasa yang mudah dipahami warga biasa, to-the-point, dan ramah.
-7. DILARANG KERAS MENGGUNAKAN EMOJI. Jangan pernah menyisipkan emoji apapun (seperti 🌱, 🤖, 💡, 📍, 📦, 🍃, 🗑️, dsb). Tulis semua respon dalam teks bahasa Indonesia yang bersih, formal-santun, dan profesional.`
+7. DILARANG KERAS MENGGUNAKAN EMOJI. Jangan pernah menyisipkan emoji apapun (seperti 🌱, 🤖, 💡, 📍, 📦, 🍃, 🗑️, dsb). Tulis semua respon dalam teks bahasa Indonesia yang bersih, formal-santun, dan profesional.
+8. DILARANG KERAS MENGGUNAKAN TANDA HUBUNG PANJANG / EM-DASH ("—" atau "–"). Tanda strip panjang tersebut membuat kalimat terkesan kaku seperti robot AI. Gunakan tanda baca alami manusia seperti koma (,), titik (.), titik dua (:), atau tanda kurung bila memberikan penjelasan.`
 
 // ============================================================================
 // 3. Penghantaran Mesej ke Gemini API
@@ -410,7 +411,7 @@ export async function sendChatMessageToPilahAI(messagesHistory) {
     }
 
     if (modelPart?.text) {
-      return { text: modelPart.text }
+      return { text: modelPart.text.replace(/—/g, ', ').replace(/–/g, ' - ') }
     }
 
     return handleLocalSmartAssistant(messagesHistory)
