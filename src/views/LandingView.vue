@@ -2,520 +2,479 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
-import AuthModal from '@/components/AuthModal.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import {
-  Search,
-  Sparkles,
-  ArrowRight,
-  Recycle,
-  MapPin,
-  Calendar,
-  BookOpen,
-  CheckCircle2,
-  AlertTriangle,
-  Flame,
-  Apple,
-  Box,
-  Layers,
   HelpCircle,
+  MapPinOff,
   Clock,
-  ShieldCheck,
-  ChevronRight
+  Compass,
+  CheckCircle,
+  ChevronDown,
+  ArrowRight
 } from 'lucide-vue-next'
 
 const router = useRouter()
 const { isAuthenticated } = useAuth()
 
-const searchQuery = ref('')
-const isAuthModalOpen = ref(false)
-const modalTitle = ref('Masuk ke Pilahki')
-const modalSubtitle = ref('Masuk untuk mengakses fitur lengkap pemilahan, fasilitas, dan jadwal angkut.')
-const pendingAction = ref(null)
+const activeFaqIndex = ref(null)
 
-// Contoh sampah rumah tangga umum
-const quickExamples = [
-  'Baterai Bekas',
-  'Botol Minyak',
-  'Kemasan Sachet',
-  'Kulit Buah',
-  'Lampu Neon'
-]
+const toggleFaq = (index) => {
+  activeFaqIndex.value = activeFaqIndex.value === index ? null : index
+}
 
-// 4 Fitur utama sesuai PRD Seksyen 7
-const features = [
+const faqs = [
   {
-    id: 'pilah',
-    title: 'Pilah Sampah',
-    badge: 'Kategori & Solusi',
-    desc: 'Cek apakah sampah masuk organik, anorganik, B3, atau residu serta cara penanganannya.',
-    path: '/pilah',
-    actionText: 'Cek Kategori',
-    icon: Search,
-    color: 'emerald'
+    q: "Apakah PilahKi' memerlukan instalasi aplikasi di HP?",
+    a: "Tidak perlu! PilahKi' berbasis web murni yang responsif. Anda dapat langsung membukanya dari browser Chrome, Safari, atau Firefox di smartphone maupun laptop tanpa membebani memori HP."
   },
   {
-    id: 'lokasi',
-    title: 'Cari Lokasi',
-    badge: 'Bank Sampah & TPS',
-    desc: 'Temukan fasilitas penerima sampah terdekat di Makassar, jam operasional, dan jenis yang diterima.',
-    path: '/lokasi',
-    actionText: 'Cari Fasilitas',
-    icon: MapPin,
-    color: 'blue'
+    q: "Bagaimana cara kerja chatbot PilahAI?",
+    a: "PilahAI menggunakan teknologi LLM Gemini dengan Function Calling. Ketika Anda bertanya, AI secara otomatis mendeteksi kebutuhan data Anda (misal mengecek kategori sampah, mencari Bank Sampah terdekat, atau mencari jadwal angkut) dan memanggil database sistem untuk memberikan respon yang akurat."
   },
   {
-    id: 'jadwal',
-    title: 'Jadwal Angkut',
-    badge: 'Waktu Pengutipan',
-    desc: 'Ketahui hari pengangkutan sampah di wilayah Anda agar tidak terlewat dan menumpuk.',
-    path: '/jadwal',
-    actionText: 'Lihat Jadwal',
-    icon: Calendar,
-    color: 'amber'
+    q: "Apakah data lokasi dan jadwal mencakup seluruh Indonesia?",
+    a: "Untuk demonstrasi kompetisi lomba saat ini, data difokuskan pada wilayah pemukiman percontohan Kota Makassar. Namun arsitektur sistem dirancang fleksibel agar data wilayah lain dapat ditambahkan dengan mudah melalui panel pengelola."
   },
   {
-    id: 'panduan',
-    title: 'Panduan Praktis',
-    badge: 'Edukasi Warga',
-    desc: 'Tips ringkas memilah sampah rumah tangga dengan bahasa sederhana tanpa istilah teknis.',
-    path: '/panduan',
-    actionText: 'Baca Panduan',
-    icon: BookOpen,
-    color: 'purple'
+    q: "Apakah saya harus mendaftar untuk mencoba PilahKi'?",
+    a: "Anda dapat melihat informasi umum dan panduan di halaman beranda ini. Namun untuk menikmati semua fitur interaktif lengkap (asisten percakapan cerdas PilahAI, bookmark Bank Sampah, dan filter jadwal), Anda cukup membuat akun gratis melalui tombol Daftar."
   }
 ]
-
-// 4 Kategori Sampah
-const categories = [
-  {
-    id: 'organik',
-    name: 'Organik',
-    desc: 'Bahan alami yang mudah terurai hayati seperti sisa makanan, daun, dan sayuran.',
-    examples: ['Sisa Sayuran', 'Kulit Buah', 'Dedaunan', 'Nasi Sisa'],
-    solution: 'Dibuat kompos atau pakan maggot',
-    badgeVariant: 'organik',
-    icon: Apple,
-    borderColor: 'border-emerald-200 hover:border-emerald-400',
-    bgBadge: 'bg-emerald-50 text-emerald-800'
-  },
-  {
-    id: 'anorganik',
-    name: 'Anorganik',
-    desc: 'Barang tidak mudah terurai namun bernilai ekonomi jika didaur ulang dengan bersih.',
-    examples: ['Botol Plastik PET', 'Kardus & Kertas', 'Kaleng Minuman', 'Kaca'],
-    solution: 'Cuci bersih, keringkan, lalu setor ke Bank Sampah',
-    badgeVariant: 'anorganik',
-    icon: Box,
-    borderColor: 'border-blue-200 hover:border-blue-400',
-    bgBadge: 'bg-blue-50 text-blue-800'
-  },
-  {
-    id: 'b3',
-    name: 'B3 Rumah Tangga',
-    desc: 'Bahan Berbahaya dan Beracun yang memerlukan penanganan khusus demi keamanan lingkungan.',
-    examples: ['Baterai Bekas', 'Lampu Neon / LED', 'Kaleng Obat Serangga', 'Obat Kedaluwarsa'],
-    solution: 'Pisahkan dalam wadah tertutup aman, bawa ke drop point B3',
-    badgeVariant: 'b3',
-    icon: AlertTriangle,
-    borderColor: 'border-amber-200 hover:border-amber-400',
-    bgBadge: 'bg-amber-50 text-amber-800'
-  },
-  {
-    id: 'residu',
-    name: 'Residu',
-    desc: 'Sampah yang sulit atau tidak dapat didaur ulang dan harus berakhir di TPA terkontrol.',
-    examples: ['Kemasan Sachet Foil', 'Popok Sekali Pakai', 'Puntung Rokok', 'Tisu Kotor'],
-    solution: 'Kemas rapat dan buang ke tempat penampungan TPS resmi',
-    badgeVariant: 'residu',
-    icon: Layers,
-    borderColor: 'border-zinc-200 hover:border-zinc-400',
-    bgBadge: 'bg-zinc-100 text-zinc-800'
-  }
-]
-
-// Sample PilahAI Questions
-const aiPrompts = [
-  'Baterai jam dinding bekas harus dibuang ke mana?',
-  'Kemasan kopi sachet masuk kategori apa?',
-  'Kapan jadwal pengangkutan sampah di Rappocini?',
-  'Di mana bank sampah terdekat dari Tamalanrea?'
-]
-
-const executeWithAuth = (actionCallback, featureTitle = 'Fitur Pilahki') => {
-  if (!isAuthenticated.value) {
-    modalTitle.value = `Masuk untuk akses ${featureTitle}`
-    modalSubtitle.value = 'Silakan masuk atau daftar menggunakan email dan kata sandi Anda untuk melanjutkan.'
-    pendingAction.value = actionCallback
-    isAuthModalOpen.value = true
-    return
-  }
-  actionCallback()
-}
-
-const handleSearch = (overrideQuery = null) => {
-  if (overrideQuery !== null) {
-    searchQuery.value = overrideQuery
-  }
-  const query = searchQuery.value.trim()
-  if (!query) return
-
-  executeWithAuth(() => {
-    router.push({ path: '/pilah', query: { q: query } })
-  }, `Pilah Sampah "${query}"`)
-}
-
-const handleFeatureClick = (feature) => {
-  executeWithAuth(() => {
-    router.push(feature.path)
-  }, feature.title)
-}
-
-const handleOpenAIWithPrompt = (promptText = '') => {
-  executeWithAuth(() => {
-    router.push({ path: '/pilah-ai', query: promptText ? { q: promptText } : {} })
-  }, 'PilahAI')
-}
-
-const handleAuthSuccess = () => {
-  if (pendingAction.value) {
-    const action = pendingAction.value
-    pendingAction.value = null
-    action()
-  }
-}
 </script>
 
 <template>
-  <div class="space-y-16 sm:space-y-24 pb-20">
-    <!-- 1. Hero Section -->
-    <section class="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 bg-gradient-to-b from-emerald-50/40 via-white to-white border-b border-zinc-100">
-      <div class="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-        <!-- Pill Badge -->
-        <div class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/90 px-3.5 py-1 text-xs font-semibold text-emerald-800 shadow-2xs mb-6">
-          <Sparkles class="h-3.5 w-3.5 text-emerald-600" />
-          <span>Inisiatif Bersih Kota Makassar &bull; Terintegrasi PilahAI</span>
-        </div>
+  <div class="relative w-full overflow-hidden bg-[#fafdfa]">
+    
+    <!-- ================= 1. HERO SECTION ================= -->
+    <section id="tentang" class="relative overflow-hidden py-24 sm:py-32 lg:py-40 bg-[#fafdfa]">
+      <!-- Background Image & Contrast Overlays -->
+      <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
+        <img 
+          src="/img/hero-sampah.jpg" 
+          alt="Tumpukan sampah daur ulang" 
+          class="w-full h-full object-cover object-right md:object-center opacity-75 lg:opacity-85 filter contrast-105"
+        />
+        <!-- Horizontal mask: Ensures left side text is 100% readable with smooth fade to the waste pile on right -->
+        <div class="absolute inset-0 bg-gradient-to-r from-[#fafdfa] via-[#fafdfa]/95 sm:via-[#fafdfa]/90 lg:via-[#fafdfa]/80 to-[#fafdfa]/60 lg:to-transparent"></div>
+        <!-- Vertical edge blend: Seamless transitions from top navbar and into bottom section -->
+        <div class="absolute inset-0 bg-gradient-to-b from-[#fafdfa] via-transparent to-[#fafdfa]"></div>
+        <!-- Subtle atmospheric eco tint -->
+        <div class="absolute inset-0 bg-emerald-950/10 mix-blend-multiply"></div>
+      </div>
 
-        <!-- Headline -->
-        <h1 class="text-3xl font-extrabold tracking-tight text-zinc-900 sm:text-5xl lg:text-6xl max-w-3xl mx-auto leading-tight sm:leading-none">
-          Pilah Sampah Jadi Gampang, Warga Makassar Nyaman.
-        </h1>
+      <!-- Content (Left-aligned, ample breathing room) -->
+      <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl text-left space-y-8">
+          
+          <!-- Headline Tagline -->
+          <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-brand-950 leading-[1.15]">
+            Mulai dari Pilahan, <br class="hidden sm:inline" />
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-800 via-brand-700 to-brand-500">
+              Ciptakan Perubahan
+            </span>
+          </h1>
 
-        <p class="mt-5 text-base sm:text-lg text-zinc-600 max-w-2xl mx-auto leading-relaxed">
-          Hilangkan keraguan memilah sampah rumah tangga. Cek kategori secara instan, temukan bank sampah terdekat, pantau jadwal angkut, atau tanyakan langsung pada AI.
-        </p>
+          <!-- Deskripsi -->
+          <p class="text-base sm:text-lg lg:text-xl text-slate-700 max-w-2xl leading-relaxed font-normal">
+            Hilangkan keraguan memilah sampah rumah tangga. Cek kategori secara instan, temukan bank sampah terdekat, pantau jadwal angkut, atau tanyakan langsung pada AI.
+          </p>
 
-        <!-- Search Bar Input -->
-        <div class="mt-8 max-w-2xl mx-auto">
-          <form @submit.prevent="handleSearch()" class="flex flex-col sm:flex-row items-center gap-2 p-1.5 rounded-2xl bg-white border border-zinc-200 shadow-lg shadow-zinc-200/50 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all">
-            <div class="relative flex-1 w-full">
-              <Search class="absolute left-3.5 top-3.5 h-4 w-4 text-zinc-400" />
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="Punya sampah apa? Ketik cth: 'Baterai bekas', 'Botol minyak'..."
-                class="w-full h-11 pl-10 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 bg-transparent border-none outline-none focus:ring-0"
-              />
-            </div>
-            <Button
-              type="submit"
-              size="lg"
-              class="w-full sm:w-auto h-11 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs font-semibold gap-2"
+          <!-- CTA Buttons -->
+          <div class="pt-2 flex flex-wrap items-center gap-4">
+            <router-link
+              :to="isAuthenticated ? '/pilah' : '/register'"
+              class="inline-flex items-center justify-center px-8 py-4 rounded-xl font-bold text-white bg-brand-800 hover:bg-brand-700 shadow-md hover:shadow-lg transition-all duration-200 text-base"
             >
-              <Search class="h-4 w-4" />
-              <span>Cari Solusi</span>
-            </Button>
-          </form>
+              <span>{{ isAuthenticated ? 'Buka Aplikasi PilahKi' : 'Mulai Pilah Sekarang' }}</span>
+            </router-link>
 
-          <!-- Quick Examples -->
-          <div class="mt-3.5 flex flex-wrap items-center justify-center gap-2 text-xs">
-            <span class="text-zinc-400 font-medium">Contoh cepat:</span>
-            <button
-              v-for="example in quickExamples"
-              :key="example"
-              type="button"
-              class="rounded-full bg-zinc-100 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 border border-zinc-200/60 px-2.5 py-1 text-zinc-600 transition-colors cursor-pointer"
-              @click="handleSearch(example)"
+            <router-link
+              to="/pilah"
+              class="inline-flex items-center justify-center px-6 py-4 rounded-xl font-semibold text-brand-800 bg-brand-50 hover:bg-brand-100 transition-all text-base"
             >
-              {{ example }}
-            </button>
+              <span>Jelajahi Fitur</span>
+            </router-link>
           </div>
-        </div>
 
-        <!-- Action Buttons -->
-        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Button
-            size="lg"
-            class="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
-            @click="handleFeatureClick(features[0])"
-          >
-            <span>Buka Katalog Sampah</span>
-            <ArrowRight class="h-4 w-4" />
-          </Button>
-
-          <Button
-            size="lg"
-            variant="outline"
-            class="border-zinc-300 hover:bg-zinc-100 text-zinc-700 gap-2"
-            @click="handleOpenAIWithPrompt('')"
-          >
-            <Sparkles class="h-4 w-4 text-emerald-600" />
-            <span>Konsultasi PilahAI</span>
-          </Button>
         </div>
       </div>
     </section>
 
-    <!-- 2. Empat Fitur Utama (PRD Seksyen 7) -->
-    <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="text-center max-w-2xl mx-auto mb-10">
-        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
-          Solusi Terintegrasi Tanpa Ribet
-        </h2>
-        <p class="mt-2 text-sm text-zinc-500">
-          Dirancang khusus untuk warga kota agar alur dari pegang sampah sampai tempat yang tepat tidak putus di tengah jalan.
-        </p>
-      </div>
+    <!-- ================= 2. TANTANGAN / PROBLEM SECTION ================= -->
+    <section id="masalah" class="py-16 bg-white border-y border-slate-100">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-3xl mx-auto mb-14">
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-brand-950">
+            Mengapa Mengelola Sampah Rumah Tangga Masih Terasa Sulit?
+          </h2>
+          <p class="text-slate-600 text-sm sm:text-base mt-3">
+            Sebagian besar warga ingin berpartisipasi menjaga lingkungan, namun sering terbentur oleh 4 kendala utama ini:
+          </p>
+        </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card
-          v-for="feat in features"
-          :key="feat.id"
-          class="flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border-zinc-200/80 group"
-        >
-          <CardHeader class="pb-3">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-800 group-hover:bg-emerald-100 group-hover:text-emerald-700 transition-colors">
-                <component :is="feat.icon" class="h-5 w-5" />
-              </div>
-              <Badge variant="outline" class="text-[11px] font-medium bg-zinc-50">
-                {{ feat.badge }}
-              </Badge>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          
+          <!-- Problem 1 -->
+          <div class="p-6 rounded-2xl bg-[#fafdfa] border border-slate-100 hover:border-brand-200 hover:shadow-card-hover transition-all duration-300 text-left">
+            <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 border border-brand-100 flex items-center justify-center mb-4">
+              <HelpCircle class="w-6 h-6" />
             </div>
-            <CardTitle class="text-lg font-bold group-hover:text-emerald-700 transition-colors">
-              {{ feat.title }}
-            </CardTitle>
-            <CardDescription class="mt-1 text-xs sm:text-sm text-zinc-500 line-clamp-3">
-              {{ feat.desc }}
-            </CardDescription>
-          </CardHeader>
-          <CardFooter class="pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              class="w-full justify-between group-hover:border-emerald-600 group-hover:text-emerald-700"
-              @click="handleFeatureClick(feat)"
-            >
-              <span>{{ feat.actionText }}</span>
-              <ChevronRight class="h-3.5 w-3.5 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    </section>
-
-    <!-- 3. Spotlight PilahAI (Chatbot Cerdas) -->
-    <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="relative rounded-3xl border border-emerald-200/80 bg-gradient-to-br from-emerald-900 via-teal-900 to-zinc-950 p-8 sm:p-12 text-white shadow-xl overflow-hidden">
-        <!-- Background accents -->
-        <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
-        <div class="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-teal-500/20 blur-3xl" />
-
-        <div class="relative grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div class="lg:col-span-7 space-y-4">
-            <div class="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300">
-              <Sparkles class="h-3.5 w-3.5" />
-              <span>Titik Akses Tunggal Warga</span>
-            </div>
-            <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight">
-              Tanya Apa Saja Seputar Sampah ke PilahAI
-            </h2>
-            <p class="text-zinc-300 text-sm sm:text-base leading-relaxed">
-              Gak yakin sampah yang Anda pegang itu apa? PilahAI terhubung langsung dengan database kategori, lokasi bank sampah di Makassar, dan jadwal pengangkutan. Cukup tanya dengan gaya bicara sehari-hari.
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Bingung Memilah</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Tidak tahu kategori sampah (organik, anorganik, B3, atau residu) dan cara penanganan yang aman sebelum dibuang.
             </p>
-
-            <!-- Quick AI Prompt Chips -->
-            <div class="pt-2 space-y-2">
-              <p class="text-xs text-emerald-300 font-semibold uppercase tracking-wider">Coba tanyakan langsung:</p>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  v-for="prompt in aiPrompts"
-                  :key="prompt"
-                  type="button"
-                  class="text-left text-xs bg-white/10 hover:bg-white/20 border border-white/15 rounded-lg px-3 py-1.5 text-zinc-200 hover:text-white transition-colors cursor-pointer"
-                  @click="handleOpenAIWithPrompt(prompt)"
-                >
-                  "{{ prompt }}"
-                </button>
-              </div>
-            </div>
-
-            <div class="pt-4">
-              <Button
-                size="lg"
-                class="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold shadow-lg shadow-emerald-500/30"
-                @click="handleOpenAIWithPrompt('')"
-              >
-                <Sparkles class="h-4 w-4 mr-2" />
-                <span>Buka Chat PilahAI Sekarang</span>
-              </Button>
-            </div>
           </div>
 
-          <!-- Chat UI Mockup Preview -->
-          <div class="lg:col-span-5 bg-white/95 text-zinc-900 rounded-2xl p-5 shadow-2xl border border-white/20 space-y-3">
-            <div class="flex items-center gap-3 border-b border-zinc-100 pb-3">
-              <div class="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
-                AI
-              </div>
-              <div>
-                <p class="text-xs font-bold text-zinc-900">PilahAI Makassar</p>
-                <p class="text-[10px] text-emerald-600 flex items-center gap-1 font-medium">
-                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Online & Siap Menjawab
-                </p>
-              </div>
+          <!-- Problem 2 -->
+          <div class="p-6 rounded-2xl bg-[#fafdfa] border border-slate-100 hover:border-brand-200 hover:shadow-card-hover transition-all duration-300 text-left">
+            <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 border border-brand-100 flex items-center justify-center mb-4">
+              <MapPinOff class="w-6 h-6" />
             </div>
-
-            <div class="space-y-2.5 text-xs">
-              <div class="flex justify-end">
-                <div class="bg-emerald-600 text-white rounded-2xl rounded-tr-none px-3.5 py-2 max-w-[85%] shadow-2xs">
-                  Saya ada baterai remote bekas, buang ke mana ya?
-                </div>
-              </div>
-              <div class="flex justify-start">
-                <div class="bg-zinc-100 text-zinc-800 rounded-2xl rounded-tl-none px-3.5 py-2.5 max-w-[88%] space-y-1.5 border border-zinc-200/60">
-                  <p class="font-medium text-emerald-800">
-                    Baterai bekas masuk kategori <strong>B3 Rumah Tangga</strong> karena mengandung logam berat.
-                  </p>
-                  <p class="text-[11px] text-zinc-600">
-                    Solusi: Jangan buang ke tong sampah biasa. Masukkan ke botol tertutup, lalu bawa ke drop-point B3 di Kantor Camat Rappocini atau Bank Sampah terdekat.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Sulit Cari Lokasi</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Tidak mengetahui keberadaan Bank Sampah atau TPS terdekat, jam buka, dan jenis sampah yang mereka terima.
+            </p>
           </div>
+
+          <!-- Problem 3 -->
+          <div class="p-6 rounded-2xl bg-[#fafdfa] border border-slate-100 hover:border-brand-200 hover:shadow-card-hover transition-all duration-300 text-left">
+            <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 border border-brand-100 flex items-center justify-center mb-4">
+              <Clock class="w-6 h-6" />
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Jadwal Tidak Jelas</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Jadwal truk pengangkut sampah tidak transparan, menyebabkan sampah menumpuk di depan rumah dan berbau.
+            </p>
+          </div>
+
+          <!-- Problem 4 -->
+          <div class="p-6 rounded-2xl bg-[#fafdfa] border border-slate-100 hover:border-brand-200 hover:shadow-card-hover transition-all duration-300 text-left">
+            <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 border border-brand-100 flex items-center justify-center mb-4">
+              <Compass class="w-6 h-6" />
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Bingung Penyaluran</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Setelah dipilah, warga bingung ke mana sampah bernilai harus disalurkan agar tidak kembali tercampur di TPA.
+            </p>
+          </div>
+
         </div>
+
+        <!-- Solution Bridge Banner -->
+        <div class="mt-12 bg-gradient-to-r from-brand-800 to-brand-700 text-white rounded-3xl p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-glow">
+          <div class="space-y-2 text-center md:text-left">
+            <span class="text-xs uppercase font-bold tracking-wider text-accent-light">Jawaban Masalah</span>
+            <h3 class="text-2xl sm:text-3xl font-extrabold">PilahKi' Hadir Menjawab Semua Masalah Tersebut</h3>
+            <p class="text-brand-100 text-sm sm:text-base max-w-2xl">
+              Semua kebutuhan informasi pemilahan, fasilitas terdekat, jadwal, dan asisten AI terangkum dalam satu pintu web yang ramah dan mudah diakses siapa saja.
+            </p>
+          </div>
+          <router-link
+            to="/pilah"
+            class="whitespace-nowrap px-6 py-3.5 rounded-xl bg-white text-brand-800 hover:bg-brand-50 font-bold text-sm shadow-md transition-all duration-200"
+          >
+            Coba Fitur
+          </router-link>
+        </div>
+
       </div>
     </section>
 
-    <!-- 4. Kategori Sampah Rumah Tangga -->
-    <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="text-center max-w-2xl mx-auto mb-10">
-        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">
-          4 Kategori Sampah yang Wajib Diketahui
-        </h2>
-        <p class="mt-2 text-sm text-zinc-500">
-          Pemilahan dari sumber adalah kunci. Kenali wadah dan penanganan yang tepat sebelum dibuang.
-        </p>
-      </div>
+    <!-- ================= 3. 5 FITUR UTAMA SECTION ================= -->
+    <section id="fitur" class="py-24 sm:py-32 bg-[#fafdfa]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Section Header -->
+        <div class="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-950 tracking-tight">
+            5 Fitur Unggulan di Dalam PilahKi'
+          </h2>
+          <p class="text-slate-600 text-base sm:text-lg mt-4 max-w-2xl mx-auto leading-relaxed">
+            Dirancang spesifik untuk mendukung warga hidup bersih dan berkelanjutan, mulai dari pemilahan harian hingga bantuan kecerdasan buatan.
+          </p>
+        </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card
-          v-for="cat in categories"
-          :key="cat.id"
-          :class="['border transition-all duration-200 hover:shadow-md', cat.borderColor]"
-        >
-          <CardHeader class="pb-3">
-            <div class="flex items-center justify-between mb-2">
-              <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-800">
-                <component :is="cat.icon" class="h-4 w-4" />
-              </div>
-              <span :class="['px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider', cat.bgBadge]">
-                {{ cat.name }}
-              </span>
-            </div>
-            <CardTitle class="text-base font-bold text-zinc-900">
-              Sampah {{ cat.name }}
-            </CardTitle>
-            <CardDescription class="text-xs text-zinc-500 leading-relaxed">
-              {{ cat.desc }}
-            </CardDescription>
-          </CardHeader>
-          <CardContent class="space-y-3 text-xs">
+        <!-- Open Features Layout (Editorial) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 lg:gap-x-16 gap-y-12 lg:gap-y-16 text-left">
+          
+          <!-- Fitur 1: Pilah Sampah -->
+          <div class="space-y-3 group cursor-pointer" @click="router.push('/pilah')">
+            <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 01</span>
+            <h3 class="text-xl font-bold text-brand-950 group-hover:text-brand-600 transition-colors flex items-center justify-between">
+              <span>Pilah Sampah</span>
+              <ArrowRight class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-brand-600" />
+            </h3>
+            <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+              Kenali kategori sampah rumah tangga dalam hitungan detik. Dapatkan panduan tepat apakah sampah termasuk <strong>Organik, Anorganik, B3, atau Residu</strong> beserta instruksi penanganannya yang aman sebelum dibuang.
+            </p>
+          </div>
+
+          <!-- Fitur 2: Cari Lokasi -->
+          <div class="space-y-3 group cursor-pointer" @click="router.push('/lokasi')">
+            <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 02</span>
+            <h3 class="text-xl font-bold text-brand-950 group-hover:text-brand-600 transition-colors flex items-center justify-between">
+              <span>Cari Lokasi Fasilitas</span>
+              <ArrowRight class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-brand-600" />
+            </h3>
+            <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+              Temukan Bank Sampah dan TPS terdekat dari tempat tinggal Anda lewat GPS atau pemilihan wilayah manual, lengkap dengan jam operasional, petunjuk arah rute, dan jenis sampah yang diterima.
+            </p>
+          </div>
+
+          <!-- Fitur 3: Jadwal Angkut -->
+          <div class="space-y-3 group cursor-pointer" @click="router.push('/jadwal')">
+            <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 03</span>
+            <h3 class="text-xl font-bold text-brand-950 group-hover:text-brand-600 transition-colors flex items-center justify-between">
+              <span>Jadwal Angkut</span>
+              <ArrowRight class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-brand-600" />
+            </h3>
+            <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+              Pantau jadwal penjemputan sampah rutin di lingkungan RT/RW tempat tinggal Anda. Tidak ada lagi tumpukan sampah berhari-hari di depan rumah karena jadwal pengangkutan yang transparan dan tepat waktu.
+            </p>
+          </div>
+
+          <!-- Fitur 4: Panduan Edukasi -->
+          <div class="space-y-3 group cursor-pointer" @click="router.push('/panduan')">
+            <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 04</span>
+            <h3 class="text-xl font-bold text-brand-950 group-hover:text-brand-600 transition-colors flex items-center justify-between">
+              <span>Panduan Edukasi Warga</span>
+              <ArrowRight class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-brand-600" />
+            </h3>
+            <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+              Akses artikel informatif, infografis praktis, dan tips gaya hidup minim sampah (<em>zero waste</em>). Pelajari teknik komposting mandiri dari sisa dapur hingga cara tepat mengisolasi limbah B3.
+            </p>
+          </div>
+
+          <!-- Fitur 5: PilahAI -->
+          <div class="space-y-3 group cursor-pointer" @click="router.push('/pilah-ai')">
+            <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 05</span>
+            <h3 class="text-xl font-bold text-brand-950 group-hover:text-brand-600 transition-colors flex items-center justify-between">
+              <span>PilahAI Asisten Cerdas</span>
+              <ArrowRight class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-brand-600" />
+            </h3>
+            <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+              Tidak perlu berpindah-pindah menu secara manual. Cukup tanyakan langsung pada chatbot PilahAI yang terintegrasi dengan data pemilahan, fasilitas, dan jadwal di Makassar.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= 4. ALIGNMENT DENGAN SDG ================= -->
+    <section id="sdg" class="py-20 bg-brand-950 text-white relative overflow-hidden">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white">
+            Komitmen Nyata PilahKi' untuk Keberlanjutan Lingkungan
+          </h2>
+          <p class="text-slate-300 text-sm sm:text-base mt-3">
+            Setiap fitur di dalam platform terhubung langsung dengan target Tujuan Pembangunan Berkelanjutan (SDGs).
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+          
+          <!-- SDG 11 -->
+          <div class="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-300 flex flex-col justify-between">
             <div>
-              <p class="font-semibold text-zinc-700 mb-1">Contoh barang:</p>
-              <div class="flex flex-wrap gap-1">
-                <span
-                  v-for="ex in cat.examples"
-                  :key="ex"
-                  class="rounded bg-zinc-100 text-zinc-700 px-1.5 py-0.5 text-[11px]"
-                >
-                  {{ ex }}
-                </span>
+              <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-2xl mb-6 border border-emerald-500/30">
+                11
               </div>
+              <h3 class="text-xl font-bold mb-2 text-white">Kota & Permukiman Berkelanjutan</h3>
+              <p class="text-sm text-slate-300 leading-relaxed mb-4">
+                Fitur <strong>Cari Lokasi</strong> dan <strong>Jadwal Angkut</strong> mempermudah warga mengakses infrastruktur pengolahan sampah kota, mencegah TPS liar, dan menata sanitasi lingkungan pemukiman.
+              </p>
             </div>
-            <div class="border-t border-zinc-100 pt-2.5">
-              <p class="font-semibold text-zinc-700">Cara penanganan:</p>
-              <p class="text-zinc-600 text-[11px] mt-0.5">{{ cat.solution }}</p>
+            <div class="pt-4 border-t border-white/10 text-xs font-medium text-emerald-300 flex items-center gap-1.5">
+              <CheckCircle class="w-4 h-4" />
+              <span>Mewujudkan kota bersih & tertata</span>
             </div>
-          </CardContent>
-          <CardFooter class="pt-0">
-            <Button
-              variant="outline"
-              size="sm"
-              class="w-full text-xs"
-              @click="handleSearch(cat.id)"
-            >
-              Lihat Daftar {{ cat.name }}
-            </Button>
-          </CardFooter>
-        </Card>
+          </div>
+
+          <!-- SDG 13 -->
+          <div class="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-300 flex flex-col justify-between">
+            <div>
+              <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-2xl mb-6 border border-emerald-500/30">
+                13
+              </div>
+              <h3 class="text-xl font-bold mb-2 text-white">Penanganan Perubahan Iklim</h3>
+              <p class="text-sm text-slate-300 leading-relaxed mb-4">
+                Fitur <strong>Pilah Sampah</strong> memfasilitasi pengolahan kompos organik rumahan, secara langsung memangkas emisi gas metana (CH₄) berbahaya dari penumpukan sampah busuk di TPA.
+              </p>
+            </div>
+            <div class="pt-4 border-t border-white/10 text-xs font-medium text-emerald-300 flex items-center gap-1.5">
+              <CheckCircle class="w-4 h-4" />
+              <span>Kurangi jejak karbon rumah tangga</span>
+            </div>
+          </div>
+
+          <!-- SDG 4 -->
+          <div class="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-300 flex flex-col justify-between">
+            <div>
+              <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-2xl mb-6 border border-emerald-500/30">
+                04
+              </div>
+              <h3 class="text-xl font-bold mb-2 text-white">Pendidikan & Literasi Lingkungan</h3>
+              <p class="text-sm text-slate-300 leading-relaxed mb-4">
+                Fitur <strong>Panduan Edukasi</strong> dan <strong>PilahAI</strong> mendemokratisasi akses literasi pemilahan sampah dengan bahasa santai yang dapat dipahami segala umur tanpa sekat teknis.
+              </p>
+            </div>
+            <div class="pt-4 border-t border-white/10 text-xs font-medium text-emerald-300 flex items-center gap-1.5">
+              <CheckCircle class="w-4 h-4" />
+              <span>Edukasi inklusif bagi seluruh lapisan warga</span>
+            </div>
+          </div>
+
+        </div>
+
       </div>
     </section>
 
-    <!-- 5. Tiga Langkah Mudah Alur Warga -->
-    <section class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-      <div class="rounded-2xl border border-zinc-200/80 bg-white p-8 sm:p-10 shadow-xs">
-        <h3 class="text-xl sm:text-2xl font-bold text-zinc-900 text-center mb-8">
-          3 Langkah Nyata Kelola Sampah dari Rumah
-        </h3>
+    <!-- ================= 5. CARA KERJA / WORKFLOW SECTION ================= -->
+    <section class="py-20 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-2xl mx-auto mb-16">
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-brand-950">
+            3 Langkah Mudah Menggunakan PilahKi'
+          </h2>
+          <p class="text-slate-600 text-sm sm:text-base mt-3">
+            Hanya butuh beberapa menit untuk memulai kebiasaan baik menjaga lingkungan sekitar.
+          </p>
+        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div class="flex flex-col items-center text-center space-y-3">
-            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 font-extrabold text-lg">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+          
+          <!-- Connecting Dashed Line between Step 1, 2, and 3 (Desktop) -->
+          <div class="hidden md:block absolute top-14 left-[16.6%] right-[16.6%] border-t-2 border-dashed border-brand-200 z-0" aria-hidden="true"></div>
+
+          <!-- Step 1 -->
+          <div class="text-center p-6 space-y-4 relative">
+            <div class="relative z-10 w-16 h-16 rounded-full bg-brand-100 text-brand-800 font-extrabold text-2xl mx-auto flex items-center justify-center border-4 border-white shadow-md">
               1
             </div>
-            <h4 class="text-sm font-bold text-zinc-900">Identifikasi Jenis Sampah</h4>
-            <p class="text-xs text-zinc-500 leading-relaxed">
-              Cek nama barang di Pilahki atau tanyakan ke PilahAI untuk mengetahui kategori & cara penanganannya.
+            <h3 class="text-xl font-bold text-brand-950">Daftar & Pilih Wilayah</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Buat akun gratis dalam 30 detik dan tentukan domisili tempat tinggalmu agar sistem dapat menampilkan info yang relevan.
             </p>
           </div>
 
-          <div class="flex flex-col items-center text-center space-y-3">
-            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-700 font-extrabold text-lg">
+          <!-- Step 2 -->
+          <div class="text-center p-6 space-y-4 relative">
+            <div class="relative z-10 w-16 h-16 rounded-full bg-brand-500 text-white font-extrabold text-2xl mx-auto flex items-center justify-center border-4 border-white shadow-md">
               2
             </div>
-            <h4 class="text-sm font-bold text-zinc-900">Pisahkan Berdasarkan Sifat</h4>
-            <p class="text-xs text-zinc-500 leading-relaxed">
-              Keringkan botol/kardus untuk bank sampah, kumpulkan sisa dapur untuk kompos, dan simpan B3 di wadah terpisah.
+            <h3 class="text-xl font-bold text-brand-950">Kenali & Pilah Sampah</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Gunakan fitur cari kategori sampah untuk mengidentifikasi sampah organik, daur ulang anorganik, residu, maupun limbah B3.
             </p>
           </div>
 
-          <div class="flex flex-col items-center text-center space-y-3">
-            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 font-extrabold text-lg">
+          <!-- Step 3 -->
+          <div class="text-center p-6 space-y-4 relative">
+            <div class="relative z-10 w-16 h-16 rounded-full bg-brand-800 text-white font-extrabold text-2xl mx-auto flex items-center justify-center border-4 border-white shadow-md">
               3
             </div>
-            <h4 class="text-sm font-bold text-zinc-900">Salurkan Tepat Waktu</h4>
-            <p class="text-xs text-zinc-500 leading-relaxed">
-              Setor anorganik bernilai ke Bank Sampah terdekat, dan letakkan residu sesuai jadwal pengangkutan resmi.
+            <h3 class="text-xl font-bold text-brand-950">Salurkan & Pantau Jadwal</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Kirim sampah ke Bank Sampah terdekat untuk ditukar manfaat atau siapkan di depan rumah saat jadwal angkut tiba.
             </p>
           </div>
+
         </div>
+
       </div>
     </section>
 
-    <!-- Global Auth Modal -->
-    <AuthModal
-      :is-open="isAuthModalOpen"
-      :title="modalTitle"
-      :subtitle="modalSubtitle"
-      @close="isAuthModalOpen = false"
-      @auth-success="handleAuthSuccess"
-    />
+    <!-- ================= 6. FAQ SECTION ================= -->
+    <section id="faq" class="py-20 bg-[#fafdfa] border-t border-slate-100">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-2xl mx-auto mb-14">
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-brand-950">
+            Pertanyaan yang Sering Diajukan
+          </h2>
+          <p class="text-slate-600 text-sm sm:text-base mt-3">
+            Seputar fungsionalitas aplikasi dan cara kerja platform PilahKi'.
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          
+          <div 
+            v-for="(faq, index) in faqs" 
+            :key="index"
+            class="bg-white border border-slate-200 rounded-2xl p-5 cursor-pointer transition-all hover:border-brand-300 shadow-2xs text-left"
+            @click="toggleFaq(index)"
+          >
+            <div class="flex items-center justify-between font-bold text-brand-950 text-base sm:text-lg">
+              <span>{{ faq.q }}</span>
+              <ChevronDown 
+                class="w-5 h-5 text-slate-400 transition-transform duration-200 shrink-0 ml-4"
+                :class="{ 'rotate-180 text-brand-600': activeFaqIndex === index }"
+              />
+            </div>
+            <div 
+              v-show="activeFaqIndex === index"
+              class="text-slate-600 text-sm mt-3 pt-3 border-t border-slate-100 leading-relaxed animate-in fade-in duration-150"
+            >
+              {{ faq.a }}
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= 7. FINAL CALL TO ACTION BANNER ================= -->
+    <section class="py-20 bg-gradient-to-br from-brand-900 via-brand-800 to-brand-950 text-white relative overflow-hidden">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-6">
+
+        <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">
+          Siap Melangkah Menuju Lingkungan yang Lebih Bersih?
+        </h2>
+
+        <p class="text-base sm:text-lg text-brand-100 max-w-2xl mx-auto leading-relaxed">
+          Bergabunglah dengan ribuan warga yang telah merasakan kemudahan memilah sampah dari rumah dengan bantuan teknologi cerdas PilahKi'.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          <template v-if="!isAuthenticated">
+            <router-link
+              to="/register"
+              class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-xl font-bold text-brand-900 bg-white hover:bg-brand-50 shadow-lg hover:shadow-glow transition-all text-base"
+            >
+              Daftar Sekarang
+            </router-link>
+            <router-link
+              to="/login"
+              class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-xl font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all text-base"
+            >
+              Masuk Sekarang
+            </router-link>
+          </template>
+          <template v-else>
+            <router-link
+              to="/pilah"
+              class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-xl font-bold text-brand-900 bg-white hover:bg-brand-50 shadow-lg hover:shadow-glow transition-all text-base"
+            >
+              Buka Katalog Pilah Sampah
+            </router-link>
+            <router-link
+              to="/pilah-ai"
+              class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-xl font-semibold text-white bg-brand-500 hover:bg-brand-600 transition-all text-base"
+            >
+              Tanya PilahAI
+            </router-link>
+          </template>
+        </div>
+
+      </div>
+    </section>
+
   </div>
 </template>

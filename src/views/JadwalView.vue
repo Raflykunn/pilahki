@@ -1,283 +1,283 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { wilayahList, jadwalMaster } from '@/data/jadwalData'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
+import {
+  MAKASSAR_DISTRICTS,
+  getDistrictSchedule
+} from '@/data/jadwalData'
 import {
   Calendar,
+  Crosshair,
   Clock,
-  MapPin,
   Truck,
-  Sparkles,
+  Leaf,
+  Recycle,
+  Trash2,
+  CalendarOff,
+  Award,
   CheckCircle2,
-  AlertCircle,
-  Bell,
-  Check,
-  ChevronRight,
   Info
 } from 'lucide-vue-next'
 
-const router = useRouter()
-
-// State
-const selectedWilayahId = ref(wilayahList[0]?.id || '')
-const isSavedNoticeVisible = ref(false)
-const activeCategoryFilter = ref('semua')
-
-const hariNamaList = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
-const todayDayIndex = new Date().getDay()
-const todayName = hariNamaList[todayDayIndex]
+const selectedDistrict = ref('Panakkukang')
+const isGpsActive = ref(false)
+const gpsStatusText = ref('Makassar')
 
 onMounted(() => {
-  const saved = localStorage.getItem('pilahki_wilayah_id')
-  if (saved && wilayahList.some(w => w.id === saved)) {
-    selectedWilayahId.value = saved
-  }
-})
-
-const currentWilayah = computed(() => {
-  return wilayahList.find(w => w.id === selectedWilayahId.value) || wilayahList[0]
-})
-
-const handleWilayahChange = () => {
-  localStorage.setItem('pilahki_wilayah_id', selectedWilayahId.value)
-  isSavedNoticeVisible.value = true
-  setTimeout(() => {
-    isSavedNoticeVisible.value = false
-  }, 2500)
-}
-
-const allJadwalForWilayah = computed(() => {
-  return jadwalMaster[selectedWilayahId.value] || []
-})
-
-const filteredJadwal = computed(() => {
-  const list = allJadwalForWilayah.value
-  if (activeCategoryFilter.value === 'semua') return list
-  return list.filter(item => item.kategori === activeCategoryFilter.value)
-})
-
-// Jadwal Pengangkutan Terdekat
-const nextUpcomingPickup = computed(() => {
-  const list = allJadwalForWilayah.value
-  if (!list.length) return null
-
-  // Cari yang hari ini atau hari-hari terdekat
-  const todayMatch = list.find(item => item.hari.toLowerCase() === todayName.toLowerCase())
-  if (todayMatch) {
-    return { ...todayMatch, status: 'Hari Ini' }
-  }
-
-  // Ambil item pertama dari daftar sebagai jadwal terdekat berikutnya
-  return { ...list[0], status: 'Jadwal Rutin' }
-})
-
-const getKategoriBadgeVariant = (kategori) => {
-  switch (kategori) {
-    case 'organik': return 'organik'
-    case 'anorganik': return 'anorganik'
-    case 'b3': return 'b3'
-    case 'residu': return 'residu'
-    default: return 'outline'
-  }
-}
-
-const askAIJadwal = () => {
-  router.push({
-    path: '/pilah-ai',
-    query: {
-      q: `Kapan jadwal pengangkutan sampah di wilayah ${currentWilayah.value?.nama}? Bagaimana aturan meletakkan sampahnya?`
+  try {
+    const raw = localStorage.getItem('pilahki_domicile')
+    if (raw) {
+      const d = JSON.parse(raw)
+      if (d.district && MAKASSAR_DISTRICTS.includes(d.district)) {
+        selectedDistrict.value = d.district
+      }
     }
-  })
+  } catch (e) {}
+})
+
+const daysOrder = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
+
+const dayNamesIndo = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]
+const todayName = computed(() => {
+  return dayNamesIndo[new Date().getDay()]
+})
+
+const weeklySchedule = computed(() => {
+  return getDistrictSchedule(selectedDistrict.value)
+})
+
+const todaySchedule = computed(() => {
+  return (
+    weeklySchedule.value.find(
+      (item) => item.day.toLowerCase() === todayName.value.toLowerCase()
+    ) || weeklySchedule.value[0]
+  )
+})
+
+const isPickupToday = computed(() => {
+  return (
+    todaySchedule.value.status.includes('Ada Penjemputan') ||
+    todaySchedule.value.status.includes('Penyetoran')
+  )
+})
+
+const getScheduleIcon = (iconName) => {
+  switch (iconName) {
+    case 'leaf':
+      return Leaf
+    case 'recycle':
+      return Recycle
+    case 'trash-2':
+      return Trash2
+    case 'award':
+      return Award
+    case 'calendar-off':
+      return CalendarOff
+    default:
+      return Truck
+  }
+}
+
+const handleLiveGps = () => {
+  if (!navigator.geolocation) {
+    alert('Browser Anda tidak mendukung deteksi lokasi Geolocation.')
+    return
+  }
+
+  gpsStatusText.value = 'Mendeteksi...'
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      isGpsActive.value = true
+      gpsStatusText.value = 'GPS Terkunci'
+      // Auto-assign to nearest demo district
+      selectedDistrict.value = 'Panakkukang'
+    },
+    (err) => {
+      gpsStatusText.value = 'GPS Gagal'
+      alert('Tidak dapat mendeteksi lokasi GPS Anda.')
+    },
+    { enableHighAccuracy: true, timeout: 8000 }
+  )
 }
 </script>
 
 <template>
-  <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div class="space-y-1.5">
-        <div class="flex items-center gap-2">
-          <Badge variant="outline" class="bg-amber-50 text-amber-800 border-amber-200">
-            Jadwal Operasional
-          </Badge>
-          <span class="text-xs text-zinc-400">Kota Makassar &bull; Hari ini: {{ todayName }}</span>
-        </div>
-        <h1 class="text-3xl font-extrabold tracking-tight text-zinc-900">
-          Jadwal Angkut Sampah Wilayah
-        </h1>
-        <p class="text-sm text-zinc-500 max-w-2xl leading-relaxed">
-          Ketahui hari dan jam pengangkutan sampah berdasarkan jenisnya di tempat tinggal Anda agar sampah tidak menumpuk liar.
-        </p>
-      </div>
-
-      <!-- AI Prompt Button -->
-      <Button
-        variant="outline"
-        size="sm"
-        class="gap-2 border-zinc-200 text-zinc-700 hover:bg-zinc-100 self-start sm:self-auto"
-        @click="askAIJadwal"
-      >
-        <Sparkles class="h-4 w-4 text-emerald-600" />
-        <span>Tanya AI Jadwal Wilayah</span>
-      </Button>
-    </div>
-
-    <!-- Wilayah Selection Card -->
-    <Card class="p-6 bg-white border-zinc-200 shadow-2xs">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 md:pb-12 text-left">
+    <div class="space-y-6">
+      
+      <!-- Top Title & Live GPS + District Selector -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="space-y-1">
-          <label for="wilayah-select" class="text-xs font-bold uppercase tracking-wider text-zinc-500">
-            Pilih Wilayah Tempat Tinggal Anda
-          </label>
-          <div class="flex items-center gap-3">
-            <select
-              id="wilayah-select"
-              v-model="selectedWilayahId"
-              class="h-11 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-semibold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 focus:border-emerald-600 cursor-pointer min-w-[240px]"
-              @change="handleWilayahChange"
-            >
-              <option v-for="w in wilayahList" :key="w.id" :value="w.id">
-                Kecamatan {{ w.nama }}
-              </option>
-            </select>
-
-            <span
-              v-if="isSavedNoticeVisible"
-              class="flex items-center gap-1 text-xs text-emerald-700 font-medium animate-in fade-in"
-            >
-              <Check class="h-4 w-4" />
-              <span>Tersimpan untuk kunjungan berikutnya</span>
-            </span>
-          </div>
-        </div>
-
-        <div class="text-xs text-zinc-500 max-w-sm">
-          <p>Wilayah terpilih: <strong class="text-zinc-800">{{ currentWilayah?.nama }}</strong></p>
-          <p class="mt-0.5 text-zinc-400 leading-relaxed">{{ currentWilayah?.keterangan || 'Jadwal berlaku untuk seluruh kelurahan dalam kecamatan ini.' }}</p>
-        </div>
-      </div>
-    </Card>
-
-    <!-- Highlight Next Upcoming Pickup -->
-    <div
-      v-if="nextUpcomingPickup"
-      class="rounded-2xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50 via-teal-50/50 to-white p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
-    >
-      <div class="flex items-center gap-4">
-        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-xs">
-          <Truck class="h-6 w-6" />
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <Badge variant="organik" class="text-[10px] uppercase font-bold">
-              {{ nextUpcomingPickup.status }}
-            </Badge>
-            <span class="text-xs font-semibold text-zinc-500">{{ nextUpcomingPickup.hari }} &bull; {{ nextUpcomingPickup.jam }}</span>
-          </div>
-          <h3 class="text-lg font-bold text-zinc-900 mt-0.5">
-            Pengangkutan Sampah {{ nextUpcomingPickup.kategori.toUpperCase() }}
-          </h3>
-          <p class="text-xs text-zinc-600 mt-0.5">
-            {{ nextUpcomingPickup.catatan || 'Harap siapkan sampah sebelum jam pengangkutan dimulai.' }}
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Pantau Jadwal Angkut Armada</h1>
+          <p class="text-xs sm:text-sm text-slate-600">
+            Jadwal operasional penjemputan sampah terpilah dan residu DLH Kota Makassar di wilayah Anda.
           </p>
         </div>
-      </div>
 
-      <div class="text-xs bg-white rounded-lg px-3 py-2 border border-emerald-200 text-emerald-800 font-medium shrink-0">
-        Armada: {{ nextUpcomingPickup.armada || 'Truk Kebersihan DLH Makassar' }}
-      </div>
-    </div>
+        <!-- Live Location & District Selector Controls -->
+        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs">
+            <span
+              class="w-2 h-2 rounded-full"
+              :class="isGpsActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'"
+            ></span>
+            <span>{{ gpsStatusText }}</span>
+          </span>
 
-    <!-- Category Filter Tabs -->
-    <div class="flex items-center gap-2 border-b border-zinc-200 pb-2 overflow-x-auto scrollbar-none">
-      <button
-        v-for="cat in [
-          { id: 'semua', label: 'Semua Kategori' },
-          { id: 'organik', label: 'Organik Saja' },
-          { id: 'anorganik', label: 'Anorganik Saja' },
-          { id: 'residu', label: 'Residu Saja' }
-        ]"
-        :key="cat.id"
-        type="button"
-        :class="[
-          'px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap',
-          activeCategoryFilter === cat.id
-            ? 'bg-zinc-900 text-white shadow-xs'
-            : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
-        ]"
-        @click="activeCategoryFilter = cat.id"
-      >
-        {{ cat.label }}
-      </button>
-    </div>
+          <button 
+            type="button" 
+            @click="handleLiveGps"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-800 hover:bg-brand-700 text-white text-xs font-bold transition-all shadow-xs hover:shadow-md cursor-pointer group"
+            title="Deteksi kecamatan otomatis sesuai titik GPS Anda"
+          >
+            <Crosshair class="w-4 h-4 text-accent-light group-hover:rotate-45 transition-transform" />
+            <span>Live GPS Saya</span>
+          </button>
 
-    <!-- Schedule Cards Grid -->
-    <div class="space-y-4">
-      <div v-if="filteredJadwal.length === 0" class="rounded-xl border border-dashed border-zinc-300 bg-white p-12 text-center text-xs text-zinc-500">
-        Tidak ada jadwal pengangkutan untuk filter kategori ini di {{ currentWilayah?.nama }}.
-      </div>
-
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <Card
-          v-for="j in filteredJadwal"
-          :key="j.id || (j.hari + j.kategori)"
-          class="flex flex-col justify-between border-zinc-200/90 hover:shadow-md transition-all duration-200"
-        >
-          <CardHeader class="pb-3">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-base font-extrabold text-zinc-900 flex items-center gap-1.5">
-                <Calendar class="h-4 w-4 text-emerald-600" />
-                <span>{{ j.hari }}</span>
-              </span>
-              <Badge :variant="getKategoriBadgeVariant(j.kategori)" class="text-[10px] uppercase font-bold">
-                {{ j.kategori }}
-              </Badge>
-            </div>
-
-            <div class="flex items-center gap-1.5 text-xs font-semibold text-zinc-600">
-              <Clock class="h-3.5 w-3.5 text-zinc-400" />
-              <span>{{ j.jam }}</span>
-            </div>
-          </CardHeader>
-
-          <CardContent class="space-y-3 text-xs py-2">
-            <div class="bg-zinc-50 rounded-lg p-3 border border-zinc-100 space-y-1">
-              <p class="font-semibold text-zinc-700">Jenis Sampah yang Diterima:</p>
-              <p class="text-zinc-600 text-[11px] leading-relaxed">
-                {{ j.deskripsi || `Sampah ${j.kategori} yang telah dipilah rapi dalam kantong/wadah.` }}
-              </p>
-            </div>
-
-            <div class="space-y-1">
-              <span class="text-[11px] text-zinc-400 font-medium">Petugas / Armada:</span>
-              <p class="text-xs text-zinc-700 font-medium flex items-center gap-1.5">
-                <Truck class="h-3.5 w-3.5 text-zinc-400" />
-                <span>{{ j.armada || 'Tim Pengangkut DLH Kota Makassar' }}</span>
-              </p>
-            </div>
-
-            <div v-if="j.catatan" class="flex items-start gap-1.5 text-[11px] text-zinc-500 pt-1">
-              <Info class="h-3.5 w-3.5 shrink-0 text-amber-500 mt-0.5" />
-              <span>{{ j.catatan }}</span>
-            </div>
-          </CardContent>
-
-          <CardFooter class="pt-3 border-t border-zinc-100">
-            <Button
-              variant="outline"
-              size="sm"
-              class="w-full text-xs gap-1.5 border-zinc-200 text-zinc-700 hover:bg-zinc-100"
-              @click="askAIJadwal"
+          <div class="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
+            <label for="district-select" class="text-xs font-bold text-slate-500 whitespace-nowrap">Wilayah:</label>
+            <select 
+              id="district-select"
+              v-model="selectedDistrict"
+              class="text-xs sm:text-sm font-bold text-slate-900 bg-transparent focus:outline-none cursor-pointer pr-1"
             >
-              <Sparkles class="h-3.5 w-3.5 text-emerald-600" />
-              <span>Tanya Detail Pengangkutan</span>
-            </Button>
-          </CardFooter>
-        </Card>
+              <option v-for="d in MAKASSAR_DISTRICTS" :key="d" :value="d">
+                Kecamatan {{ d }}
+              </option>
+            </select>
+          </div>
+        </div>
       </div>
+
+      <!-- Upcoming Pickup Highlight Banner -->
+      <div class="bg-gradient-to-r from-brand-900 via-brand-800 to-brand-900 rounded-3xl p-6 sm:p-8 text-white shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="space-y-2">
+            <div
+              :class="[
+                'inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold border',
+                isPickupToday
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                  : 'bg-white/10 text-slate-200 border-white/15'
+              ]"
+            >
+              <span
+                class="w-2 h-2 rounded-full"
+                :class="isPickupToday ? 'bg-emerald-400 animate-ping' : 'bg-slate-400'"
+              ></span>
+              <span>Jadwal Terdekat: Hari {{ todaySchedule.day }} (Hari Ini)</span>
+            </div>
+            
+            <h3 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+              {{ todaySchedule.category }}
+            </h3>
+
+            <p class="text-xs sm:text-sm text-brand-100 leading-relaxed max-w-xl">
+              <span v-if="isPickupToday">
+                Waktu operasional penjemputan: <strong class="text-white">{{ todaySchedule.time }}</strong> menggunakan armada <em class="text-white font-medium">{{ todaySchedule.vehicle }}</em>.
+              </span>
+              <span v-else>
+                {{ todaySchedule.notes }}
+              </span>
+            </p>
+          </div>
+
+          <!-- Quick Tip Box inside Banner -->
+          <div class="bg-white/10 border border-white/15 rounded-2xl p-4 sm:p-5 max-w-sm shrink-0 space-y-1">
+            <span class="text-[11px] uppercase font-bold text-accent-light tracking-wider flex items-center gap-1.5">
+              <Info class="w-3.5 h-3.5" />
+              <span>Petunjuk Warga</span>
+            </span>
+            <p class="text-xs text-brand-100 leading-relaxed">
+              {{ todaySchedule.notes }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subheading & Agenda Table -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between px-1">
+          <div class="flex items-center gap-2">
+            <Calendar class="w-5 h-5 text-brand-700" />
+            <h2 class="text-base sm:text-lg font-bold text-slate-900">
+              Kecamatan {{ selectedDistrict }}, Kota Makassar
+            </h2>
+          </div>
+          <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Agenda Mingguan (Senin s/d Minggu)</span>
+        </div>
+
+        <!-- Tabel Agenda Mingguan Minimalis Container -->
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-2xs overflow-hidden">
+          <div class="divide-y divide-slate-100">
+            
+            <div
+              v-for="item in weeklySchedule"
+              :key="item.day"
+              :class="[
+                'p-4 sm:p-5 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4',
+                item.day.toLowerCase() === todayName.toLowerCase()
+                  ? 'bg-brand-50/70 border-l-4 border-brand-600'
+                  : 'hover:bg-slate-50/70'
+              ]"
+            >
+              <!-- Left: Day & Status -->
+              <div class="flex items-center gap-4 min-w-[180px]">
+                <div
+                  :class="[
+                    'w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-xs shrink-0 select-none shadow-2xs',
+                    item.day.toLowerCase() === todayName.toLowerCase()
+                      ? 'bg-brand-800 text-white'
+                      : item.iconBg
+                  ]"
+                >
+                  <component :is="getScheduleIcon(item.icon)" class="w-4 h-4" />
+                </div>
+
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-extrabold text-sm sm:text-base text-slate-900">{{ item.day }}</span>
+                    <span
+                      v-if="item.day.toLowerCase() === todayName.toLowerCase()"
+                      class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-800 text-white uppercase tracking-wider"
+                    >
+                      Hari Ini
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                    <span :class="['w-2 h-2 rounded-full', item.statusDot]"></span>
+                    <span>{{ item.status }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Middle: Category & Vehicle -->
+              <div class="flex-1 space-y-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span :class="['inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border', item.badge]">
+                    {{ item.category }}
+                  </span>
+                  <span class="text-xs text-slate-500 font-medium flex items-center gap-1">
+                    <Clock class="w-3.5 h-3.5 text-slate-400" />
+                    <span>{{ item.time }}</span>
+                  </span>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                  Armada: <strong class="text-slate-800">{{ item.vehicle }}</strong>
+                </p>
+              </div>
+
+              <!-- Right: Operational Notes -->
+              <div class="md:max-w-xs text-xs text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 leading-relaxed">
+                {{ item.notes }}
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
     </div>
-  </div>
+  </main>
 </template>

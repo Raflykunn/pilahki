@@ -88,13 +88,8 @@ import { appConfig } from '@/config/app'
       </div>
 
       <!-- Bottom Separator & Copyright -->
-      <div class="mt-10 border-t border-zinc-200/60 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-400">
+      <div class="mt-10 border-t border-zinc-200/60 pt-6 text-center text-xs text-zinc-400">
         <p>&copy; {{ new Date().getFullYear() }} {{ appConfig.name }} {{ appConfig.city }}. Dikembangkan oleh <span class="font-semibold text-zinc-700 tracking-wider">{{ appConfig.author }}</span>.</p>
-        <div class="flex items-center gap-1.5 text-zinc-500">
-          <span>Dibuat dengan</span>
-          <Heart class="h-3.5 w-3.5 text-red-500 fill-red-500" />
-          <span>oleh <strong class="font-bold text-zinc-800 tracking-wider">{{ appConfig.author }}</strong> untuk kelestarian Kota Makassar</span>
-        </div>
       </div>
     </div>
   </footer>

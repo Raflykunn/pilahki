@@ -1,326 +1,483 @@
-// Database jenis sampah umum rumah tangga (mengikut PRD Seksyen 7.1, minimal 20 item)
-export const kategoriConfig = {
+/**
+ * Database Jenis Sampah Rumah Tangga PilahKi'
+ * 22 Sampah Umum terverifikasi Kota Makassar dengan nilai ekonomis, langkah penanganan, penyaluran, dan pantangan.
+ */
+
+export const CATEGORY_THEMES = {
   organik: {
-    label: 'Organik',
-    warna: 'green',
-    warnaBg: '#f0fdf4',
-    warnaBorder: '#bbf7d0',
-    warnaText: '#15803d',
-    deskripsiUmum: 'Sampah alami yang mudah membusuk dan dapat diolah menjadi kompos.'
+    name: 'Organik',
+    icon: 'leaf',
+    iconBox: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+    badge: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    hoverBorder: 'hover:border-emerald-300',
+    accentHover: 'group-hover:text-emerald-800',
   },
   anorganik: {
-    label: 'Anorganik',
-    warna: 'blue',
-    warnaBg: '#eff6ff',
-    warnaBorder: '#bfdbfe',
-    warnaText: '#1d4ed8',
-    deskripsiUmum: 'Sampah kering daur ulang yang bernilai ekonomis dan diterima di Bank Sampah.'
+    name: 'Anorganik',
+    icon: 'recycle',
+    iconBox: 'bg-blue-50 text-blue-700 border border-blue-100',
+    badge: 'bg-blue-50 text-blue-800 border-blue-200',
+    hoverBorder: 'hover:border-blue-300',
+    accentHover: 'group-hover:text-blue-800',
   },
   b3: {
-    label: 'Limbah B3',
-    warna: 'amber',
-    warnaBg: '#fffbeb',
-    warnaBorder: '#fde68a',
-    warnaText: '#b45309',
-    deskripsiUmum: 'Bahan Berbahaya & Beracun yang memerlukan penanganan khusus dan drop box terpisah.'
+    name: 'B3',
+    icon: 'alert-triangle',
+    iconBox: 'bg-amber-50 text-amber-700 border border-amber-100',
+    badge: 'bg-amber-50 text-amber-800 border-amber-200',
+    hoverBorder: 'hover:border-amber-300',
+    accentHover: 'group-hover:text-amber-800',
   },
   residu: {
-    label: 'Residu',
-    warna: 'slate',
-    warnaBg: '#f8fafc',
-    warnaBorder: '#e2e8f0',
-    warnaText: '#475569',
-    deskripsiUmum: 'Sampah yang sulit didaur ulang dan harus dibungkus rapat menuju TPA.'
+    name: 'Residu',
+    icon: 'trash-2',
+    iconBox: 'bg-slate-100 text-slate-700 border border-slate-200/80',
+    badge: 'bg-slate-100 text-slate-700 border-slate-200',
+    hoverBorder: 'hover:border-slate-300',
+    accentHover: 'group-hover:text-slate-800',
   }
 }
 
-export const daftarSampah = [
+export const wasteData = [
   {
-    id: 's-1',
-    nama: 'Botol Plastik Air Mineral (PET)',
-    kategori: 'anorganik',
-    alias: ['botol aqua', 'botol plastik', 'pet', 'botol mineral', 'plastik bening'],
-    penanganan: [
-      'Kosongkan cairan di dalam botol hingga tuntas.',
-      'Lepaskan label plastik pembungkus merk (label masuk residu).',
-      'Remas atau injak botol hingga gepeng untuk menghemat ruang.',
-      'Pasang kembali tutupnya dan simpan di wadah anorganik kering.'
+    id: "botol-pet",
+    name: "Botol Plastik PET (Air Mineral)",
+    category: "anorganik",
+    categoryName: "Anorganik",
+    badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
+    recyclableValue: "Tinggi (Rp 2.500 - Rp 4.500 / kg)",
+    shortDesc: "Botol bening kemasan minuman. Lepas tutup dan cincin segel, lalu remas hingga pipih.",
+    steps: [
+      "Kosongkan sisa air atau minuman manis hingga bersih.",
+      "Buka tutup botol dan pisahkan cincin segel leher botol.",
+      "Injak atau remas botol hingga pipih untuk menghemat ruang tempat penyimpanan.",
+      "Kumpulkan tutup botol secara terpisah karena jenis plastiknya berbeda (HDPE)."
     ],
-    tujuanPenyaluran: 'Bank Sampah Terdekat atau Pemulung',
-    tipsPraktis: 'Botol PET bersih tanpa label memiliki harga timbangan paling tinggi di Bank Sampah.'
+    destination: "Bank Sampah Unit terdekat atau lapak pengepul daur ulang plastik.",
+    prohibitions: [
+      "Jangan membuang botol dalam keadaan berisi cairan penuh.",
+      "Jangan membakar botol plastik karena melepaskan gas dioksin yang memicu kanker."
+    ],
+    keywords: ["aqua", "botol", "plastik", "pet", "air mineral", "minuman"]
   },
   {
-    id: 's-2',
-    nama: 'Baterai Bekas (AA, AAA, Kancing, HP)',
-    kategori: 'b3',
-    alias: ['baterai', 'batu baterai', 'aki kecil', 'batre', 'battery'],
-    penanganan: [
-      'Jangan sekali-kali membakar atau membuang baterai ke tanah/got.',
-      'Tutup kedua kutub baterai (+ dan -) dengan selotip bening untuk mencegah arus pendek.',
-      'Kumpulkan dalam wadah toples kering terpisah jauh dari anak-anak.',
-      'Bawa ke Dropbox E-Waste di kelurahan atau TPS B3 terdekat.'
+    id: "baterai-bekas",
+    name: "Baterai Bekas (Alkaline / Remote)",
+    category: "b3",
+    categoryName: "B3",
+    badgeColor: "bg-amber-50 text-amber-800 border-amber-200",
+    recyclableValue: "Wajib Penanganan Khusus (Mengandung Logam Berat)",
+    shortDesc: "Baterai remote, jam, mainan anak. Berpotensi bocor dan mencemari tanah.",
+    steps: [
+      "Tutup kutub positif (+) dan negatif (-) dengan selotip bening isolasi.",
+      "Simpan dalam toples atau wadah plastik kedap yang kering.",
+      "Jauhkan dari jangkauan anak-anak dan bahan mudah terbakar."
     ],
-    tujuanPenyaluran: 'Drop Box E-Waste Kelurahan / TPS B3',
-    tipsPraktis: 'Cairan baterai yang bocor mengandung logam berat merkuri yang dapat meracuni air tanah.'
+    destination: "Drop Box Limbah B3 Dinas Lingkungan Hidup atau Bank Sampah induk penampung e-waste.",
+    prohibitions: [
+      "Dilarang keras membakar atau merusak/membongkar baterai.",
+      "Dilarang membuang baterai ke tempat sampah residu umum atau saluran air."
+    ],
+    keywords: ["baterai", "alkaline", "aki", "lithium", "jam", "remote"]
   },
   {
-    id: 's-3',
-    nama: 'Kemasan Sachet Kopi / Bumbu (Multilayer)',
-    kategori: 'residu',
-    alias: ['sachet', 'bungkus royco', 'saset', 'bungkus kopi', 'foil plastik', 'kemasan mie instan'],
-    penanganan: [
-      'Kosongkan sisa serbuk atau bumbu di dalamnya.',
-      'Gunting sedikit dan bersihkan jika berminyak.',
-      'Kumpulkan dalam kantong residu tertutup.',
-      'Serahkan saat jadwal truk residu kota atau manfaatkan untuk kerajinan ecobrick bila kering.'
+    id: "sisa-sayur-buah",
+    name: "Sisa Makanan Sayur & Buah",
+    category: "organik",
+    categoryName: "Organik",
+    badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    recyclableValue: "Tinggi (Bahan Baku Kompos / Eco-Enzyme)",
+    shortDesc: "Kulit buah, sayuran layu, dan ampas dapur. Mengurangi emisi gas metana TPA.",
+    steps: [
+      "Tiriskan sisa sayur/buah agar tidak terlalu becek berair.",
+      "Cacah atau potong menjadi ukuran lebih kecil (2-3 cm) untuk mempercepat penguraian.",
+      "Masukkan ke dalam wadah komposter Takakura atau lubang resapan biopori pekarangan."
     ],
-    tujuanPenyaluran: 'Truk Sampah Residu Lingkungan (TPA)',
-    tipsPraktis: 'Kemasan sachet terbuat dari lapisan plastik dan aluminium foil yang tidak bisa dilebur mesin daur ulang biasa.'
+    destination: "Komposter mandiri di rumah atau diserahkan ke TPS 3R pengolah kompos.",
+    prohibitions: [
+      "Jangan campur dengan plastik klip, karet gelang, atau staples bungkus sayur.",
+      "Hindari mencampur minyak/lemak berlebih ke komposter aerobik."
+    ],
+    keywords: ["sayur", "buah", "kulit", "pisang", "makanan", "dapur", "organik"]
   },
   {
-    id: 's-4',
-    nama: 'Sisa Sayur & Kulit Buah',
-    kategori: 'organik',
-    alias: ['kulit buah', 'sayur busuk', 'sisa sayuran', 'kulit pisang', 'potongan wortel'],
-    penanganan: [
-      'Tiriskan sisa air cucian atau kuah sayur.',
-      'Potong kecil-kecil bila ingin dijadikan kompos agar cepat terurai.',
-      'Masukkan ke tong sampah dapur tertutup atau lubang biopori pekarangan.'
+    id: "bohlam-lampu",
+    name: "Bohlam Lampu & Neon Bekas",
+    category: "b3",
+    categoryName: "B3",
+    badgeColor: "bg-amber-50 text-amber-800 border-amber-200",
+    recyclableValue: "Wajib Penanganan Khusus (Mengandung Uap Merkuri)",
+    shortDesc: "Lampu TL panjang, LED mati, atau bohlam pijar. Rawan pecah dan beracun.",
+    steps: [
+      "Masukkan lampu ke dalam kotak kemasan aslinya atau bungkus tebal dengan koran.",
+      "Tuliskan tanda peringatan 'Lampu Bekas - Rawan Pecah'.",
+      "Kumpulkan terpisah hingga jadwal penyaluran B3."
     ],
-    tujuanPenyaluran: 'Kompos Mandiri / Gerobak Sampah Organik TPS 3R',
-    tipsPraktis: 'Jangan campur dengan kantong kresek pengikat sayur saat membuang.'
+    destination: "Drop Box E-Waste DLH Kota Makassar atau gerai pengumpulan limbah elektronik.",
+    prohibitions: [
+      "Jangan memecahkan bohlam secara sengaja karena serbuk merkuri sangat berbahaya bila terhirup."
+    ],
+    keywords: ["lampu", "bohlam", "neon", "led", "philips"]
   },
   {
-    id: 's-5',
-    nama: 'Nasi Basi & Sisa Makanan Berkuah',
-    kategori: 'organik',
-    alias: ['nasi sisa', 'makanan sisa', 'lauk basi', 'kuah gulai'],
-    penanganan: [
-      'Saring kuah/cairan ke saringan wastafel (jangan buang minyak pekat).',
-      'Masukkan nasi basi ke wadah organik tertutup.',
-      'Bisa diolah menjadi Mikroorganisme Lokal (MOL) atau pakan maggot BSF.'
+    id: "minyak-jelantah",
+    name: "Minyak Jelantah (Minyak Goreng Bekas)",
+    category: "b3",
+    categoryName: "B3",
+    badgeColor: "bg-amber-50 text-amber-800 border-amber-200",
+    recyclableValue: "Tinggi (Rp 4.000 - Rp 7.000 / liter untuk Biodiesel)",
+    shortDesc: "Minyak sisa penggorengan dapur. Berbahaya bila menyumbat saluran air.",
+    steps: [
+      "Tunggu hingga minyak benar-benar dingin setelah memasak.",
+      "Saring remah-remah kotoran makanan menggunakan saringan halus.",
+      "Tuang ke dalam jeriken atau botol plastik bekas bertutup rapat."
     ],
-    tujuanPenyaluran: 'Pengolahan Organik TPS 3R / Pakan Ternak',
-    tipsPraktis: 'Nasi basi yang ditaburi sedikit bekatul atau sekam tidak akan berbau menyengat.'
+    destination: "Bank Sampah Unit atau mitra pengumpul bahan baku biodiesel terdaftar.",
+    prohibitions: [
+      "Dilarang keras membuang minyak jelantah ke wastafel cuci piring atau selokan!",
+      "Jangan menyiramkan ke tanah pekarangan karena merusak kesuburan tanah."
+    ],
+    keywords: ["minyak", "jelantah", "goreng", "sawit", "kelapa"]
   },
   {
-    id: 's-6',
-    nama: 'Minyak Goreng Bekas (Minyak Jelantah)',
-    kategori: 'anorganik',
-    alias: ['jelantah', 'minyak bekas', 'minyak goreng bekas', 'oli bekas'],
-    penanganan: [
-      'Tunggu hingga minyak dingin sehabis memasak.',
-      'Saring sisa remahan tepung/makanan.',
-      'Tuangkan ke dalam botol atau jeriken plastik tertutup rapat.',
-      'JANGAN PERNAH dibuang ke wastafel atau got rumah karena membeku dan menyumbat saluran.'
+    id: "popok-pembalut",
+    name: "Popok Bayi & Pembalut Sekali Pakai",
+    category: "residu",
+    categoryName: "Residu",
+    badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
+    recyclableValue: "Non-Ekonomis (Residu Menuju TPA)",
+    shortDesc: "Limbah sanitasi sekali pakai dengan gel penyerap yang tidak dapat terurai alami.",
+    steps: [
+      "Buang kotoran padat ke dalam kloset dan siram bersih.",
+      "Gulung popok/pembalut dengan rapi dan rekatkan perekat sampingnya.",
+      "Bungkus menggunakan plastik atau kertas bekas agar tertutup rapat dan higienis.",
+      "Masukkan ke kantong sampah residu berwarna gelap."
     ],
-    tujuanPenyaluran: 'Bank Sampah Penerima Jelantah / Komunitas Biodiesel',
-    tipsPraktis: 'Minyak jelantah dapat dijual per liter ke pengepul resmi untuk bahan baku bahan bakar terbarukan (biofuel).'
+    destination: "Truk pengangkut sampah residu Dinas Lingkungan Hidup menuju TPA.",
+    prohibitions: [
+      "Dilarang membuang ke sungai atau saluran drainase (dapat menyumbat gorong-gorong).",
+      "Jangan dibakar di pemukiman karena menimbulkan bau menyengat dan asap beracun."
+    ],
+    keywords: ["popok", "pampers", "pembalut", "bayi", "diaper", "sanitasi"]
   },
   {
-    id: 's-7',
-    nama: 'Kardus Paket & Box Makanan',
-    kategori: 'anorganik',
-    alias: ['kardus', 'karton', 'box paket', 'kardus sepatu', 'kotak kardus'],
-    penanganan: [
-      'Lepaskan lakban cokelat dan stiker resi pengiriman plastik.',
-      'Lipat kardus hingga pipih dan ikat dengan tali rafia bila jumlahnya banyak.',
-      'Pastikan kardus dalam keadaan kering dan tidak terkena tumpahan kuah minyak.'
+    id: "kotak-kardus",
+    name: "Kotak Kardus / Karton Cokelat",
+    category: "anorganik",
+    categoryName: "Anorganik",
+    badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
+    recyclableValue: "Tinggi (Rp 1.200 - Rp 2.200 / kg)",
+    shortDesc: "Kardus paket pengiriman, kemasan makanan kering, karton tebal.",
+    steps: [
+      "Lepaskan lakban cokelat, isolasi plastik, dan staples besi yang menempel.",
+      "Lipat kardus hingga pipih dan rapikan bentuknya.",
+      "Tumpuk kardus sejenis dan ikat kencang dengan tali rafia."
     ],
-    tujuanPenyaluran: 'Bank Sampah / Pengepul Kertas',
-    tipsPraktis: 'Kardus tebal cokelat adalah salah satu komoditas daur ulang paling dicari dan bernilai stabil.'
+    destination: "Bank Sampah Unit atau pengepul kertas/karton daur ulang.",
+    prohibitions: [
+      "Hindari kardus basah terkena hujan karena menurunkan harga jual timbangan.",
+      "Jangan campurkan kardus yang berlumur minyak goreng atau lemak kotor."
+    ],
+    keywords: ["kardus", "karton", "box", "paket", "kertas"]
   },
   {
-    id: 's-8',
-    nama: 'Kaleng Minuman & Susu (Aluminium/Besi)',
-    kategori: 'anorganik',
-    alias: ['kaleng', 'kaleng soda', 'kaleng susu', 'seng', 'kaleng biskuit'],
-    penanganan: [
-      'Bilas sisa minuman manis atau susu kental dengan air agar tidak dikerubungi semut.',
-      'Injak atau tekan kaleng agar pipih bila memungkinkan.',
-      'Kumpulkan bersama kelompok anorganik logam.'
+    id: "kaleng-minuman",
+    name: "Kaleng Logam & Minuman Ringan",
+    category: "anorganik",
+    categoryName: "Anorganik",
+    badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
+    recyclableValue: "Sangat Tinggi (Aluminium: Rp 12.000 - Rp 16.000 / kg)",
+    shortDesc: "Kaleng soda aluminium, kaleng susu kental manis, kaleng biskuit.",
+    steps: [
+      "Bilas bagian dalam kaleng dari sisa cairan manis atau susu.",
+      "Pipihkan kaleng dengan cara diinjak secara hati-hati agar hemat tempat.",
+      "Kumpulkan dalam karung khusus wadah logam."
     ],
-    tujuanPenyaluran: 'Bank Sampah Logam',
-    tipsPraktis: 'Aluminium kaleng minuman dapat didaur ulang tanpa batas tanpa menurunkan kualitas logamnya.'
+    destination: "Bank Sampah Unit terdekat.",
+    prohibitions: [
+      "Jangan membiarkan kaleng terbuka dalam kondisi manis karena mengundang lalat dan semut."
+    ],
+    keywords: ["kaleng", "logam", "soda", "aluminium", "susu", "biskuit"]
   },
   {
-    id: 's-9',
-    nama: 'Lampu Neon / Bohlam TL / LED Rusak',
-    kategori: 'b3',
-    alias: ['lampu', 'bohlam', 'lampu neon', 'lampu philips', 'tl', 'neon'],
-    penanganan: [
-      'Bungkus lampu dengan kardus aslinya atau koran agar tidak pecah.',
-      'Jangan memecahkan kaca lampu karena uap merkuri di dalamnya beracun bila terhirup.',
-      'Serahkan ke dropbox limbah B3.'
+    id: "kemasan-sachet",
+    name: "Kemasan Sachet Kopi & Bumbu (Multilayer)",
+    category: "residu",
+    categoryName: "Residu",
+    badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
+    recyclableValue: "Rendah (Bahan Baku Ecobrick / RDF)",
+    shortDesc: "Plastik kemasan berlapis aluminium foil (multilayer) yang sulit dipisahkan mesin daur ulang.",
+    steps: [
+      "Gunting sachet dan bilas dari sisa bumbu/kopi.",
+      "Keringkan di bawah sinar matahari.",
+      "Dapat dipotong kecil-kecil dan dipadatkan ke botol PET untuk membuat Ecobrick."
     ],
-    tujuanPenyaluran: 'Drop Box E-Waste / TPS B3',
-    tipsPraktis: 'Bila lampu pecah tanpa sengaja, buka ventilasi ruangan dan gunakan lap basah untuk membersihkan serpihan (jangan gunakan vacuum cleaner).'
+    destination: "Komunitas pembuat ecobrick atau truk residu TPA.",
+    prohibitions: [
+      "Dilarang dibakar di pekarangan rumah."
+    ],
+    keywords: ["sachet", "kopi", "bumbu", "snack", "foil", "kemasan"]
   },
   {
-    id: 's-10',
-    nama: 'Popok Bayi (Pampers) & Pembalut Wanita',
-    kategori: 'residu',
-    alias: ['popok', 'pampers', 'pembalut', 'diapers', 'pampers bekas'],
-    penanganan: [
-      'Keluarkan kotoran padat ke kloset dan siram.',
-      'Gulung popok/pembalut ke arah dalam dan rekatkan perekat sampingnya.',
-      'Bungkus dalam plastik kecil terpisah dan ikat rapat.',
-      'Keluarkan hanya saat jadwal pengangkutan residu.'
+    id: "puntung-rokok",
+    name: "Puntung Rokok & Abu",
+    category: "residu",
+    categoryName: "Residu",
+    badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
+    recyclableValue: "Non-Ekonomis (Mengandung Toksin & Plastik Selulosa Asetat)",
+    shortDesc: "Filter rokok membutuhkan waktu 10-15 tahun untuk terurai dan mengandung zat karsinogenik.",
+    steps: [
+      "Pastikan bara api rokok telah mati sempurna.",
+      "Kumpulkan di asbak kering, lalu masukkan ke kantong sampah residu tertutup."
     ],
-    tujuanPenyaluran: 'Truk Sampah Residu Kota',
-    tipsPraktis: 'Membuang kotoran padat ke toilet mengurangi bau menyengat di tong sampah secara drastis.'
+    destination: "Tempat sampah residu TPA.",
+    prohibitions: [
+      "Jangan membuang puntung ke saluran air atau pot tanaman (meracuni mikroorganisme tanah).",
+      "Jangan buang puntung sembarangan yang masih menyala (bahaya kebakaran)."
+    ],
+    keywords: ["rokok", "puntung", "abu", "filter", "tembakau"]
   },
   {
-    id: 's-11',
-    nama: 'Tisu Bekas Pakai & Tisu Basah',
-    kategori: 'residu',
-    alias: ['tisu', 'tissue', 'tisu basah', 'tisu makan'],
-    penanganan: [
-      'Jangan masukkan ke saluran kloset karena serat tisu basah tidak mudah hancur dan membuat pipa tersumbat.',
-      'Masukkan langsung ke tempat sampah residu rumah.'
+    id: "pakaian-bekas",
+    name: "Pakaian & Kain Bekas (Tekstil)",
+    category: "anorganik",
+    categoryName: "Anorganik",
+    badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
+    recyclableValue: "Sedang (Donasi Layak Pakai / Lap Pembersih)",
+    shortDesc: "Baju robek, kain perca, sprei lama yang tidak terpakai.",
+    steps: [
+      "Pilah antara yang masih layak pakai dan yang sudah rusak parah.",
+      "Baju layak pakai dapat dicuci bersih untuk didonasikan ke dropbox sandang.",
+      "Kain robek dapat dipotong menjadi lap pembersih dapur (kain majun)."
     ],
-    tujuanPenyaluran: 'TPA Sampah Kota',
-    tipsPraktis: 'Tisu yang sudah terkena minyak makanan atau ingus tidak dapat didaur ulang menjadi kertas baru.'
+    destination: "Bank Sampah Unit yang menerima tekstil atau dropbox donasi pakaian.",
+    prohibitions: [
+      "Jangan membuang kain ke aliran selokan.",
+      "Hindari membakar kain sintetis berbahan poliester."
+    ],
+    keywords: ["baju", "pakaian", "kain", "tekstil", "celana", "donasi"]
   },
   {
-    id: 's-12',
-    nama: 'Botol Kaca Sirup / Kecap / Selai',
-    kategori: 'anorganik',
-    alias: ['botol kaca', 'beling', 'toples kaca', 'botol kecap', 'botol sirup'],
-    penanganan: [
-      'Cuci bersih sisa kecap atau sirup.',
-      'Lepaskan tutup botol logam/plastik.',
-      'Simpan dalam kardus terpisah agar tidak beradu dan pecah.'
+    id: "botol-kaca",
+    name: "Botol Kaca & Beling Utuh",
+    category: "anorganik",
+    categoryName: "Anorganik",
+    badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
+    recyclableValue: "Sedang (Rp 500 - Rp 1.500 / botol)",
+    shortDesc: "Botol sirup kaca, botol kecap, toples selai kaca.",
+    steps: [
+      "Bilas bagian dalam botol dari sisa saus atau sirup manis.",
+      "Buka tutup seng atau plastik penutupnya.",
+      "Simpan dalam peti atau kotak kardus agar tidak pecah terbentur."
     ],
-    tujuanPenyaluran: 'Bank Sampah / Tukang Loak',
-    tipsPraktis: 'Botol kecap atau sirup berstandar sering kali diambil kembali oleh produsen melalui sistem botol balikan.'
+    destination: "Bank Sampah atau lapak pengumpul botol bekas sistem tukar isi ulang.",
+    prohibitions: [
+      "Jangan mencampurkan botol kaca utuh dengan pecahan beling tajam tanpa pengaman."
+    ],
+    keywords: ["kaca", "beling", "sirup", "kecap", "toples", "marjan"]
   },
   {
-    id: 's-13',
-    nama: 'Kantong Plastik Kresek Kotor / Tipis',
-    kategori: 'residu',
-    alias: ['kresek', 'plastik belanja', 'kresek hitam', 'kantong kresek'],
-    penanganan: [
-      'Bila masih bersih, simpan dan gunakan kembali untuk berbelanja.',
-      'Bila sudah kotor terkena kuah atau robek parah, masukkan ke tong residu.'
+    id: "styrofoam-makanan",
+    name: "Wadah Makanan Styrofoam (Polystyrene)",
+    category: "residu",
+    categoryName: "Residu",
+    badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
+    recyclableValue: "Non-Ekonomis (Sangat Ringan, Volume Besar)",
+    shortDesc: "Kotak styrofoam bekas wadah bubur atau makanan cepat saji.",
+    steps: [
+      "Bersihkan sisa makanan dan minyak semaksimal mungkin.",
+      "Patahkan menjadi bagian lebih kecil agar tidak memenuhi tong sampah residu."
     ],
-    tujuanPenyaluran: 'Truk Residu Lingkungan',
-    tipsPraktis: 'Bawa tas belanja kain lipat di dalam tas kerja/pasar untuk menghindari penumpukan kantong kresek.'
+    destination: "Tempat sampah residu TPA.",
+    prohibitions: [
+      "Dilarang membakar styrofoam karena melepaskan senyawa stiren beracun ke udara."
+    ],
+    keywords: ["styrofoam", "gabus", "makanan", "bubur", "ps"]
   },
   {
-    id: 's-14',
-    nama: 'Gelas Plastik Air Mineral (PP)',
-    kategori: 'anorganik',
-    alias: ['gelas aqua', 'cup plastik', 'gelas plastik', 'gelas pop ice'],
-    penanganan: [
-      'Cabut tutup sedotan plastik lid bagian atas.',
-      'Kosongkan air dan tumpuk gelas plastik rapi memanjang.',
-      'Kumpulkan bersama barang anorganik plastik.'
+    id: "obat-kedaluwarsa",
+    name: "Obat-obatan Kedaluwarsa & Bekas",
+    category: "b3",
+    categoryName: "B3",
+    badgeColor: "bg-amber-50 text-amber-800 border-amber-200",
+    recyclableValue: "Wajib Penanganan Khusus",
+    shortDesc: "Sirup obat, tablet, kapsul, dan salep kedaluwarsa.",
+    steps: [
+      "Keluarkan tablet/kapsul dari blister dan hancurkan, campur dengan tanah/ampas kopi dalam plastik tertutup.",
+      "Obat sirup diencerkan dengan air dan dibuang ke saluran limbah bertahap.",
+      "Hilangkan label nama pasien pada botol obat sebelum wadahnya dibuang."
     ],
-    tujuanPenyaluran: 'Bank Sampah',
-    tipsPraktis: 'Gelas plastik PP bernilai tinggi bagi pabrik daur ulang biji plastik tali rafia dan ember cor.'
+    destination: "Drop Box Obat Kedaluwarsa di Puskesmas / Farmasi DLH.",
+    prohibitions: [
+      "Jangan membuang obat tablet utuh langsung ke tong sampah (rawan disalahgunakan pemulung/anak-anak)."
+    ],
+    keywords: ["obat", "farmasi", "sirup", "tablet", "kapsul", "kedaluwarsa"]
   },
   {
-    id: 's-15',
-    nama: 'Obat Kedaluwarsa & Sirup Obat Sisa',
-    kategori: 'b3',
-    alias: ['obat', 'obat basi', 'obat kedaluwarsa', 'sirup obat', 'kapsul bekas'],
-    penanganan: [
-      'Untuk obat tablet: keluarkan dari blister, hancurkan, dan campur dengan bubuk kopi/tanah agar tidak diminum hewan/orang lain.',
-      'Untuk obat sirup: buang cairan ke saluran air yang mengalir bersama sabun cuci.',
-      'Rusak label botol obat sebelum wadahnya dibuang.'
+    id: "daun-ranting",
+    name: "Daun Kering & Ranting Pangkasan",
+    category: "organik",
+    categoryName: "Organik",
+    badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    recyclableValue: "Tinggi (Bahan Kompos Cokelat / Mulsa Tanah)",
+    shortDesc: "Sampah sapuan pekarangan kaya kandungan karbon (unsur C).",
+    steps: [
+      "Pisahkan dari sampah plastik atau kawat yang tercecer di halaman.",
+      "Patahkan ranting kecil dan tumpuk daun kering sebagai lapisan penutup komposter atau biopori."
     ],
-    tujuanPenyaluran: 'Drop Box Farmasi / TPS B3',
-    tipsPraktis: 'Beberapa apotek jaringan dan puskesmas menerima program serah obat kedaluwarsa untuk dimusnahkan secara aman.'
+    destination: "Lubang biopori pekarangan atau TPS 3R bagian pencacah daun.",
+    prohibitions: [
+      "Jangan dibakar di halaman rumah karena asapnya mengganggu pernapasan warga sekitar."
+    ],
+    keywords: ["daun", "ranting", "kebun", "rumput", "pekarangan"]
   },
   {
-    id: 's-16',
-    nama: 'Kaleng Semprotan Nyamuk / Aerosol / Deodoran',
-    kategori: 'b3',
-    alias: ['baygon', 'semprotan nyamuk', 'hit', 'pilox', 'aerosol'],
-    penanganan: [
-      'Pastikan gas di dalam kaleng sudah habis terpakai.',
-      'JANGAN menusuk atau melubangi kaleng karena sisa tekanan gas dapat memicu percikan api.',
-      'Serahkan terpisah kepada petugas kebersihan atau drop box B3.'
+    id: "kaleng-aerosol",
+    name: "Kaleng Aerosol (Semprotan Nyamuk / Deodoran)",
+    category: "b3",
+    categoryName: "B3",
+    badgeColor: "bg-amber-50 text-amber-800 border-amber-200",
+    recyclableValue: "Wajib Penanganan Khusus (Rawan Meledak)",
+    shortDesc: "Semprotan obat nyamuk, cat semprot, deodoran aerosol bertekanan gas.",
+    steps: [
+      "Pastikan isi gas di dalam kaleng telah benar-benar habis di ruang terbuka.",
+      "Jangan pernah melubangi kaleng aerosol secara paksa.",
+      "Kumpulkan terpisah di wadah B3."
     ],
-    tujuanPenyaluran: 'Drop Box B3 / Petugas Khusus',
-    tipsPraktis: 'Wadah aerosol yang dibakar di tempat sampah liar adalah penyebab utama ledakan di tempat pembuangan.'
+    destination: "Drop Box Limbah B3 DLH.",
+    prohibitions: [
+      "Dilarang keras melempar kaleng aerosol ke api/pembakaran karena akan meledak seketika."
+    ],
+    keywords: ["aerosol", "semprotan", "baygon", "hit", "pilox", "deodoran"]
   },
   {
-    id: 's-17',
-    nama: 'Kulit Telur Ayam / Bebek',
-    kategori: 'organik',
-    alias: ['cangkang telur', 'kulit telor', 'kulit telur'],
-    penanganan: [
-      'Bilas sedikit bila berlendir putih telur.',
-      'Remas dengan tangan hingga berbutir kecil.',
-      'Bisa langsung ditaburkan di atas tanah pot tanaman sebagai kalsium alami atau dimasukkan ke komposter.'
+    id: "elektronik-kecil",
+    name: "Casing HP, Kabel & Charger Bekas",
+    category: "b3",
+    categoryName: "B3",
+    badgeColor: "bg-amber-50 text-amber-800 border-amber-200",
+    recyclableValue: "Sedang (Mengandung Tembaga & Plastik Khusus)",
+    shortDesc: "Kabel charger putus, powerbank rusak, earphone mati.",
+    steps: [
+      "Gulung kabel dengan rapi dan ikat.",
+      "Simpan bersama barang elektronik kecil lainnya di kotak e-waste rumah."
     ],
-    tujuanPenyaluran: 'Pupuk Tanaman / Kompos Mandiri',
-    tipsPraktis: 'Butiran cangkang telur di sekitar tanaman juga efektif mencegah siput dan hama bekicot mendekat.'
+    destination: "Dropbox E-Waste Balai Kota Makassar atau Bank Sampah induk.",
+    prohibitions: [
+      "Jangan membuang charger ke tempat sampah basah."
+    ],
+    keywords: ["kabel", "charger", "hp", "earphone", "elektronik", "powerbank"]
   },
   {
-    id: 's-18',
-    nama: 'Ampas Kopi & Teh Celup',
-    kategori: 'organik',
-    alias: ['ampas kopi', 'ampas teh', 'kantong teh celup', 'teh basi'],
-    penanganan: [
-      'Lepaskan benang dan isi kantong teh bila kantongnya terbuat dari serat plastik jaring.',
-      'Ampas kopi bisa langsung ditabur ke media tanam bunga untuk penyubur tanah.'
+    id: "kantong-kresek",
+    name: "Kantong Kresek Plastik Lembut (LDPE)",
+    category: "anorganik",
+    categoryName: "Anorganik",
+    badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
+    recyclableValue: "Rendah (Rp 500 - Rp 1.000 / kg)",
+    shortDesc: "Kresek belanja warung atau kantong plastik bening.",
+    steps: [
+      "Pastikan kantong kering dan bersih dari tumpahan kuah makanan.",
+      "Lipat segitiga atau tumpuk rapi agar bisa digunakan kembali sebagai kantong belanja.",
+      "Jika sudah sobek, kumpulkan dalam jumlah banyak untuk ditimbang."
     ],
-    tujuanPenyaluran: 'Kompos / Media Tanam',
-    tipsPraktis: 'Ampas kopi kering efektif menyerap bau apek di dalam kulkas atau lemari sepatu.'
+    destination: "Bank Sampah Unit atau wadah daur ulang plastik lembut.",
+    prohibitions: [
+      "Hindari membuang kresek sembarangan karena mudah terbang dan mencemari saluran air."
+    ],
+    keywords: ["kresek", "kantong", "plastik", "belanja", "ldpe"]
   },
   {
-    id: 's-19',
-    nama: 'Wadah Styrofoam Makanan Kotor',
-    kategori: 'residu',
-    alias: ['styrofoam', 'sterofoam', 'gabus makanan', 'wadah seblak'],
-    penanganan: [
-      'Buang sisa makanan kuah ke tempat organik.',
-      'Patahkan styrofoam agar hemat tempat.',
-      'Masukkan ke tempat sampah residu (karena tidak diterima bank sampah).'
+    id: "kertas-hvs",
+    name: "Kertas HVS & Dokumen Bekas",
+    category: "anorganik",
+    categoryName: "Anorganik",
+    badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
+    recyclableValue: "Tinggi (Rp 2.000 - Rp 3.500 / kg)",
+    shortDesc: "Kertas cetak kantor, lembar fotokopi, buku tulis bekas.",
+    steps: [
+      "Lepaskan klip kertas dan staples kawat logam.",
+      "Jika memuat data rahasia/pribadi, robek atau potong terlebih dahulu.",
+      "Susun rapi dan ikat dengan tali rapia."
     ],
-    tujuanPenyaluran: 'TPA',
-    tipsPraktis: 'Kurangi pemakaian styrofoam untuk makanan panas karena partikel mikronya dapat larut ke dalam kuah makanan berlemak.'
+    destination: "Bank Sampah Unit atau pabrik daur ulang kertas.",
+    prohibitions: [
+      "Hindari kertas terkena basah atau tumpahan minyak."
+    ],
+    keywords: ["kertas", "hvs", "dokumen", "buku", "skripsi", "print"]
   },
   {
-    id: 's-20',
-    nama: 'Kertas HVS / Buku / Koran Bekas',
-    kategori: 'anorganik',
-    alias: ['kertas', 'hvs', 'buku bekas', 'koran', 'majalah', 'kertas ujian'],
-    penanganan: [
-      'Pisahkan kertas dari klip kertas besi atau map plastik.',
-      'Tumpuk rapi dan ikat dengan tali.',
-      'Jaga agar tidak basah terkena air hujan.'
+    id: "sikat-gigi",
+    name: "Sikat Gigi Plastik Bekas",
+    category: "residu",
+    categoryName: "Residu",
+    badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
+    recyclableValue: "Non-Ekonomis (Komposit Bulu Sikat & Karet Gagang)",
+    shortDesc: "Gagang plastik dengan bulu nilon yang sulit dipisahkan secara ekonomis.",
+    steps: [
+      "Bilas bersih dan gunakan sebagai sikat pembersih sudut keramik lantai kamar mandi.",
+      "Jika sudah aus total, masukkan ke kantong sampah residu."
     ],
-    tujuanPenyaluran: 'Bank Sampah / Daur Ulang Kertas',
-    tipsPraktis: 'Kertas putih HVS bersih memiliki harga kiloan lebih tinggi dibanding kertas buram atau koran.'
+    destination: "Tempat sampah residu TPA.",
+    prohibitions: [
+      "Jangan buang ke kloset."
+    ],
+    keywords: ["sikat", "gigi", "nilon", "kamar mandi"]
   },
   {
-    id: 's-21',
-    nama: 'Pecahan Keramik / Genteng / Kaca Cermin',
-    kategori: 'residu',
-    alias: ['piring pecah', 'cermin pecah', 'keramik', 'genteng'],
-    penanganan: [
-      'Bungkus pecahan tajam dengan koran tebal atau kardus bekas berlapis.',
-      'Tuliskan peringatan "AWAS KACA PECAH" di bagian luar dengan spidol agar tidak melukai tangan petugas kebersihan.',
-      'Masukkan ke tong residu.'
+    id: "masker-medis",
+    name: "Masker Medis Sekali Pakai",
+    category: "residu",
+    categoryName: "Residu",
+    badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
+    recyclableValue: "Non-Ekonomis",
+    shortDesc: "Masker spunbond sekali pakai.",
+    steps: [
+      "Gunting kedua tali telinga masker agar tidak menjerat satwa liar jika tercecer.",
+      "Lipat bagian luar ke dalam dan bungkus dengan plastik kecil.",
+      "Semprotkan sedikit disinfektan jika bekas orang sakit."
     ],
-    tujuanPenyaluran: 'TPA Kota',
-    tipsPraktis: 'Kaca cermin dan keramik memiliki titik lebur berbeda dengan botol beling biasa, sehingga tidak bisa didaur ulang di pabrik botol.'
+    destination: "Tong sampah residu.",
+    prohibitions: [
+      "Jangan membuang masker dalam keadaan tali utuh."
+    ],
+    keywords: ["masker", "medis", "kesehatan", "flu", "batuk"]
   },
   {
-    id: 's-22',
-    nama: 'Dedaunan Kering & Ranting Pangkasan Kebun',
-    kategori: 'organik',
-    alias: ['daun kering', 'ranting', 'rumput', 'pangkasan taman'],
-    penanganan: [
-      'Kumpulkan dalam karung goni atau karung beras bekas.',
-      'Gunakan sebagai mulsa pelindung tanah pot atau masukkan ke lubang resapan biopori.',
-      'Serahkan ke armada organik TPS 3R.'
+    id: "tulang-sisa-daging",
+    name: "Tulang & Duri Sisa Daging/Ikan",
+    category: "organik",
+    categoryName: "Organik",
+    badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    recyclableValue: "Bahan Pengisi Biopori / Tepung Tulang",
+    shortDesc: "Sisa olahan hewani yang membutuhkan waktu lebih lama terurai.",
+    steps: [
+      "Pisahkan dari kuah berminyak kental.",
+      "Masukkan ke lubang biopori dalam tanah (hindari komposter Takakura karena dapat memicu belatung dan bau amis)."
     ],
-    tujuanPenyaluran: 'Kompos / TPS 3R',
-    tipsPraktis: 'JANGAN membakar dedaunan kering di pemukiman karena asapnya mencemari udara dan memicu gangguan pernapasan tetangga.'
+    destination: "Lubang resapan biopori atau TPS 3R.",
+    prohibitions: [
+      "Jangan dibiarkan terbuka di tempat sampah tanpa penutup (mengundang kucing dan tikus)."
+    ],
+    keywords: ["tulang", "duri", "ikan", "ayam", "daging", "hewan"]
   }
 ]
+
+// Backwards-compatible aliases
+export const daftarSampah = wasteData.map(w => ({
+  id: w.id,
+  nama: w.name,
+  kategori: w.category,
+  kategoriLabel: w.categoryName,
+  alias: w.keywords || [],
+  penanganan: w.steps,
+  tujuanPenyaluran: w.destination,
+  tipsPraktis: w.shortDesc
+}))
+
+export const kategoriConfig = {
+  organik: { label: 'Organik', color: 'emerald' },
+  anorganik: { label: 'Anorganik', color: 'blue' },
+  b3: { label: 'B3', color: 'amber' },
+  residu: { label: 'Residu', color: 'slate' }
+}

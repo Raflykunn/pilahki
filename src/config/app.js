@@ -1,10 +1,11 @@
 export const appConfig = {
-  name: 'Pilahki',
-  tagline: 'Solusi Sampah Terintegrasi',
+  name: "PilahKi'",
+  tagline: 'Mulai dari Pilahan, Ciptakan Perubahan',
   city: 'Makassar',
-  favicon: '/pilahki-favicon.svg',
-  logo: '/pilahki-logo.svg',
-  description: 'Platform terpadu pemilahan, pencarian lokasi bank sampah, jadwal angkut, dan panduan sampah rumah tangga Kota Makassar.',
+  favicon: '/img/logo.jpeg',
+  logo: '/img/logo-tulisan.jpeg',
+  logoSquare: '/img/logo.jpeg',
+  description: 'Pilahki membantu warga memilah sampah, menemukan bank sampah terdekat, cek jadwal angkut, dan edukasi lingkungan terintegrasi asisten pintar PilahAI.',
   author: 'BINFINITY',
   version: '1.0.0'
 }

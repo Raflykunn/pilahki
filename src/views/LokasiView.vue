@@ -1,311 +1,404 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { daftarFasilitas, jenisFasilitasConfig } from '@/data/lokasiData'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import L from 'leaflet'
 import {
-  MapPin,
-  Navigation,
+  makassarFacilities,
+  MAKASSAR_CENTER,
+  jenisFasilitasConfig,
+  calculateDistance
+} from '@/data/lokasiData'
+import {
+  Crosshair,
+  Locate,
   Search,
   Clock,
+  Navigation,
   Phone,
-  ExternalLink,
-  Sparkles,
   CheckCircle2,
-  AlertCircle,
-  Building2,
-  Compass,
-  Map as MapIcon,
-  ListFilter
+  MapPin
 } from 'lucide-vue-next'
 
-const router = useRouter()
-const route = useRoute()
+const mapContainer = ref(null)
+let leafletMap = null
+let markersGroup = null
+let userMarker = null
 
-// State Penapis & Carian
 const searchQuery = ref('')
-const selectedWilayah = ref('semua')
-const selectedJenis = ref('semua')
-const viewMode = ref('list') // 'list' | 'map'
-
-// State GPS
+const selectedType = ref('semua')
 const isGpsActive = ref(false)
-const gpsMessage = ref('')
-const isLocating = ref(false)
+const gpsStatusText = ref('Makassar')
+const userLocation = ref({ lat: MAKASSAR_CENTER.lat, lng: MAKASSAR_CENTER.lng })
+const activeFacilityId = ref(null)
 
-// Daftar wilayah unik dari data
-const listWilayah = computed(() => {
-  const set = new Set(daftarFasilitas.map(f => f.wilayah))
-  return ['semua', ...Array.from(set)]
-})
+const facilityTypes = [
+  { id: 'semua', label: 'Semua' },
+  { id: 'bank_sampah', label: 'Bank Sampah' },
+  { id: 'tps_3r', label: 'TPS 3R' },
+  { id: 'drop_box_b3', label: 'Drop Box B3' }
+]
 
-onMounted(() => {
-  const catParam = route?.query?.kategori
-  if (catParam) {
-    searchQuery.value = catParam
-  }
-})
-
-const handleActivateGps = () => {
-  isLocating.value = true
-  gpsMessage.value = 'Mendeteksi posisi perangkat Anda...'
-
-  if ('geolocation' in navigator) {
-    navigator.geolocation.getCurrentPosition(
-      () => {
-        isLocating.value = false
-        isGpsActive.value = true
-        gpsMessage.value = 'Lokasi GPS aktif! Fasilitas diurutkan dari yang terdekat.'
-        setTimeout(() => { gpsMessage.value = '' }, 4000)
-      },
-      () => {
-        isLocating.value = false
-        isGpsActive.value = true
-        gpsMessage.value = 'Mode demo: Menampilkan perkiraan jarak dari posisi Anda.'
-        setTimeout(() => { gpsMessage.value = '' }, 4000)
-      },
-      { timeout: 5000 }
+const facilitiesWithDistance = computed(() => {
+  return makassarFacilities.map((fac) => {
+    const dist = calculateDistance(
+      userLocation.value.lat,
+      userLocation.value.lng,
+      fac.lat,
+      fac.lng
     )
-  } else {
-    isLocating.value = false
-    isGpsActive.value = true
-    gpsMessage.value = 'Menampilkan perkiraan jarak fasilitas.'
-  }
-}
-
-const filteredFasilitas = computed(() => {
-  const q = searchQuery.value.trim().toLowerCase()
-  return daftarFasilitas.filter(f => {
-    const matchWilayah = selectedWilayah.value === 'semua' || f.wilayah.toLowerCase() === selectedWilayah.value.toLowerCase()
-    const matchJenis = selectedJenis.value === 'semua' || f.jenis === selectedJenis.value
-
-    if (!matchWilayah || !matchJenis) return false
-    if (!q) return true
-
-    const inNama = f.nama.toLowerCase().includes(q)
-    const inAlamat = f.alamat.toLowerCase().includes(q)
-    const inWilayah = f.wilayah.toLowerCase().includes(q)
-    const inSampah = f.sampahDiterima.some(s => s.toLowerCase().includes(q))
-    return inNama || inAlamat || inWilayah || inSampah
-  })
-})
-
-const askAILocation = (fasilitas) => {
-  router.push({
-    path: '/pilah-ai',
-    query: {
-      q: `Bagaimana cara menyetor sampah ke ${fasilitas.nama} (${fasilitas.wilayah})? Apa syarat dan jenis yang diterima?`
+    return {
+      ...fac,
+      distanceKm: dist.toFixed(1)
     }
   })
+})
+
+const filteredFacilities = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  const type = selectedType.value
+
+  let list = facilitiesWithDistance.value.filter((fac) => {
+    const matchType = type === 'semua' || fac.type === type
+    if (!matchType) return false
+
+    if (!q) return true
+
+    const matchName = fac.name.toLowerCase().includes(q)
+    const matchAddress = fac.address.toLowerCase().includes(q)
+    const matchDistrict = fac.district.toLowerCase().includes(q)
+    const matchAccepted = fac.accepted?.some((a) => a.toLowerCase().includes(q))
+
+    return matchName || matchAddress || matchDistrict || matchAccepted
+  })
+
+  // Sort by distance if GPS is active
+  if (isGpsActive.value) {
+    list.sort((a, b) => parseFloat(a.distanceKm) - parseFloat(b.distanceKm))
+  }
+
+  return list
+})
+
+const initMap = () => {
+  if (!mapContainer.value) return
+
+  leafletMap = L.map(mapContainer.value, {
+    center: [MAKASSAR_CENTER.lat, MAKASSAR_CENTER.lng],
+    zoom: 13,
+    zoomControl: true
+  })
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(leafletMap)
+
+  markersGroup = L.layerGroup().addTo(leafletMap)
+  updateMapMarkers()
 }
 
-const openGoogleMaps = (fasilitas) => {
-  const query = encodeURIComponent(`${fasilitas.nama} ${fasilitas.alamat} Makassar`)
-  window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank')
+const updateMapMarkers = () => {
+  if (!markersGroup) return
+  markersGroup.clearLayers()
+
+  filteredFacilities.value.forEach((fac) => {
+    const iconColor = fac.type === 'bank_sampah' ? '#133826' : fac.type === 'tps_3r' ? '#0f766e' : '#d97706'
+    
+    const customIcon = L.divIcon({
+      className: 'custom-facility-pin',
+      html: `<div style="background-color: ${iconColor}; width: 28px; height: 28px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 11px;">${fac.typeName.charAt(0)}</div>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
+      popupAnchor: [0, -14]
+    })
+
+    const marker = L.marker([fac.lat, fac.lng], { icon: customIcon })
+      .bindPopup(`
+        <div style="font-family: 'Plus Jakarta Sans', sans-serif; padding: 4px;">
+          <h4 style="font-weight: 800; font-size: 13px; color: #0d261a; margin-bottom: 4px;">${fac.name}</h4>
+          <p style="font-size: 11px; color: #475569; margin: 0 0 6px 0;">${fac.address}</p>
+          <span style="display: inline-block; font-size: 10px; font-weight: 700; background: #e1f0e7; color: #133826; padding: 2px 8px; border-radius: 9999px;">${fac.distanceKm} km dari posisi</span>
+        </div>
+      `)
+      .addTo(markersGroup)
+
+    marker.on('click', () => {
+      activeFacilityId.value = fac.id
+      scrollToCard(fac.id)
+    })
+  })
 }
+
+const scrollToCard = (id) => {
+  const el = document.getElementById(`facility-card-${id}`)
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+}
+
+const focusFacility = (fac) => {
+  activeFacilityId.value = fac.id
+  if (leafletMap) {
+    leafletMap.flyTo([fac.lat, fac.lng], 16, { duration: 1 })
+  }
+}
+
+const centerMap = () => {
+  if (leafletMap) {
+    leafletMap.flyTo([userLocation.value.lat, userLocation.value.lng], 14, { duration: 1 })
+  }
+}
+
+const handleLiveGps = () => {
+  if (!navigator.geolocation) {
+    alert('Browser Anda tidak mendukung deteksi lokasi Geolocation.')
+    return
+  }
+
+  gpsStatusText.value = 'Mendeteksi...'
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude
+      const lng = pos.coords.longitude
+      userLocation.value = { lat, lng }
+      isGpsActive.value = true
+      gpsStatusText.value = 'GPS Terkunci'
+
+      if (leafletMap) {
+        if (userMarker) {
+          userMarker.setLatLng([lat, lng])
+        } else {
+          const userIcon = L.divIcon({
+            className: 'custom-user-pin',
+            html: `<div style="background-color: #2563eb; width: 22px; height: 22px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 4px rgba(37,99,235,0.3);"></div>`,
+            iconSize: [22, 22],
+            iconAnchor: [11, 11]
+          })
+          userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(leafletMap)
+        }
+        leafletMap.flyTo([lat, lng], 14, { duration: 1.2 })
+      }
+      updateMapMarkers()
+    },
+    (err) => {
+      gpsStatusText.value = 'GPS Gagal'
+      alert('Tidak dapat mendeteksi lokasi GPS Anda. Pastikan izin akses lokasi diizinkan pada browser.')
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  )
+}
+
+onMounted(() => {
+  nextTick(() => {
+    initMap()
+  })
+})
+
+onUnmounted(() => {
+  if (leafletMap) {
+    leafletMap.remove()
+  }
+})
 </script>
 
 <template>
-  <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div class="space-y-1.5">
-        <div class="flex items-center gap-2">
-          <Badge variant="outline" class="bg-blue-50 text-blue-800 border-blue-200">
-            Fasilitas Pengelolaan Sampah
-          </Badge>
-          <span class="text-xs text-zinc-400">Kota Makassar</span>
-        </div>
-        <h1 class="text-3xl font-extrabold tracking-tight text-zinc-900">
-          Cari Bank Sampah & TPS Terdekat
-        </h1>
-        <p class="text-sm text-zinc-500 max-w-2xl leading-relaxed">
-          Temukan fasilitas pengolahan sampah, bank sampah unit, TPS 3R, dan drop point B3 lengkap dengan jam operasional dan kontak.
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-32 md:pb-12 text-left">
+    
+    <!-- Top Header Bar: Title, Live GPS Status & Action -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div class="space-y-1">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Fasilitas Pengelolaan Sampah</h1>
+        <p class="text-xs sm:text-sm text-slate-600">
+          Menampilkan titik Bank Sampah, TPS 3R, dan Drop Box B3 terdekat di Kota Makassar.
         </p>
       </div>
 
-      <!-- GPS Button -->
-      <div>
-        <Button
-          :variant="isGpsActive ? 'default' : 'outline'"
-          size="sm"
-          class="gap-2 shrink-0"
-          :disabled="isLocating"
-          @click="handleActivateGps"
+      <!-- Live GPS Trigger Button -->
+      <div class="flex items-center gap-3 shrink-0">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs">
+          <span
+            class="w-2 h-2 rounded-full"
+            :class="isGpsActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'"
+          ></span>
+          <span>{{ gpsStatusText }}</span>
+        </span>
+
+        <button 
+          type="button" 
+          @click="handleLiveGps"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-800 hover:bg-brand-700 text-white text-xs font-bold transition-all shadow-xs hover:shadow-md cursor-pointer group"
+          title="Kunci posisi presisi Anda via Live GPS browser"
         >
-          <Compass class="h-4 w-4" :class="{ 'animate-spin': isLocating }" />
-          <span>{{ isGpsActive ? 'GPS Aktif (Terdekat)' : 'Gunakan Lokasi Saya' }}</span>
-        </Button>
+          <Crosshair class="w-4 h-4 text-accent-light group-hover:rotate-45 transition-transform" />
+          <span>Live GPS Saya</span>
+        </button>
       </div>
     </div>
 
-    <!-- GPS Alert Notice -->
-    <div
-      v-if="gpsMessage"
-      class="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs text-emerald-800"
-    >
-      <CheckCircle2 class="h-4 w-4 text-emerald-600 shrink-0" />
-      <span>{{ gpsMessage }}</span>
-    </div>
+    <!-- Split-Screen Grid: MAP DI KIRI (lg:col-span-7), FILTER & CARDS DI KANAN (lg:col-span-5) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      
+      <!-- ================= KIRI: PETA INTERAKTIF (STICKY ON DESKTOP) ================= -->
+      <div class="lg:col-span-7 space-y-3 lg:sticky lg:top-28">
+        
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Peta Interaktif Titik Sampah</span>
 
-    <!-- Search & Filter Controls -->
-    <Card class="p-4 bg-white border-zinc-200 shadow-2xs space-y-4">
-      <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+          <button 
+            type="button" 
+            @click="centerMap"
+            class="text-xs font-bold text-brand-800 hover:text-brand-900 inline-flex items-center gap-1.5 cursor-pointer hover:underline"
+            title="Pusatkan kamera peta ke titik lokasi saya"
+          >
+            <Locate class="w-3.5 h-3.5" />
+            <span>Pusatkan</span>
+          </button>
+        </div>
+
+        <!-- Leaflet Map Container -->
+        <div 
+          ref="mapContainer"
+          class="h-[380px] sm:h-[460px] lg:h-[calc(100vh-14rem)] w-full rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden relative z-10 bg-slate-100"
+          style="isolation: isolate;"
+        >
+        </div>
+
+        <!-- Map Legend -->
+        <div class="flex flex-wrap items-center justify-between gap-2.5 text-xs text-slate-600 px-4 py-2.5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs">
+          <div class="flex flex-wrap items-center gap-4 text-[11px] font-medium">
+            <div class="flex items-center gap-1.5 font-bold text-blue-700">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-600 ring-2 ring-blue-200"></span>
+              <span>Posisi Anda</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-emerald-800 font-semibold">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-700"></span>
+              <span>Bank Sampah</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-teal-800 font-semibold">
+              <span class="w-2.5 h-2.5 rounded-full bg-teal-700"></span>
+              <span>TPS 3R</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-amber-800 font-semibold">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
+              <span>Drop Box B3</span>
+            </div>
+          </div>
+          <span class="text-[11px] text-slate-400 hidden xl:inline">Klik pin peta untuk rute</span>
+        </div>
+
+      </div>
+
+      <!-- ================= KANAN: PENCARIAN, FILTER & DAFTAR KARTU ================= -->
+      <div class="lg:col-span-5 space-y-4">
+        
         <!-- Search Input -->
-        <div class="sm:col-span-6 relative">
-          <Search class="absolute left-3.5 top-3 h-4 w-4 text-zinc-400" />
-          <Input
+        <div class="relative">
+          <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input 
             v-model="searchQuery"
-            placeholder="Cari nama fasilitas, jalan, atau jenis sampah..."
-            class="pl-10"
+            @input="updateMapMarkers"
+            type="text" 
+            placeholder="Cari nama fasilitas, jalan, atau sampah..." 
+            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 bg-white"
           />
         </div>
 
-        <!-- Filter Wilayah -->
-        <div class="sm:col-span-3">
-          <select
-            v-model="selectedWilayah"
-            class="flex h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 focus:border-emerald-600 transition-all cursor-pointer"
+        <!-- Filter Category Pills -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+          <button
+            v-for="ft in facilityTypes"
+            :key="ft.id"
+            type="button"
+            @click="selectedType = ft.id; updateMapMarkers()"
+            :class="[
+              'px-3 py-1.5 rounded-xl text-xs whitespace-nowrap transition-all cursor-pointer',
+              selectedType === ft.id
+                ? 'bg-brand-800 text-white font-bold shadow-xs'
+                : 'bg-white text-slate-700 font-semibold border border-slate-200 hover:border-brand-300 hover:text-brand-800'
+            ]"
           >
-            <option value="semua">Semua Wilayah</option>
-            <option v-for="w in listWilayah.filter(x => x !== 'semua')" :key="w" :value="w">
-              Kec. {{ w }}
-            </option>
-          </select>
+            {{ ft.label }}
+          </button>
         </div>
 
-        <!-- Filter Jenis Fasilitas -->
-        <div class="sm:col-span-3">
-          <select
-            v-model="selectedJenis"
-            class="flex h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 focus:border-emerald-600 transition-all cursor-pointer"
-          >
-            <option value="semua">Semua Tipe Fasilitas</option>
-            <option v-for="(cfg, key) in jenisFasilitasConfig" :key="key" :value="key">
-              {{ cfg.label }}
-            </option>
-          </select>
+        <!-- Count Indicator -->
+        <div class="flex items-center justify-between text-xs text-slate-500 px-1">
+          <span class="font-bold text-slate-700">Ditemukan {{ filteredFacilities.length }} Fasilitas</span>
+          <span v-if="isGpsActive" class="text-brand-700 font-medium">Diurutkan terdekat</span>
         </div>
-      </div>
-    </Card>
 
-    <!-- Content Results -->
-    <div class="space-y-4">
-      <div class="flex items-center justify-between text-xs text-zinc-500">
-        <span>Menampilkan <strong>{{ filteredFasilitas.length }}</strong> fasilitas</span>
-        <span>Wilayah aktif: <strong>{{ selectedWilayah === 'semua' ? 'Seluruh Kota' : selectedWilayah }}</strong></span>
-      </div>
-
-      <!-- Empty State -->
-      <div
-        v-if="filteredFasilitas.length === 0"
-        class="rounded-xl border border-dashed border-zinc-300 bg-white p-12 text-center space-y-3"
-      >
-        <Building2 class="mx-auto h-10 w-10 text-zinc-400" />
-        <h3 class="text-sm font-semibold text-zinc-900">Tidak ada fasilitas yang cocok</h3>
-        <p class="text-xs text-zinc-500 max-w-sm mx-auto">
-          Coba ganti filter wilayah atau tanyakan alternatif lokasi lain kepada PilahAI.
-        </p>
-        <Button
-          size="sm"
-          variant="outline"
-          @click="selectedWilayah = 'semua'; selectedJenis = 'semua'; searchQuery = ''"
-        >
-          Reset Semua Filter
-        </Button>
-      </div>
-
-      <!-- Facility Cards Grid -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <Card
-          v-for="fasilitas in filteredFasilitas"
-          :key="fasilitas.id || fasilitas.nama"
-          class="flex flex-col justify-between border-zinc-200/90 hover:shadow-md hover:border-zinc-300 transition-all duration-200"
-        >
-          <CardHeader class="pb-3">
-            <div class="flex items-start justify-between gap-2 mb-2">
-              <Badge
-                variant="outline"
-                :class="[
-                  'text-[10px] font-semibold uppercase',
-                  fasilitas.jenis === 'bank-sampah' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
-                  fasilitas.jenis === 'tps-3r' ? 'bg-blue-50 text-blue-800 border-blue-200' :
-                  fasilitas.jenis === 'dropbox-b3' ? 'bg-amber-50 text-amber-800 border-amber-200' :
-                  'bg-zinc-100 text-zinc-800 border-zinc-200'
-                ]"
-              >
-                {{ jenisFasilitasConfig[fasilitas.jenis]?.label || fasilitas.jenis }}
-              </Badge>
-
-              <span v-if="fasilitas.jarakKm" class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                <Navigation class="h-3 w-3" />
-                {{ fasilitas.jarakKm }} km
+        <!-- Facility Cards List -->
+        <div class="space-y-3.5">
+          <div
+            v-for="fac in filteredFacilities"
+            :key="fac.id"
+            :id="`facility-card-${fac.id}`"
+            @click="focusFacility(fac)"
+            :class="[
+              'bg-white border rounded-2xl p-5 shadow-2xs hover:shadow-card-hover transition-all duration-200 cursor-pointer space-y-3.5',
+              activeFacilityId === fac.id ? 'border-brand-600 ring-2 ring-brand-500/20' : 'border-slate-200/80 hover:border-brand-300'
+            ]"
+          >
+            <div class="flex items-start justify-between gap-2">
+              <div class="space-y-1">
+                <span :class="['inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border', fac.typeBadge]">
+                  {{ fac.typeName }}
+                </span>
+                <h3 class="text-base font-bold text-slate-900 leading-snug">
+                  {{ fac.name }}
+                </h3>
+              </div>
+              <span class="shrink-0 px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200/70">
+                {{ fac.distanceKm }} km
               </span>
             </div>
 
-            <CardTitle class="text-base font-bold text-zinc-900 line-clamp-1">
-              {{ fasilitas.nama }}
-            </CardTitle>
-
-            <CardDescription class="text-xs text-zinc-500 flex items-start gap-1.5 mt-1.5 line-clamp-2">
-              <MapPin class="h-3.5 w-3.5 shrink-0 text-zinc-400 mt-0.5" />
-              <span>{{ fasilitas.alamat }} (Kec. {{ fasilitas.wilayah }})</span>
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent class="space-y-3.5 text-xs py-2">
-            <!-- Jam Operasional -->
-            <div class="flex items-center gap-2 text-zinc-600 bg-zinc-50 rounded-lg px-3 py-2 border border-zinc-100">
-              <Clock class="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-              <span class="truncate">{{ fasilitas.jamOperasional }}</span>
+            <!-- Address & Hours -->
+            <div class="space-y-1.5 text-xs text-slate-600">
+              <div class="flex items-start gap-2">
+                <MapPin class="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                <span class="leading-relaxed">{{ fac.address }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <Clock class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span>{{ fac.operatingHours }}</span>
+              </div>
             </div>
 
-            <!-- Jenis Sampah Diterima -->
-            <div class="space-y-1.5">
-              <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Menerima Sampah:</span>
-              <div class="flex flex-wrap gap-1">
+            <!-- Accepted Waste Chips -->
+            <div class="space-y-1.5 pt-1">
+              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Menerima:</span>
+              <div class="flex flex-wrap gap-1.5">
                 <span
-                  v-for="s in fasilitas.sampahDiterima"
-                  :key="s"
-                  class="rounded bg-zinc-100 text-zinc-700 px-2 py-0.5 text-[11px] font-medium"
+                  v-for="(acc, i) in fac.accepted"
+                  :key="i"
+                  class="inline-flex items-center px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 text-[11px] font-medium border border-emerald-200/60"
                 >
-                  {{ s }}
+                  {{ acc }}
                 </span>
               </div>
             </div>
 
-            <!-- Kontak jika ada -->
-            <div v-if="fasilitas.kontak" class="flex items-center gap-2 text-zinc-600 text-xs">
-              <Phone class="h-3.5 w-3.5 text-zinc-400" />
-              <span>{{ fasilitas.kontak }}</span>
+            <!-- Bottom Action: Google Maps Direction Link -->
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs text-slate-400">{{ fac.phone || 'Makassar' }}</span>
+              <a
+                :href="`https://www.google.com/maps/dir/?api=1&destination=${fac.lat},${fac.lng}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                @click.stop
+                class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-800 hover:text-brand-600 hover:underline"
+              >
+                <Navigation class="w-3.5 h-3.5" />
+                <span>Petunjuk Rute</span>
+              </a>
             </div>
-          </CardContent>
 
-          <CardFooter class="pt-3 border-t border-zinc-100 flex items-center justify-between gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              class="flex-1 text-xs gap-1.5 border-zinc-200 hover:bg-zinc-100 text-zinc-700"
-              @click="openGoogleMaps(fasilitas)"
-            >
-              <ExternalLink class="h-3.5 w-3.5" />
-              <span>Buka Peta</span>
-            </Button>
+          </div>
+        </div>
 
-            <Button
-              size="sm"
-              class="flex-1 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
-              @click="askAILocation(fasilitas)"
-            >
-              <Sparkles class="h-3.5 w-3.5" />
-              <span>Tanya AI</span>
-            </Button>
-          </CardFooter>
-        </Card>
       </div>
+
     </div>
-  </div>
+
+  </main>
 </template>

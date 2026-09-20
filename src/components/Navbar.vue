@@ -1,261 +1,269 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import AuthModal from '@/components/AuthModal.vue'
+import { appConfig } from '@/config/app'
 import {
-  Recycle,
-  Sparkles,
   Menu,
   X,
-  LogOut,
-  User,
-  ChevronDown,
   MapPin,
-  Calendar,
-  BookOpen,
-  Search
+  Sparkles,
+  ChevronDown
 } from 'lucide-vue-next'
-
-import { appConfig } from '@/config/app'
 
 const route = useRoute()
 const router = useRouter()
-const { isAuthenticated, userEmail, initAuth, signOut } = useAuth()
+const { isAuthenticated, userEmail, signOut } = useAuth()
 
 const isMobileMenuOpen = ref(false)
-const isProfileDropdownOpen = ref(false)
-const isAuthModalOpen = ref(false)
-const profileDropdownRef = ref(null)
+const domicile = ref({ city: 'Kota Makassar', district: 'Panakkukang' })
 
-// NavLinks standar (PilahAI diakses melalui tombol khusus berwarna hijau)
-const navLinks = [
-  { name: 'Beranda', path: '/', icon: Recycle },
-  { name: 'Pilah Sampah', path: '/pilah', icon: Search },
-  { name: 'Cari Lokasi', path: '/lokasi', icon: MapPin },
-  { name: 'Jadwal Angkut', path: '/jadwal', icon: Calendar },
-  { name: 'Panduan', path: '/panduan', icon: BookOpen },
+defineEmits(['open-domicile', 'open-profile', 'open-auth'])
+
+const isLandingRoute = computed(() => route.path === '/')
+const isAuthRoute = computed(() => route.path === '/login' || route.path === '/register')
+
+const landingSections = [
+  { name: 'Tentang', id: 'tentang' },
+  { name: 'Tantangan', id: 'masalah' },
+  { name: 'Fitur', id: 'fitur' },
+  { name: 'Dampak', id: 'sdg' },
+  { name: 'FAQ', id: 'faq' }
 ]
 
-// Pengecekan aktif: mencocokkan rute secara presisi agar /pilah-ai tidak salah menyalakan /pilah
-const isActive = (path) => {
-  if (path === '/') return route.path === '/'
+const appNavTabs = [
+  { name: 'Pilah Sampah', path: '/pilah' },
+  { name: 'Cari Lokasi', path: '/lokasi' },
+  { name: 'Jadwal Angkut', path: '/jadwal' },
+  { name: 'Panduan', path: '/panduan' }
+]
+
+const isTabActive = (path) => {
   return route.path === path || route.path.startsWith(`${path}/`)
 }
 
-// Status aktif untuk halaman PilahAI
-const isPilahAiActive = computed(() => {
-  return route.path === '/pilah-ai' || route.path.startsWith('/pilah-ai/')
+const userName = computed(() => {
+  try {
+    const raw = localStorage.getItem('pilahki_user')
+    if (raw) {
+      const u = JSON.parse(raw)
+      return u.name || "Warga PilahKi'"
+    }
+  } catch (e) {}
+  return userEmail.value ? userEmail.value.split('@')[0] : "Warga PilahKi'"
 })
 
-const userInitials = computed(() => {
-  if (!userEmail.value) return 'U'
-  return userEmail.value.slice(0, 2).toUpperCase()
+const userInitial = computed(() => {
+  return userName.value.trim().charAt(0).toUpperCase()
 })
 
-const toggleProfileDropdown = () => {
-  isProfileDropdownOpen.value = !isProfileDropdownOpen.value
-}
+onMounted(() => {
+  try {
+    const raw = localStorage.getItem('pilahki_domicile')
+    if (raw) {
+      domicile.value = JSON.parse(raw)
+    }
+  } catch (e) {}
+})
 
-const handleClickOutside = (e) => {
-  if (profileDropdownRef.value && !profileDropdownRef.value.contains(e.target)) {
-    isProfileDropdownOpen.value = false
+const scrollToSection = (id) => {
+  isMobileMenuOpen.value = false
+  if (route.path !== '/') {
+    router.push(`/#${id}`)
+    return
+  }
+  const el = document.getElementById(id)
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth' })
   }
 }
 
 const handleLogout = async () => {
-  isProfileDropdownOpen.value = false
   isMobileMenuOpen.value = false
   await signOut()
+  router.push('/login')
 }
-
-onMounted(() => {
-  initAuth()
-  document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
 </script>
 
 <template>
-  <header class="sticky top-0 z-40 w-full border-b border-zinc-200/80 bg-white/90 backdrop-blur-md transition-all">
-    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-      <!-- Logo -->
-      <div class="flex items-center gap-8">
-        <router-link to="/" class="flex items-center gap-2.5 group focus-visible:outline-none">
-          <img
-            :src="appConfig.logo"
-            :alt="appConfig.name"
-            class="h-10 w-auto object-contain group-hover:scale-105 transition-transform"
-          />
-        </router-link>
-
-        <!-- Desktop Navigation Links (Beranda, Pilah Sampah, Cari Lokasi, Jadwal Angkut, Panduan) -->
-        <nav class="hidden md:flex items-center space-x-1" aria-label="Navigasi Utama">
-          <router-link
-            v-for="link in navLinks"
-            :key="link.path"
-            :to="link.path"
-            :class="[
-              'px-3.5 py-2 text-sm font-medium rounded-lg transition-all',
-              isActive(link.path)
-                ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-2xs'
-                : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50'
-            ]"
-          >
-            {{ link.name }}
+  <header class="sticky top-0 z-40 w-full glass-nav border-b border-slate-100 bg-white/95 backdrop-blur-md transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Sisi Kiri: Logo & Navigasi -->
+        <div class="flex items-center gap-6 lg:gap-10">
+          <router-link to="/" class="flex items-center py-1 shrink-0">
+            <img :src="appConfig.logo" :alt="appConfig.name" class="h-11 sm:h-13 w-auto object-contain" />
           </router-link>
-        </nav>
-      </div>
 
-      <!-- Right Action Area -->
-      <div class="flex items-center gap-3">
-        <!-- Tombol Hijau Tanya PilahAI dengan Efek Focus / Active State -->
-        <router-link to="/pilah-ai">
-          <Button
-            variant="default"
-            size="sm"
-            :class="[
-              'hidden sm:inline-flex items-center gap-2 rounded-lg text-sm transition-all duration-200 cursor-pointer',
-              isPilahAiActive
-                ? 'bg-emerald-700 text-white font-semibold ring-2 ring-emerald-600 ring-offset-2 ring-offset-white shadow-md shadow-emerald-700/30 scale-[1.02]'
-                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs font-medium hover:scale-[1.01]'
-            ]"
-          >
-            <!-- Titik Indikator Aktif saat berada di halaman PilahAI -->
-            <span v-if="isPilahAiActive" class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-200"></span>
-            </span>
-            <Sparkles v-else class="h-4 w-4 text-emerald-200" />
-
-            <span>Tanya PilahAI</span>
-          </Button>
-        </router-link>
-
-        <!-- Auth Area -->
-        <div v-if="isAuthenticated" ref="profileDropdownRef" class="relative">
-          <button
-            type="button"
-            class="flex items-center gap-2 rounded-full p-1 hover:bg-zinc-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 cursor-pointer"
-            @click.stop="toggleProfileDropdown"
-            aria-label="Menu Profil"
-          >
-            <Avatar class="h-8 w-8 border border-emerald-200">
-              <AvatarFallback>{{ userInitials }}</AvatarFallback>
-            </Avatar>
-            <ChevronDown class="h-3.5 w-3.5 text-zinc-500" />
-          </button>
-
-          <!-- Profile Dropdown -->
-          <div
-            v-if="isProfileDropdownOpen"
-            class="absolute right-0 mt-2 w-56 rounded-xl border border-zinc-200 bg-white p-2 shadow-lg z-50 animate-in fade-in zoom-in-95 duration-150"
-          >
-            <div class="px-3 py-2 border-b border-zinc-100 mb-1">
-              <p class="text-xs text-zinc-400 font-medium">Akun Terdaftar</p>
-              <p class="text-xs font-medium text-zinc-900 truncate" :title="userEmail">{{ userEmail }}</p>
-            </div>
-            <router-link
-              to="/pilah"
-              class="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-100 transition-colors"
-              @click="isProfileDropdownOpen = false"
-            >
-              <Search class="h-3.5 w-3.5 text-zinc-500" />
-              <span>Katalog Sampah</span>
-            </router-link>
-            <router-link
-              to="/pilah-ai"
-              class="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-100 transition-colors"
-              @click="isProfileDropdownOpen = false"
-            >
-              <Sparkles class="h-3.5 w-3.5 text-emerald-600" />
-              <span>Asisten PilahAI</span>
-            </router-link>
-            <div class="my-1 border-t border-zinc-100"></div>
+          <!-- 1. Menu Navigasi Landing Page (Jika di Beranda) -->
+          <nav v-if="isLandingRoute" class="hidden md:flex items-center gap-8 font-medium text-slate-600 text-sm">
             <button
+              v-for="sec in landingSections"
+              :key="sec.id"
               type="button"
-              class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-              @click="handleLogout"
+              class="hover:text-brand-800 transition-colors cursor-pointer"
+              @click="scrollToSection(sec.id)"
             >
-              <LogOut class="h-3.5 w-3.5" />
-              <span>Keluar</span>
+              {{ sec.name }}
             </button>
-          </div>
+          </nav>
+
+          <!-- 2. Menu Navigasi Tab Internal Aplikasi (Jika di Halaman App) -->
+          <nav v-else-if="!isAuthRoute" class="hidden md:flex items-center space-x-1 lg:space-x-2" aria-label="Navigasi Menu Utama">
+            <router-link
+              v-for="tab in appNavTabs"
+              :key="tab.path"
+              :to="tab.path"
+              :class="[
+                'px-3.5 lg:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all',
+                isTabActive(tab.path)
+                  ? 'bg-brand-800 text-white font-bold shadow-xs'
+                  : 'text-slate-600 hover:text-brand-800 hover:bg-slate-100/70'
+              ]"
+            >
+              {{ tab.name }}
+            </router-link>
+          </nav>
         </div>
 
-        <Button
-          v-else
-          variant="outline"
-          size="sm"
-          class="border-zinc-300 text-zinc-700 hover:bg-zinc-100 gap-1.5 font-medium"
-          @click="isAuthModalOpen = true"
-        >
-          <User class="h-3.5 w-3.5" />
-          <span>Masuk</span>
-        </Button>
+        <!-- Sisi Kanan: Action & Profile Area -->
+        <div class="flex items-center gap-3">
+          
+          <!-- Mode Landing Page: Masuk & Daftar -->
+          <template v-if="isLandingRoute">
+            <template v-if="!isAuthenticated">
+              <router-link
+                to="/login"
+                class="hidden md:inline-flex px-4 py-2 text-sm font-bold text-brand-800 hover:text-brand-600 transition-colors"
+              >
+                Masuk
+              </router-link>
+              <router-link
+                to="/register"
+                class="hidden md:inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-800 hover:bg-brand-700 shadow-sm hover:shadow transition-all duration-200"
+              >
+                Daftar
+              </router-link>
+            </template>
+            <template v-else>
+              <router-link
+                to="/pilah"
+                class="hidden md:inline-flex items-center px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-800 hover:bg-brand-700 shadow-sm"
+              >
+                Buka Aplikasi
+              </router-link>
+            </template>
+          </template>
 
-        <!-- Mobile Menu Hamburger Button -->
-        <button
-          type="button"
-          class="flex md:hidden h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
-          @click="isMobileMenuOpen = !isMobileMenuOpen"
-          aria-label="Buka Menu"
-        >
-          <X v-if="isMobileMenuOpen" class="h-5 w-5" />
-          <Menu v-else class="h-5 w-5" />
-        </button>
+          <!-- Mode In-App Header (Sesuai App/index.html Binfinity) -->
+          <template v-else-if="!isAuthRoute">
+            
+            <!-- Domicile Pill Button -->
+            <button
+              type="button"
+              @click="$emit('open-domicile')"
+              class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-50 border border-brand-100/80 text-brand-800 text-xs font-bold hover:bg-brand-100 transition-colors cursor-pointer"
+              title="Ubah wilayah domisili Anda"
+            >
+              <MapPin class="w-3.5 h-3.5 text-brand-600" />
+              <span>{{ domicile.district || 'Panakkukang' }}, {{ domicile.city || 'Makassar' }}</span>
+            </button>
+
+            <!-- User Display & Avatar (Desktop, Jika Login) -->
+            <div
+              v-if="isAuthenticated"
+              @click="$emit('open-profile')"
+              class="hidden md:flex items-center gap-3 cursor-pointer group p-1.5 rounded-xl hover:bg-slate-100/70 transition-colors"
+              title="Buka profil warga"
+            >
+              <div class="flex flex-col text-right">
+                <span class="text-sm font-bold text-slate-900 leading-tight group-hover:text-brand-800 transition-colors">{{ userName }}</span>
+                <span class="text-[11px] text-slate-500">{{ userEmail || 'warga@pilahki.id' }}</span>
+              </div>
+
+              <div
+                class="w-10 h-10 rounded-xl bg-brand-800 text-white flex items-center justify-center font-bold text-sm shadow-xs select-none group-hover:bg-brand-700 transition-colors"
+              >
+                <span>{{ userInitial }}</span>
+              </div>
+            </div>
+
+            <!-- Tombol Masuk & Daftar (Desktop, Jika Tamu) -->
+            <div v-else class="hidden md:flex items-center gap-2">
+              <router-link
+                :to="{ path: '/login', query: { redirect: route.fullPath } }"
+                class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold text-brand-800 hover:bg-brand-50 transition-colors"
+              >
+                Masuk
+              </router-link>
+              <router-link
+                :to="{ path: '/register', query: { redirect: route.fullPath } }"
+                class="inline-flex items-center px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-brand-800 hover:bg-brand-700 shadow-xs transition-all"
+              >
+                Daftar
+              </router-link>
+            </div>
+          </template>
+
+          <!-- Mode Auth Route (Login/Register): Link Kembali -->
+          <template v-else>
+            <router-link
+              to="/"
+              class="text-xs sm:text-sm font-semibold text-slate-500 hover:text-brand-800 transition-colors"
+            >
+              Kembali ke Beranda
+            </router-link>
+          </template>
+
+          <!-- Mobile Menu Hamburger Button (Hanya di mode Landing Page) -->
+          <div v-if="isLandingRoute" class="md:hidden flex items-center">
+            <button
+              type="button"
+              class="p-2 rounded-xl text-slate-600 hover:text-brand-800 hover:bg-brand-50 focus:outline-none cursor-pointer"
+              @click="isMobileMenuOpen = !isMobileMenuOpen"
+              aria-label="Buka Menu"
+            >
+              <X v-if="isMobileMenuOpen" class="w-6 h-6" />
+              <Menu v-else class="w-6 h-6" />
+            </button>
+          </div>
+
+        </div>
       </div>
     </div>
 
-    <!-- Mobile Drawer / Dropdown Menu -->
+    <!-- Mobile Drawer Navigation (Khusus Landing Page) -->
     <div
-      v-if="isMobileMenuOpen"
-      class="md:hidden border-b border-zinc-200 bg-white px-4 pt-2 pb-6 space-y-2 shadow-xl"
+      v-if="isLandingRoute && isMobileMenuOpen"
+      class="md:hidden border-t border-slate-100 bg-white/95 backdrop-blur-md px-4 pt-3 pb-6 space-y-3 transition-all"
     >
-      <router-link
-        v-for="link in navLinks"
-        :key="link.path"
-        :to="link.path"
-        :class="[
-          'flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-lg transition-colors',
-          isActive(link.path)
-            ? 'bg-emerald-50 text-emerald-800 font-semibold'
-            : 'text-zinc-700 hover:bg-zinc-100'
-        ]"
-        @click="isMobileMenuOpen = false"
+      <button
+        v-for="sec in landingSections"
+        :key="sec.id"
+        type="button"
+        class="block w-full text-left py-2 text-slate-700 font-semibold hover:text-brand-800"
+        @click="scrollToSection(sec.id)"
       >
-        <component :is="link.icon" class="h-4 w-4" :class="isActive(link.path) ? 'text-emerald-700' : 'text-zinc-500'" />
-        <span>{{ link.name }}</span>
-      </router-link>
+        {{ sec.name }}
+      </button>
 
-      <div class="pt-2 border-t border-zinc-100">
+      <div class="pt-4 border-t border-slate-100 flex flex-col gap-2">
         <router-link
-          to="/pilah-ai"
-          :class="[
-            'flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg font-semibold text-sm transition-all',
-            isPilahAiActive
-              ? 'bg-emerald-700 text-white ring-2 ring-emerald-600 ring-offset-2 ring-offset-white shadow-md'
-              : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm'
-          ]"
+          to="/login"
+          class="w-full text-center py-2.5 rounded-xl border border-brand-800 text-brand-800 font-bold text-sm hover:bg-brand-50"
           @click="isMobileMenuOpen = false"
         >
-          <Sparkles class="h-4 w-4 text-emerald-200" />
-          <span>Tanya PilahAI (Chatbot)</span>
+          Masuk
+        </router-link>
+        <router-link
+          to="/register"
+          class="w-full text-center py-2.5 rounded-xl bg-brand-800 text-white font-bold text-sm hover:bg-brand-700 shadow-sm"
+          @click="isMobileMenuOpen = false"
+        >
+          Daftar
         </router-link>
       </div>
     </div>
-
-    <!-- Global Auth Modal -->
-    <AuthModal
-      :is-open="isAuthModalOpen"
-      @close="isAuthModalOpen = false"
-      @auth-success="isAuthModalOpen = false"
-    />
   </header>
 </template>

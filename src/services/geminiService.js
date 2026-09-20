@@ -1,10 +1,9 @@
-// Perkhidmatan Gemini AI dengan Function Calling untuk 4 Fitur Utama Pilahki (PRD Seksyen 7.5 & 8)
-import { daftarSampah, kategoriConfig } from '../data/sampahData.js'
-import { daftarFasilitas, jenisFasilitasConfig } from '../data/lokasiData.js'
-import { wilayahList, jadwalMaster } from '../data/jadwalData.js'
-import { kategoriEdukasiList, artikelPanduan, faqPanduan } from '../data/panduanData.js'
+// Perkhidmatan Gemini AI dengan Function Calling untuk PilahKi' Makassar (PRD Seksyen 7.5 & 8)
+import { wasteData, CATEGORY_THEMES, daftarSampah, kategoriConfig } from '../data/sampahData.js'
+import { makassarFacilities, jenisFasilitasConfig, daftarFasilitas } from '../data/lokasiData.js'
+import { MAKASSAR_DISTRICTS, schedulesDatabase, wilayahList, jadwalMaster } from '../data/jadwalData.js'
+import { guidesData, kategoriEdukasiList, artikelPanduan, faqPanduan } from '../data/panduanData.js'
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || ''
 const GEMINI_PRIMARY_MODEL = 'gemini-3.5-flash-lite'
 const GEMINI_FALLBACK_MODEL = 'gemini-3.5-flash'
 
@@ -17,122 +16,220 @@ function getGeminiEndpoint(modelName = GEMINI_PRIMARY_MODEL) {
   return `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`
 }
 
+// Fungsi pembersih karakter em-dash (—) dan en-dash (–) agar tidak terkesan kaku seperti robot AI
+export function cleanDashes(text) {
+  if (!text || typeof text !== 'string') return ''
+  let cleaned = text
+  // 1. Rentang angka/jam: 06.30 — 09.00 atau 5–10 -> "sampai"
+  cleaned = cleaned.replace(/(\d+)\s*[—–]\s*(\d+)/g, '$1 sampai $2')
+  // 2. Awal baris tanda strip -> bullet
+  cleaned = cleaned.replace(/(^|\n)\s*[—–]\s*/g, '$1• ')
+  // 3. Penghubung antar-klausa kata -> koma
+  cleaned = cleaned.replace(/\s*[—–]\s*/g, ', ')
+  // 4. Semua sisa em-dash atau en-dash
+  cleaned = cleaned.replace(/[—–]/g, ', ')
+  // 5. Rapikan koma berlebih
+  cleaned = cleaned.replace(/,\s*,/g, ', ')
+  cleaned = cleaned.replace(/,\s*([.?!:])/g, '$1')
+  return cleaned
+}
+
+// Mendapatkan waktu dan hari saat ini di zona waktu Makassar (WITA, UTC+8)
+export function getCurrentMakassarTime() {
+  const now = new Date()
+  let dayName = 'Senin'
+  let timeString = '08.00 WITA'
+  let fullDate = 'Hari ini'
+
+  try {
+    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+    const witaDate = new Date(now.getTime() + (8 * 60 * 60 * 1000))
+    dayName = dayNames[witaDate.getUTCDay()]
+    
+    const hours = String(witaDate.getUTCHours()).padStart(2, '0')
+    const minutes = String(witaDate.getUTCMinutes()).padStart(2, '0')
+    timeString = `${hours}.${minutes} WITA`
+
+    const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+    fullDate = `${dayName}, ${witaDate.getUTCDate()} ${months[witaDate.getUTCMonth()]} ${witaDate.getUTCFullYear()}`
+  } catch (e) {
+    console.warn('[PilahAI] Error resolving time:', e)
+  }
+
+  return { dayName, timeString, fullDate, now }
+}
+
+// Mendapatkan domisili Makassar yang telah dipilih pengguna di sistem
+export function getUserDomicile() {
+  try {
+    const raw = localStorage.getItem('pilahki_domicile')
+    if (raw) {
+      const d = JSON.parse(raw)
+      return {
+        city: d.city || 'Kota Makassar',
+        district: d.district || 'Panakkukang',
+        detail: d.detail || ''
+      }
+    }
+  } catch (e) {}
+  return { city: 'Kota Makassar', district: 'Panakkukang', detail: '' }
+}
+
+// Mendapatkan profil pengguna
+export function getUserProfile() {
+  try {
+    const raw = localStorage.getItem('pilahki_user')
+    if (raw) {
+      const u = JSON.parse(raw)
+      return { name: u.name || "Warga PilahKi'", email: u.email || '' }
+    }
+  } catch (e) {}
+  return { name: "Warga PilahKi'", email: '' }
+}
+
 // ============================================================================
-// 1. Fungsi-Fungsi Dalaman (Internal Tools)
+// 1. Fungsi-Fungsi Internal (Tools Execution)
 // ============================================================================
 
-// Fitur 1: Semak Kategori Sampah
+// Fitur 1: Cek Kategori Sampah
 export function toolCekKategoriSampah(args) {
   const query = (args?.namaSampah || '').toLowerCase().trim()
   if (!query) return { status: 'error', pesan: 'Nama sampah tidak boleh kosong.' }
 
-  const match = daftarSampah.find(item => {
-    const namaItem = item.nama.toLowerCase()
+  const match = wasteData.find(item => {
+    const namaItem = item.name.toLowerCase()
     return namaItem.includes(query) ||
       query.includes(namaItem) ||
-      item.alias.some(a => {
-        const aliasLower = a.toLowerCase()
-        return aliasLower.includes(query) || query.includes(aliasLower)
-      })
+      (item.keywords && item.keywords.some(k => query.includes(k.toLowerCase()) || k.toLowerCase().includes(query)))
   })
 
   if (match) {
     return {
       status: 'found',
-      nama: match.nama,
-      kategori: match.kategori,
-      kategoriLabel: kategoriConfig[match.kategori]?.label || match.kategori,
-      penanganan: match.penanganan,
-      tujuanPenyaluran: match.tujuanPenyaluran,
-      tipsPraktis: match.tipsPraktis
+      nama: match.name,
+      kategori: match.categoryName,
+      nilaiEkonomis: match.recyclableValue,
+      deskripsi: match.shortDesc,
+      langkahPenanganan: match.steps,
+      tempatPenyaluran: match.destination,
+      pantangan: match.prohibitions
     }
   }
 
   return {
     status: 'not_found',
-    pesan: `Sampah "${query}" belum tercatat spesifik di database cepat, namun umumnya: jika mudah membusuk masuk Organik, jika kemasan kering (kardus/plastik/kaca/kaleng) masuk Anorganik, jika sachet berlaminasi/kotor masuk Residu, dan jika baterai/bohlam/kimia masuk B3.`
+    pesan: `Sampah "${query}" belum tercatat spesifik di katalog 22 sampah umum Makassar, namun panduan umum: jika sisa makanan/organik masuk Organik (kompos/biopori), jika kardus/botol/plastik bersih masuk Anorganik (Bank Sampah), jika baterai/lampu/kimia masuk Drop Box B3, dan sachet kotor/popok masuk Residu.`
   }
 }
 
-// Fitur 2: Cari Fasiliti Terdekat
+// Fitur 2: Cari Fasilitas Terdekat (Menggunakan Domisili Pengguna Secara Default)
 export function toolCariFasilitas(args) {
-  const wilayah = (args?.wilayah || '').toLowerCase().trim()
-  const jenisSampah = (args?.jenisSampah || '').toLowerCase().trim()
-  const rawJenisFasilitas = (args?.jenisFasilitas || '').toLowerCase().trim().replace(/[\s_]+/g, '-')
+  const domicile = getUserDomicile()
+  let inputWilayah = (args?.wilayah || '').toLowerCase().trim()
 
-  let list = daftarFasilitas.filter(f => {
-    if (wilayah && !f.wilayah.toLowerCase().includes(wilayah) && !f.kecamatan.toLowerCase().includes(wilayah)) {
+  if (!inputWilayah || inputWilayah.includes('saya') || inputWilayah.includes('sini') || inputWilayah.includes('dekat')) {
+    inputWilayah = domicile.district.toLowerCase()
+  }
+
+  const jenisSampah = (args?.jenisSampah || '').toLowerCase().trim()
+  const rawJenis = (args?.jenisFasilitas || '').toLowerCase().trim().replace(/[\s_]+/g, '-')
+
+  let list = makassarFacilities.filter(f => {
+    const distMatch = f.district.toLowerCase().includes(inputWilayah) || inputWilayah.includes(f.district.toLowerCase())
+    if (inputWilayah && !distMatch) {
       return false
     }
-    if (rawJenisFasilitas) {
-      const fJenisNorm = f.jenis.toLowerCase()
-      if (!fJenisNorm.includes(rawJenisFasilitas) && !rawJenisFasilitas.includes(fJenisNorm)) {
-        return false
-      }
+    if (rawJenis) {
+      const fNorm = f.type.toLowerCase().replace(/_/g, '-')
+      if (!fNorm.includes(rawJenis) && !rawJenis.includes(fNorm)) return false
     }
     if (jenisSampah) {
-      const accepts = f.sampahDiterima.some(s => s.toLowerCase().includes(jenisSampah))
+      const accepts = f.accepted.some(s => s.toLowerCase().includes(jenisSampah))
       if (!accepts) return false
     }
     return true
   })
 
-  // Jika terlalu sempit, pulangkan fasiliti terdekat yang ada
   if (!list.length) {
-    list = daftarFasilitas.slice(0, 3)
+    list = makassarFacilities.slice(0, 3)
   }
 
   return {
     status: 'success',
+    wilayahAcuan: `Kecamatan ${domicile.district}, Kota Makassar`,
     total: list.length,
     fasilitas: list.map(f => ({
-      nama: f.nama,
-      jenis: jenisFasilitasConfig[f.jenis]?.label || f.jenis,
-      alamat: f.alamat,
-      jarak: `${f.jarakMeter} meter`,
-      jamBuka: f.jamOperasional,
-      sampahDiterima: f.sampahDiterima,
-      kontak: f.kontakWa,
-      catatan: f.catatan
+      nama: f.name,
+      jenis: f.typeName,
+      kecamatan: f.district,
+      alamat: f.address,
+      jamBuka: f.operatingHours,
+      sampahDiterima: f.accepted,
+      kontak: f.phone
     }))
   }
 }
 
-// Fitur 3: Semak Jadual Angkut Wilayah
+// Fitur 3: Cek Jadwal Angkut (Sadar Waktu & Domisili Makassar)
 export function toolCekJadwal(args) {
-  const wilayahNama = (args?.wilayah || '').toLowerCase().trim()
+  const domicile = getUserDomicile()
+  const { dayName, fullDate, timeString } = getCurrentMakassarTime()
+  let wilayahNama = (args?.wilayah || '').toLowerCase().trim()
   const jenisSampah = (args?.jenisSampah || '').toLowerCase().trim()
 
-  // Cari ID wilayah yang sepadan
-  let matchedWilayah = wilayahList.find(w => {
-    return w.kecamatan.toLowerCase().includes(wilayahNama) ||
-      w.kelurahan.toLowerCase().includes(wilayahNama) ||
-      w.rw.toLowerCase().includes(wilayahNama)
-  })
-
-  if (!matchedWilayah) {
-    const words = wilayahNama.split(/\s+/)
-    matchedWilayah = wilayahList.find(w => {
-      return words.some(word => word.length > 2 && (w.kecamatan.toLowerCase().includes(word) || w.kelurahan.toLowerCase().includes(word)))
-    }) || wilayahList[0] // fallback ke Sukajadi default
+  if (!wilayahNama || wilayahNama.includes('saya') || wilayahNama.includes('sini') || wilayahNama.includes('daerah') || wilayahNama.includes('tempat')) {
+    wilayahNama = domicile.district.toLowerCase()
   }
 
-  let jadwal = jadwalMaster[matchedWilayah.id] || []
+  let matchedDistrict = MAKASSAR_DISTRICTS.find(d => {
+    return d.toLowerCase().includes(wilayahNama) || wilayahNama.includes(d.toLowerCase())
+  })
+
+  if (!matchedDistrict) {
+    matchedDistrict = domicile.district || 'Panakkukang'
+  }
+
+  const rawJadwal = schedulesDatabase[matchedDistrict] || schedulesDatabase['Panakkukang'] || []
+  let jadwal = rawJadwal
+
   if (jenisSampah) {
-    const filtered = jadwal.filter(j => j.kategori.includes(jenisSampah) || j.jenisSampah.toLowerCase().includes(jenisSampah))
+    const filtered = jadwal.filter(j => j.category.toLowerCase().includes(jenisSampah))
     if (filtered.length) jadwal = filtered
+  }
+
+  // Cari jadwal hari ini
+  const hariIniJadwal = jadwal.find(j => j.day.toLowerCase() === dayName.toLowerCase())
+
+  // Cari jadwal penjemputan aktif berikutnya (selain hari ini jika hari ini libur, atau jadwal besok/lusa)
+  const dayOrder = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+  const todayIdx = dayOrder.findIndex(d => d.toLowerCase() === dayName.toLowerCase())
+  let nextPickup = null
+
+  for (let i = 1; i <= 7; i++) {
+    const nextDayName = dayOrder[(todayIdx + i) % 7]
+    const found = jadwal.find(j => j.day.toLowerCase() === nextDayName.toLowerCase() && j.status === 'Ada Penjemputan')
+    if (found) {
+      nextPickup = found
+      break
+    }
   }
 
   return {
     status: 'success',
-    wilayah: `${matchedWilayah.kecamatan} - ${matchedWilayah.kelurahan} (${matchedWilayah.rw})`,
-    tpsTerdekat: matchedWilayah.tpsTerdekat,
-    jadwal: jadwal.map(j => ({
-      hari: j.hari,
-      waktu: j.waktu,
-      jenisSampah: j.jenisSampah,
-      kategori: j.kategori,
-      catatan: j.catatan
+    hariIni: dayName,
+    tanggalHariIni: fullDate,
+    waktuSekarang: timeString,
+    kecamatan: matchedDistrict,
+    wilayahLengkap: `Kecamatan ${matchedDistrict}, Kota Makassar`,
+    jadwalHariIni: hariIniJadwal || null,
+    penjemputanTerdekat: nextPickup || null,
+    jadwalLengkap: jadwal.map(j => ({
+      hari: j.day,
+      status: j.status,
+      waktu: j.time,
+      kategoriSampah: j.category,
+      armada: j.vehicle,
+      catatan: j.notes
     }))
   }
 }
@@ -141,52 +238,26 @@ export function toolCekJadwal(args) {
 export function toolCariPanduan(args) {
   const topik = (args?.topik || '').toLowerCase().trim()
 
-  const isOrganik = topik.includes('organik')
-  const isAnorganik = topik.includes('anorganik') || topik.includes('nonorganik') || topik.includes('non-organik')
+  const match = guidesData.find(g => {
+    return g.title.toLowerCase().includes(topik) ||
+      g.category.toLowerCase().includes(topik) ||
+      g.summary.toLowerCase().includes(topik)
+  })
 
-  // Panduan komparatif organik vs anorganik
-  if (isOrganik && isAnorganik) {
+  if (match) {
     return {
       status: 'success',
-      ringkasanEdukasi: `Membedakan sampah organik dan anorganik (non-organik) itu sangat mudah, kuncinya ada pada **sumbernya** dan **bisa membusuk atau tidak**:\n\n` +
-        `**1. Sampah Organik (Bisa Membusuk)**\n` +
-        `• **Asal:** Sisa makhluk hidup (tumbuhan, hewan, dapur).\n` +
-        `• **Ciri:** Mudah hancur secara alami dalam hitungan hari/minggu dan berbau bila dibiarkan lembap.\n` +
-        `• **Contoh:** Sisa sayur & buah, sisa makanan/nasi, daun rontok, kulit telur, ampas kopi/teh, tulang ayam/ikan.\n` +
-        `• **Pengelolaan:** Tiriskan airnya, simpan di wadah tertutup, bisa diolah jadi kompos atau pakan maggot.\n\n` +
-        `**2. Sampah Non-Organik / Anorganik (Tidak Bisa Membusuk)**\n` +
-        `• **Asal:** Buatan manusia atau proses industri sintetis.\n` +
-        `• **Ciri:** Kering, awet, butuh puluhan hingga ratusan tahun untuk terurai di alam.\n` +
-        `• **Contoh:** Botol plastik, kantong kresek, kardus, kaleng minuman, wadah kaca, styrofoam.\n` +
-        `• **Pengelolaan:** Cuci bilas bersih dari minyak/sisa isi, keringkan, remas/lipat agar ringkas, lalu kumpulkan untuk disetor ke Bank Sampah terdekat.\n\n` +
-        `*Rumus Cepat:* Tanyakan ke diri sendiri: *"Apakah benda ini bakal membusuk dan hancur sendiri dalam 1-2 minggu?"*\n` +
-        `• Kalau **Iya** &rarr; Masuk **Organik**\n` +
-        `• Kalau **Tidak** &rarr; Masuk **Anorganik**`
+      judul: match.title,
+      kategori: match.category,
+      ringkasan: match.summary,
+      waktuBaca: match.readTime
     }
   }
 
-  const words = topik.split(/\s+/).filter(w => w.length > 2)
-  const kategori = kategoriEdukasiList.find(k => {
-    return words.some(w => k.id.includes(w) || k.nama.toLowerCase().includes(w) || k.contoh.some(c => c.toLowerCase().includes(w)))
-  })
-
-  const artikel = artikelPanduan.find(a => {
-    return words.some(w => a.judul.toLowerCase().includes(w) || a.ringkasan.toLowerCase().includes(w))
-  })
-
   return {
     status: 'success',
-    panduanKategori: kategori ? {
-      nama: kategori.nama,
-      ringkasan: kategori.ringkasan,
-      langkah: kategori.langkahPraktis,
-      tips: kategori.tipsRina
-    } : null,
-    artikel: artikel ? {
-      judul: artikel.judul,
-      ringkasan: artikel.ringkasan,
-      langkah: artikel.isi
-    } : null
+    judul: 'Prinsip Pemilahan Sampah Mandiri di Rumah',
+    ringkasan: 'Selalu pisahkan sampah dari sumbernya: sampah organik dapur ditiriskan airnya untuk kompos/biopori, sampah anorganik (plastik/kardus/kaleng) dicuci dan dipipihkan untuk disetor ke Bank Sampah, limbah B3 (baterai/lampu) disendirikan dalam kotak tertutup, dan sampah residu dibuang ke armada angkut umum.'
   }
 }
 
@@ -198,13 +269,13 @@ const toolsDefinition = [
     functionDeclarations: [
       {
         name: 'cekKategoriSampah',
-        description: 'Mengecek kategori sampah (Organik, Anorganik, B3, Residu), cara penanganan aman, dan tujuan penyaluran.',
+        description: 'Mengecek kategori sampah (Organik, Anorganik, B3, Residu), langkah penanganan, tempat penyaluran, dan pantangan.',
         parameters: {
           type: 'OBJECT',
           properties: {
             namaSampah: {
               type: 'STRING',
-              description: 'Nama barang atau sampah yang ditanyakan warga (misal: baterai, minyak jelantah, botol plastik, popok, sachet).'
+              description: 'Nama barang atau sampah yang ditanyakan warga (misal: botol plastik, baterai, sachet kopi, minyak jelantah, duri ikan).'
             }
           },
           required: ['namaSampah']
@@ -212,51 +283,55 @@ const toolsDefinition = [
       },
       {
         name: 'cariFasilitas',
-        description: 'Mencari lokasi Bank Sampah, TPS 3R, Drop Box B3, atau TPS terdekat di wilayah kota beserta jam operasional.',
+        description: 'Mencari lokasi Bank Sampah, TPS 3R, atau Drop Box B3 di Kota Makassar. Otomatis memprioritaskan domisili pengguna saat ini.',
         parameters: {
           type: 'OBJECT',
           properties: {
             wilayah: {
               type: 'STRING',
-              description: 'Nama kecamatan atau kelurahan (misal: Sukajadi, Coblong, Lengkong, Cicendo, Dago, Pasteur).'
+              description: 'Kecamatan di Makassar (misal: Panakkukang, Rappocini, Tamalanrea, Bontoala, dsb). Jika pengguna tidak menyebut kecamatan lain, kosongkan atau isi wilayah domisili pengguna.'
             },
             jenisSampah: {
               type: 'STRING',
-              description: 'Jenis sampah yang ingin disetor (misal: jelantah, baterai, kardus, plastik).'
+              description: 'Jenis sampah yang ingin disetor (misal: botol, kardus, jelantah, baterai).'
             },
             jenisFasilitas: {
               type: 'STRING',
-              description: 'Tipe fasilitas: bank-sampah, tps-3r, dropbox-b3, atau tps.'
+              description: 'Tipe: bank-sampah, tps-3r, atau drop-box-b3.'
             }
           }
         }
       },
       {
         name: 'cekJadwal',
-        description: 'Mengecek jadwal hari dan jam pengangkutan sampah rutin armada kebersihan berdasarkan wilayah perumahan warga.',
+        description: 'Mengecek jadwal pengangkutan armada kebersihan di kecamatan Kota Makassar. Otomatis memprioritaskan domisili pengguna dan waktu saat ini (hari ini / sekarang).',
         parameters: {
           type: 'OBJECT',
           properties: {
             wilayah: {
               type: 'STRING',
-              description: 'Nama wilayah/kecamatan/kelurahan tempat tinggal warga (misal: Sukajadi, Coblong, Dago, Malabar).'
+              description: 'Kecamatan di Makassar (misal: Panakkukang, Rappocini, Tamalanrea). Jika pengguna menanyakan jadwal "di wilayah saya", gunakan domisili pengguna saat ini.'
+            },
+            hari: {
+              type: 'STRING',
+              description: 'Waktu atau hari spesifik: sekarang, hari ini, besok, atau nama hari tertentu.'
             },
             jenisSampah: {
               type: 'STRING',
-              description: 'Jenis sampah spesifik: organik, anorganik, residu.'
+              description: 'Kategori sampah: organik, anorganik, residu.'
             }
           }
         }
       },
       {
         name: 'cariPanduan',
-        description: 'Mencari tips dan artikel edukasi pemilahan sampah praktis untuk dapur dan rumah tangga.',
+        description: 'Mencari panduan praktis pengolahan sampah (Kompos Takakura, Lubang Biopori, Kode Plastik 1-7, Kotak Aman B3).',
         parameters: {
           type: 'OBJECT',
           properties: {
             topik: {
               type: 'STRING',
-              description: 'Topik panduan (misal: bau sampah dapur, mencuci botol, wadah baterai, sachet).'
+              description: 'Topik panduan (misal: biopori, kompos, takakura, kode plastik, baterai).'
             }
           }
         }
@@ -265,36 +340,50 @@ const toolsDefinition = [
   }
 ]
 
-// System Instruction rasmi mengikut PRD Seksyen 7.5
-const SYSTEM_INSTRUCTION = `Anda adalah "PilahAI", asisten cerdas resmi dari platform Pilahki untuk membantu warga Indonesia (terutama ibu rumah tangga dan masyarakat awam) memilah dan mengelola sampah rumah tangga dengan bahasa santun, ramah, bersahabat, dan ringkas.
+// Membangun System Instruction dinamis dengan konteks waktu dan domisili
+function buildSystemInstruction() {
+  const dom = getUserDomicile()
+  const user = getUserProfile()
+  const { dayName, fullDate, timeString } = getCurrentMakassarTime()
+
+  return `Anda adalah "PilahAI", asisten cerdas resmi dari platform PilahKi' Kota Makassar untuk membantu warga memilah dan mengelola sampah rumah tangga dengan bahasa santun, ramah, bersahabat, ringkas, dan to-the-point.
+
+WAKTU & TANGGAL REAL-TIME DI MAKASSAR (WITA):
+- Hari & Tanggal: ${fullDate} (Hari ${dayName})
+- Jam Saat Ini: ${timeString}
+
+KONTEKS PENGGUNA TERVERIFIKASI:
+- Nama Warga: ${user.name}
+- Domisili Terpilih di Aplikasi: Kecamatan ${dom.district}, ${dom.city}${dom.detail ? ` (${dom.detail})` : ''}
+
+ATURAN PENTING MENGENAI JADWAL ANGKUT (SANGAT KETAT):
+1. JIKA PENGGUNA BERTANYA JADWAL "SEKARANG", "HARI INI", ATAU "TERDEKAT" (contoh: "kapan angkut sampah sekarang?", "hari ini angkut apa?", "jadwal hari ini apa?", "kapan sampah dijemput?", "besok angkut apa?"):
+   - DILARANG MENYEBUTKAN SEMUA HARI DARI SENIN SAMPAI MINGGU! Jangan pernah mencetak daftar panjang 7 hari jika pengguna hanya menanyakan sekarang/hari ini.
+   - FOKUSKAN HANYA PADA HARI INI (Hari ${dayName}) dan pengangkutan terdekat berikutnya (misal: besok atau jadwal armada terdekat).
+   - Jelaskan status hari ini: apakah armada beroperasi menjemput sampah hari ini, ada layanan Bank Sampah, atau libur operasional. Lalu infokan jadwal pengangkutan terdekat berikutnya.
+2. HANYA jika pengguna secara eksplisit meminta jadwal seminggu penuh (contoh: "jadwal seminggu", "jadwal lengkap", "semua hari"), baru Anda sebutkan seluruh hari Senin hingga Minggu.
+3. Otomatis gunakan jadwal untuk domisili pengguna di Kecamatan ${dom.district} tanpa perlu bertanya lagi di mana wilayah pengguna.
 
 ATURAN DOMAIN & FORMAT KETAT:
-1. Anda HANYA membantu seputar pemilahan sampah, kategori sampah (Organik, Anorganik, B3, Residu), fasilitas penerima (Bank Sampah, TPS 3R, Drop Box B3), jadwal angkut, dan panduan edukasi sampah rumah tangga.
-2. JANGAN PERNAH MENGGUNAKAN FORMAT TABEL (| kolom 1 | kolom 2 |). Tabel terlihat sangat buruk di bubble chat.
-3. Untuk menyampaikan jadwal angkut atau daftar fasilitas, WAJIB gunakan format daftar poin ringkas berjarak (bullet points • atau angka 1, 2, 3) yang jelas dan bersih tanpa menggunakan spam emoji.
-   Contoh format jadwal yang benar:
-   • **Senin** (06:30 - 08:30 WIB)
-   - Jenis: Organik (Sisa Makanan)
-   - Catatan: Taruh di depan pagar sebelum jam 06:30.
-4. Jika pengguna bertanya di luar topik sampah (misalnya politik, sains rumit, kode pemrograman, resep masak umum), tolak dengan sangat sopan bahwa Anda hanya bisa membantu seputar pemilahan dan pengelolaan sampah rumah tangga.
-5. Selalu gunakan perkakas fungsi (function calling) yang disediakan (cekKategoriSampah, cariFasilitas, cekJadwal, cariPanduan) saat pengguna bertanya hal yang relevan untuk memberikan informasi akurat dari database Pilahki.
-6. Jangan gunakan istilah teknis rumit. Gunakan bahasa yang mudah dipahami warga biasa, to-the-point, dan ramah.
-7. DILARANG KERAS MENGGUNAKAN EMOJI. Jangan pernah menyisipkan emoji apapun (seperti 🌱, 🤖, 💡, 📍, 📦, 🍃, 🗑️, dsb). Tulis semua respon dalam teks bahasa Indonesia yang bersih, formal-santun, dan profesional.
-8. DILARANG KERAS MENGGUNAKAN TANDA HUBUNG PANJANG / EM-DASH ("—" atau "–"). Tanda strip panjang tersebut membuat kalimat terkesan kaku seperti robot AI. Gunakan tanda baca alami manusia seperti koma (,), titik (.), titik dua (:), atau tanda kurung bila memberikan penjelasan.`
+1. Anda HANYA membantu seputar pemilahan sampah, 4 kategori sampah (Organik, Anorganik, B3, Residu), lokasi fasilitas di Makassar, jadwal armada kecamatan, dan panduan edukasi.
+2. DILARANG MENGGUNAKAN FORMAT TABEL (| kolom 1 | kolom 2 |). Tabel rusak di tampilan bubble chat mobile.
+3. Untuk jadwal atau daftar fasilitas, WAJIB gunakan daftar poin berjarak (bullet points • atau angka 1, 2, 3) yang rapi.
+4. Tolak dengan sopan jika pertanyaan di luar topik pengelolaan sampah.
+5. DILARANG KERAS MENGGUNAKAN EMOJI SPAM. Tulis dalam bahasa Indonesia bersih, santun, dan profesional.
+6. DILARANG MENGGUNAKAN TANDA HUBUNG PANJANG EM-DASH ("—" atau "–"). Gunakan tanda baca alami seperti koma, titik dua (:), atau tanda kurung.`
+}
 
 // ============================================================================
-// 3. Penghantaran Mesej ke Gemini API
+// 3. Penghantaran Pesan ke Gemini API
 // ============================================================================
 export async function sendChatMessageToPilahAI(messagesHistory) {
   const apiKey = getGeminiApiKey()
 
-  // Jika API Key tidak dimasukkan atau default placeholder, gunakan pembantu tempatan cerdas
   if (!apiKey || apiKey === 'your_gemini_api_key_here') {
     return handleLocalSmartAssistant(messagesHistory)
   }
 
   try {
-    // Siapkan riwayat percakapan terkini (maksimal 8 pesan terakhir)
     const validHistory = messagesHistory
       .filter(msg => msg.text && typeof msg.text === 'string')
       .slice(-8)
@@ -304,11 +393,12 @@ export async function sendChatMessageToPilahAI(messagesHistory) {
       parts: [{ text: msg.text }]
     }))
 
-    // Kirim dengan gemini-3.5-flash utama, jika kena 429/503 fallback ke gemini-3.5-flash-lite
+    const systemInstruction = buildSystemInstruction()
     let endpoint = getGeminiEndpoint(GEMINI_PRIMARY_MODEL)
+
     const payload = {
       systemInstruction: {
-        parts: [{ text: SYSTEM_INSTRUCTION }]
+        parts: [{ text: systemInstruction }]
       },
       contents,
       tools: toolsDefinition
@@ -321,7 +411,6 @@ export async function sendChatMessageToPilahAI(messagesHistory) {
     })
 
     if (!response.ok && (response.status === 429 || response.status === 503 || response.status === 404)) {
-      console.warn(`[PilahAI] Model ${GEMINI_PRIMARY_MODEL} (${response.status}), mencoba model fallback ${GEMINI_FALLBACK_MODEL}...`)
       endpoint = getGeminiEndpoint(GEMINI_FALLBACK_MODEL)
       response = await fetch(endpoint, {
         method: 'POST',
@@ -331,8 +420,6 @@ export async function sendChatMessageToPilahAI(messagesHistory) {
     }
 
     if (!response.ok) {
-      const errorText = await response.text().catch(() => '')
-      console.warn(`[PilahAI] Gemini API response not ok (${response.status}):`, errorText)
       return handleLocalSmartAssistant(messagesHistory)
     }
 
@@ -340,7 +427,7 @@ export async function sendChatMessageToPilahAI(messagesHistory) {
     const candidate = result?.candidates?.[0]
     const modelPart = candidate?.content?.parts?.[0]
 
-    // Jika Gemini mencadangkan pemanggilan fungsi (Function Call)
+    // Jika Gemini melakukan Function Calling
     if (modelPart?.functionCall) {
       const call = modelPart.functionCall
       let functionResult = null
@@ -357,7 +444,6 @@ export async function sendChatMessageToPilahAI(messagesHistory) {
         functionResult = { status: 'success' }
       }
 
-      // Hantar semula hasil fungsi ke Gemini untuk rumusan perbualan akhir
       const followUpContents = [
         ...contents,
         {
@@ -381,7 +467,7 @@ export async function sendChatMessageToPilahAI(messagesHistory) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+          systemInstruction: { parts: [{ text: systemInstruction }] },
           contents: followUpContents,
           tools: toolsDefinition
         })
@@ -392,188 +478,235 @@ export async function sendChatMessageToPilahAI(messagesHistory) {
         const textAnswer = followResult?.candidates?.[0]?.content?.parts?.[0]?.text
         if (textAnswer) {
           return {
-            text: textAnswer,
+            text: cleanDashes(textAnswer),
             toolUsed: call.name,
             toolData: functionResult
           }
         }
-      } else {
-        const followUpErr = await followUpResponse.text().catch(() => '')
-        console.warn('[PilahAI] Follow-up function call error:', followUpErr)
       }
 
-      // Fallback format jika susulan tamat atau kuota habis
       return {
-        text: formatFunctionResultAsText(call.name, functionResult),
+        text: cleanDashes(formatFunctionResultAsText(call.name, functionResult)),
         toolUsed: call.name,
         toolData: functionResult
       }
     }
 
     if (modelPart?.text) {
-      return { text: modelPart.text.replace(/—/g, ', ').replace(/–/g, ' - ') }
+      return { text: cleanDashes(modelPart.text) }
     }
 
     return handleLocalSmartAssistant(messagesHistory)
   } catch (err) {
-    console.error('[PilahAI] Ralat penghantaran chat:', err)
+    console.error('[PilahAI] Error chat:', err)
     return handleLocalSmartAssistant(messagesHistory)
   }
 }
 
-// Formatkan hasil fungsi jika model belum membalas susulan
+// Format hasil fungsi jika dipanggil sebagai teks langsung
 function formatFunctionResultAsText(funcName, res) {
   if (funcName === 'cekKategoriSampah') {
     if (res.status === 'found') {
-      return `Sampah **${res.nama}** masuk ke dalam kategori **${res.kategoriLabel}**.\n\n**Langkah Penanganan:**\n${res.penanganan.map((p, i) => `${i + 1}. ${p}`).join('\n')}\n\n**Tujuan Penyaluran:** ${res.tujuanPenyaluran}\n*Tips: ${res.tipsPraktis}*`
+      return `Sampah **${res.nama}** masuk ke dalam kategori **${res.kategori.toUpperCase()}**.\n\n` +
+        `**Nilai Daur Ulang:** ${res.nilaiEkonomis}\n\n` +
+        `**Langkah Penanganan:**\n${res.langkahPenanganan.map((p, i) => `${i + 1}. ${p}`).join('\n')}\n\n` +
+        `**Tujuan Penyaluran:** ${res.tempatPenyaluran}\n\n` +
+        `*Pantangan:* ${res.pantangan ? res.pantangan.join(' ') : 'Jangan dicampur dengan sampah lain.'}`
     }
     return res.pesan
   }
 
   if (funcName === 'cariFasilitas') {
-    return `Berikut fasilitas terdekat yang tersedia:\n\n` + res.fasilitas.map(f => `• **${f.nama}** (${f.jenis})\nAlamat: ${f.alamat} (${f.jarak})\nJam Buka: ${f.jamBuka}\nSampah diterima: ${f.sampahDiterima.join(', ')}`).join('\n\n')
+    return `Berikut fasilitas pengelolaan sampah terdekat di Makassar:\n\n` +
+      res.fasilitas.map(f => `• **${f.nama}** (${f.jenis})\n  Alamat: ${f.alamat} (Kecamatan ${f.kecamatan})\n  Jam Operasional: ${f.jamBuka}\n  Menerima: ${f.sampahDiterima.join(', ')}\n  Kontak: ${f.kontak}`).join('\n\n')
   }
 
   if (funcName === 'cekJadwal') {
-    return `Jadwal pengangkutan sampah di **${res.wilayah}**:\n\n` + res.jadwal.map(j => `• **${j.hari}** (${j.waktu})\nJenis: ${j.jenisSampah}\nCatatan: ${j.catatan}`).join('\n\n')
+    let text = `Jadwal pengangkutan armada kebersihan untuk **${res.wilayahLengkap}**:\n\n`
+    if (res.jadwalHariIni) {
+      text += `📅 **Hari Ini (${res.hariIni}, ${res.waktuSekarang}):**\n` +
+        `• **Status:** ${res.jadwalHariIni.status}\n` +
+        `• **Waktu:** ${res.jadwalHariIni.waktu}\n` +
+        `• **Kategori:** ${res.jadwalHariIni.kategoriSampah}\n` +
+        `• **Armada:** ${res.jadwalHariIni.armada}\n` +
+        `• *Catatan:* ${res.jadwalHariIni.catatan}\n\n`
+    }
+    if (res.penjemputanTerdekat) {
+      text += `🚚 **Pengangkutan Terdekat Berikutnya:**\n` +
+        `• **${res.penjemputanTerdekat.hari}** (${res.penjemputanTerdekat.waktu})\n` +
+        `• **Kategori:** ${res.penjemputanTerdekat.kategoriSampah}\n` +
+        `• **Armada:** ${res.penjemputanTerdekat.armada}\n` +
+        `• *Catatan:* ${res.penjemputanTerdekat.catatan}`
+    }
+    return text
   }
 
   if (funcName === 'cariPanduan') {
-    if (res?.ringkasanEdukasi) {
-      return res.ringkasanEdukasi
-    }
-    if (res?.panduanKategori) {
-      return `Berikut panduan pemilahan untuk **${res.panduanKategori.nama}**:\n\n` +
-        `*${res.panduanKategori.ringkasan}*\n\n` +
-        `**Langkah Praktis:**\n` +
-        res.panduanKategori.langkah.map((l, i) => `${i + 1}. ${l}`).join('\n') +
-        `\n\n*Tips Praktis:* ${res.panduanKategori.tips}`
-    }
-    if (res?.artikel) {
-      return `Berikut panduan praktis dari Pilahki:\n\n**${res.artikel.judul}**\n\n` +
-        res.artikel.langkah.map((l, i) => `${i + 1}. ${l}`).join('\n')
-    }
-    return `Kunci pemilahan sampah di rumah tangga:\n\n` +
-      `• **Organik (Mudah Membusuk):** Sisa makanan, sayur, buah, daun. Kumpulkan terpisah tanpa plastik dan tiriskan airnya.\n\n` +
-      `• **Anorganik (Daur Ulang):** Botol plastik, kardus, kaleng, kaca. Cuci bilas hingga bersih dan keringkan.\n\n` +
-      `• **B3 (Berbahaya):** Baterai bekas, bohlam, obat kadaluarsa. Pisahkan khusus untuk Drop Box B3.\n\n` +
-      `• **Residu:** Popok, pembalut, sachet kotor. Buang ke tempat sampah umum/TPS.`
+    return `**${res.judul}**\n\n${res.ringkasan}`
   }
 
-  return 'Informasi telah ditemukan di sistem Pilahki.'
+  return 'Informasi telah ditemukan di sistem PilahKi Makassar.'
 }
 
 // ============================================================================
-// 4. Pembantu Tempatan Cerdas (Local Smart Fallback)
-// Berfungsi penuh walaupun tanpa API Key Gemini dengan memanfaatkan fungsi 4 fitur
+// 4. Asisten Lokal Cerdas (Sadar Waktu Hari Ini & Domisili Makassar)
 // ============================================================================
 function handleLocalSmartAssistant(messagesHistory) {
   const latestMessage = messagesHistory[messagesHistory.length - 1]?.text || ''
   const lower = latestMessage.toLowerCase()
+  const domicile = getUserDomicile()
 
-  // 1. Semak Soalan Di Luar Domain (PRD Seksyen 7.5 Aturan Ketat)
-  const offTopicKeywords = ['politik', 'presiden', 'koding', 'javascript', 'resep martabak', 'asal usul kamu', 'siapa yang buat', 'kenapa aplikasi ini dibuat']
-  if (offTopicKeywords.some(w => lower.includes(w))) {
+  // 1. Cek topik di luar sampah
+  const offTopic = ['politik', 'presiden', 'pemilu', 'koding', 'javascript', 'resep martabak', 'sepak bola']
+  if (offTopic.some(w => lower.includes(w))) {
     return {
-      text: 'Mohon maaf, saya adalah PilahAI yang khusus dilatih untuk membantu warga seputar pemilahan dan pengelolaan sampah rumah tangga (kategori sampah, fasilitas bank sampah, jadwal angkut, dan panduan edukasi). Ada yang bisa saya bantu terkait sampah di rumah Anda?'
+      text: 'Mohon maaf, saya adalah PilahAI yang khusus dilatih untuk membantu warga seputar pemilahan sampah, fasilitas Bank Sampah di Makassar, jadwal armada pengangkut, dan panduan edukasi rumah tangga. Ada yang bisa saya bantu terkait sampah di rumah Anda?'
     }
   }
 
-  // 2. Semak Permintaan Jadwal
-  if (lower.includes('jadwal') || lower.includes('kapan') || lower.includes('diangkut') || lower.includes('hari apa')) {
-    let targetWilayah = 'Sukajadi'
-    if (lower.includes('coblong') || lower.includes('dago')) targetWilayah = 'Coblong'
-    if (lower.includes('lengkong') || lower.includes('malabar')) targetWilayah = 'Lengkong'
-    if (lower.includes('cicendo') || lower.includes('pasirkaliki')) targetWilayah = 'Cicendo'
+  // 2. Permintaan Jadwal (Sadar Hari Ini & Waktu Real-Time)
+  if (lower.includes('jadwal') || lower.includes('kapan') || lower.includes('diangkut') || lower.includes('hari apa') || lower.includes('truk') || lower.includes('jemput') || lower.includes('ambil')) {
+    let targetDistrict = domicile.district
 
-    const res = toolCekJadwal({ wilayah: targetWilayah })
+    for (const d of MAKASSAR_DISTRICTS) {
+      if (lower.includes(d.toLowerCase())) {
+        targetDistrict = d
+        break
+      }
+    }
+
+    const res = toolCekJadwal({ wilayah: targetDistrict })
+    const isAskingBesok = lower.includes('besok')
+    const isAskingAll = lower.includes('semua') || lower.includes('lengkap') || lower.includes('seminggu') || lower.includes('1 minggu') || lower.includes('sepekan')
+    const isAskingNow = lower.includes('sekarang') || lower.includes('hari ini') || lower.includes('saat ini') || lower.includes('terdekat') || lower.includes('berikutnya') || lower.includes('kapan')
+
+    // Jika pengguna menanyakan jadwal sekarang / hari ini / besok / terdekat (TIDAK minta seminggu penuh)
+    if (!isAskingAll && (isAskingNow || isAskingBesok)) {
+      let responseText = `Untuk wilayah domisili Anda di **${res.wilayahLengkap}**:\n\n`
+
+      if (isAskingBesok) {
+        const dayOrder = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+        const todayIdx = dayOrder.findIndex(d => d.toLowerCase() === res.hariIni.toLowerCase())
+        const tomorrowDay = dayOrder[(todayIdx + 1) % 7]
+        const tomorrowJadwal = res.jadwalLengkap.find(j => j.hari.toLowerCase() === tomorrowDay.toLowerCase())
+
+        if (tomorrowJadwal) {
+          responseText += `📅 **Jadwal Besok (${tomorrowDay}):**\n` +
+            `• **Status:** ${tomorrowJadwal.status}\n` +
+            `• **Waktu:** ${tomorrowJadwal.waktu}\n` +
+            `• **Kategori:** ${tomorrowJadwal.kategoriSampah}\n` +
+            `• **Armada:** ${tomorrowJadwal.armada}\n` +
+            `• *Catatan:* ${tomorrowJadwal.catatan}`
+        }
+      } else {
+        // Hari ini
+        responseText += `📅 **Jadwal Hari Ini (${res.hariIni}, ${res.tanggalHariIni}):**\n`
+        if (res.jadwalHariIni) {
+          responseText += `• **Status:** ${res.jadwalHariIni.status}\n` +
+            `• **Waktu:** ${res.jadwalHariIni.waktu}\n` +
+            `• **Kategori:** ${res.jadwalHariIni.kategoriSampah}\n` +
+            `• **Armada:** ${res.jadwalHariIni.armada}\n` +
+            `• *Catatan:* ${res.jadwalHariIni.catatan}\n\n`
+        }
+
+        if (res.penjemputanTerdekat) {
+          responseText += `🚚 **Pengangkutan Terdekat Berikutnya:**\n` +
+            `• **${res.penjemputanTerdekat.hari}** (${res.penjemputanTerdekat.waktu})\n` +
+            `• **Kategori:** ${res.penjemputanTerdekat.kategoriSampah}\n` +
+            `• **Armada:** ${res.penjemputanTerdekat.armada}\n` +
+            `• *Catatan:* ${res.penjemputanTerdekat.catatan}`
+        }
+      }
+
+      responseText += `\n\n*Catatan:* Jika ingin melihat jadwal lengkap seminggu penuh, Anda bisa mengetik *"jadwal seminggu"* atau membuka menu **Jadwal Angkut**.`
+      return {
+        text: responseText,
+        toolUsed: 'cekJadwal',
+        toolData: res
+      }
+    }
+
+    // Jika pengguna meminta jadwal seminggu penuh
     return {
-      text: `Halo! Berdasarkan data jadwal wilayah **${res.wilayah}**:\n\n` +
-        res.jadwal.map(j => `• **${j.hari}** (${j.waktu})\n• **${j.jenisSampah}**\n• *Catatan:* ${j.catatan}`).join('\n\n') +
-        `\n\n*TPS Terdekat:* ${res.tpsTerdekat}\nJangan lupa taruh wadah di depan pagar sebelum jam pengangkutan ya!`,
+      text: `Berdasarkan wilayah domisili Anda di **${res.wilayahLengkap}**, berikut agenda jadwal pengangkutan mingguan:\n\n` +
+        res.jadwalLengkap.map(j => `• **${j.hari}** (${j.waktu})\n  - **Status:** ${j.status}\n  - **Kategori:** ${j.kategoriSampah}\n  - **Armada:** ${j.armada}\n  - *Catatan:* ${j.catatan}`).join('\n\n') +
+        `\n\n*Tips:* Letakkan tempat sampah terpilah di depan pagar sebelum jadwal armada tiba.`,
       toolUsed: 'cekJadwal',
       toolData: res
     }
   }
 
-  // 3. Semak Permintaan Lokasi Fasiliti / Bank Sampah
-  if (lower.includes('lokasi') || lower.includes('bank sampah') || lower.includes('tps') || lower.includes('dropbox') || lower.includes('buang ke mana') || lower.includes('di mana')) {
+  // 3. Permintaan Lokasi Fasilitas / Bank Sampah
+  if (lower.includes('lokasi') || lower.includes('bank sampah') || lower.includes('tps') || lower.includes('dropbox') || lower.includes('buang ke mana') || lower.includes('di mana') || lower.includes('setor') || lower.includes('jual sampah')) {
+    let targetDistrict = domicile.district
+
+    for (const d of MAKASSAR_DISTRICTS) {
+      if (lower.includes(d.toLowerCase())) {
+        targetDistrict = d
+        break
+      }
+    }
+
     let jenisF = ''
     if (lower.includes('bank sampah')) jenisF = 'bank-sampah'
-    if (lower.includes('b3') || lower.includes('baterai') || lower.includes('lampu')) jenisF = 'dropbox-b3'
+    if (lower.includes('b3') || lower.includes('baterai') || lower.includes('lampu')) jenisF = 'drop-box-b3'
+    if (lower.includes('tps 3r') || lower.includes('kompos')) jenisF = 'tps-3r'
 
-    const res = toolCariFasilitas({ jenisFasilitas: jenisF })
+    const res = toolCariFasilitas({ wilayah: targetDistrict, jenisFasilitas: jenisF })
     return {
-      text: `Berikut rekomendasi tempat penyaluran terdekat di wilayah percontohan:\n\n` +
-        res.fasilitas.slice(0, 2).map(f => `• **${f.nama}** (${f.jenis})\n  Alamat: ${f.alamat} (sekitar ${f.jarak})\n  Jam Buka: ${f.jamBuka}\n  Menerima: ${f.sampahDiterima.join(', ')}\n  Catatan: ${f.catatan}`).join('\n\n') +
-        `\n\nAnda juga bisa membuka menu **Cari Lokasi** untuk petunjuk arah langsung via Google Maps.`,
+      text: `Berdasarkan domisili Anda di **Kecamatan ${domicile.district}, Kota Makassar**, berikut fasilitas pengelolaan sampah terdekat yang direkomendasikan:\n\n` +
+        res.fasilitas.slice(0, 3).map(f => `• **${f.nama}** (${f.jenis})\n  - **Alamat:** ${f.alamat} (Kecamatan ${f.kecamatan})\n  - **Jam Operasional:** ${f.jamBuka}\n  - **Menerima:** ${f.sampahDiterima.join(', ')}\n  - **Kontak:** ${f.kontak}`).join('\n\n') +
+        `\n\nBuka menu **Cari Lokasi** untuk petunjuk arah langsung dan peta interaktif.`,
       toolUsed: 'cariFasilitas',
       toolData: res
     }
   }
 
-  // 4. Semak Kategori Sampah
-  // Ekstrak kata nama sampah
+  // 4. Kategori Sampah
   let cleanItemName = latestMessage
-    .replace(/(bagaimana|cara|buang|kategori|masuk|apa|ke mana|apakah|bisa|saya|punya|tolong|cek)/gi, '')
+    .replace(/(bagaimana|cara|buang|kategori|masuk|apa|ke mana|apakah|bisa|saya|punya|tolong|cek|tanya)/gi, '')
     .trim()
 
   const kategoriResult = toolCekKategoriSampah({ namaSampah: cleanItemName || latestMessage })
   if (kategoriResult.status === 'found') {
     return {
-      text: `Untuk **${kategoriResult.nama}**, barang ini masuk kategori **${kategoriResult.kategoriLabel.toUpperCase()}**.\n\n**Langkah Penanganan Praktis:**\n` +
-        kategoriResult.penanganan.map((step, idx) => `${idx + 1}. ${step}`).join('\n') +
-        `\n\n**Tujuan Penyaluran:** ${kategoriResult.tujuanPenyaluran}\n*Tips Tambahan:* ${kategoriResult.tipsPraktis}`,
+      text: `Sampah **${kategoriResult.nama}** masuk kategori **${kategoriResult.kategori.toUpperCase()}**.\n\n` +
+        `**Nilai Daur Ulang:** ${kategoriResult.nilaiEkonomis}\n\n` +
+        `**Langkah Penanganan Praktis:**\n` +
+        kategoriResult.langkahPenanganan.map((step, idx) => `${idx + 1}. ${step}`).join('\n') +
+        `\n\n**Tujuan Penyaluran:** ${kategoriResult.tempatPenyaluran}\n\n` +
+        `*Pantangan:* ${kategoriResult.pantangan ? kategoriResult.pantangan.join(' ') : 'Jangan dicampur dengan sampah lain.'}`,
       toolUsed: 'cekKategoriSampah',
       toolData: kategoriResult
     }
   }
 
-  // 5. Semak Panduan & Pemilahan Edukasi
-  const isOrganik = lower.includes('organik')
-  const isAnorganik = lower.includes('anorganik') || lower.includes('nonorganik') || lower.includes('non-organik')
-  const isMembedakan = lower.includes('beda') || lower.includes('membedakan') || lower.includes('bedakan')
-
-  if ((isOrganik && isAnorganik) || (isMembedakan && (isOrganik || isAnorganik))) {
-    const panduanRes = toolCariPanduan({ topik: 'organik anorganik' })
+  // 5. Panduan Edukasi
+  const panduanRes = toolCariPanduan({ topik: lower })
+  if (lower.includes('panduan') || lower.includes('kompos') || lower.includes('biopori') || lower.includes('takakura') || lower.includes('plastik') || lower.includes('b3') || lower.includes('cara')) {
     return {
-      text: panduanRes.ringkasanEdukasi,
+      text: `**${panduanRes.judul}**\n\n${panduanRes.ringkasan}\n\nAnda dapat membaca panduan selengkapnya dengan membuka menu **Panduan** di navigasi utama.`,
       toolUsed: 'cariPanduan',
       toolData: panduanRes
     }
   }
 
-  if (lower.includes('panduan') || lower.includes('tips') || lower.includes('dapur') || lower.includes('bau') || lower.includes('cara')) {
-    const panduanRes = toolCariPanduan({ topik: lower })
-    let answerText = ''
-    if (panduanRes.ringkasanEdukasi) {
-      answerText = panduanRes.ringkasanEdukasi
-    } else if (panduanRes.artikel) {
-      answerText = `**${panduanRes.artikel.judul}**\n\n` + panduanRes.artikel.langkah.map((l, i) => `${i + 1}. ${l}`).join('\n')
-    } else if (panduanRes.panduanKategori) {
-      answerText = `Berikut panduan pemilahan untuk **${panduanRes.panduanKategori.nama}**:\n\n` +
-        `*${panduanRes.panduanKategori.ringkasan}*\n\n` +
-        `**Langkah Praktis:**\n` +
-        panduanRes.panduanKategori.langkah.map((l, i) => `${i + 1}. ${l}`).join('\n') +
-        `\n\n*Tips Praktis:* ${panduanRes.panduanKategori.tips}`
-    } else {
-      answerText = `Kuncinya di rumah tangga adalah selalu memisahkan sampah basah organik dan sampah kering anorganik. Tiriskan air sisa makanan agar tempat sampah tidak mudah berbau, dan bilas botol/wadah plastik sebelum dikumpulkan!`
-    }
-
-    return {
-      text: answerText,
-      toolUsed: 'cariPanduan',
-      toolData: panduanRes
-    }
-  }
-
-  // Jawapan Laluan Umum Ramah
+  // Default sapaan ramah sadar domisili
   return {
-    text: `Halo! Saya PilahAI. Anda bisa tanyakan apa saja seputar sampah rumah tangga, misalnya:\n\n` +
-      `1. *"Baterai bekas masuk kategori apa dan cara buangnya gimana?"*\n` +
-      `2. *"Kapan jadwal truk sampah organik di Sukajadi?"*\n` +
-      `3. *"Di mana bank sampah terdekat yang menerima minyak jelantah?"*\n` +
-      `4. *"Gimana cara mencuci botol plastik berminyak?"*\n\n` +
-      `Silakan ketik pertanyaan Anda!`
+    text: `Halo! Saya PilahAI. Domisili Anda terhubung di **Kecamatan ${domicile.district}, Makassar**.\n\nAnda bisa menanyakan seputar:\n` +
+      `1. *"Kapan jadwal truk sampah sekarang?"*\n` +
+      `2. *"Di mana Bank Sampah terdekat?"*\n` +
+      `3. *"Botol minyak bekas masuk kategori apa?"*\n` +
+      `4. *"Bagaimana cara membuat kompos Takakura?"*\n\n` +
+      `Ada yang bisa saya bantu hari ini?`
   }
+}
+
+// Wrapper fungsi untuk kemudahan pemanggilan komponen
+export async function sendMessageToGemini(prompt) {
+  const reply = await sendChatMessageToPilahAI([{ role: 'user', text: prompt }])
+  if (reply && typeof reply.text === 'string') {
+    reply.text = cleanDashes(reply.text)
+  }
+  return reply
 }

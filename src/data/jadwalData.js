@@ -1,186 +1,216 @@
-// Data jadual pengangkutan sampah contoh wilayah perbandaran (mengikut PRD Seksyen 7.3 & 12)
-export const wilayahList = [
-  {
-    id: 'kel-sukajadi-rw03',
-    kecamatan: 'Kecamatan Sukajadi',
-    kelurahan: 'Kelurahan Pasteur',
-    rw: 'RW 03 (Jl. Sukajadi & sekitarnya)',
-    tpsTerdekat: 'TPS Sukajadi Indah (450 m)'
-  },
-  {
-    id: 'kel-coblong-rw05',
-    kecamatan: 'Kecamatan Coblong',
-    kelurahan: 'Kelurahan Dago',
-    rw: 'RW 05 (Jl. Ir. H. Juanda)',
-    tpsTerdekat: 'TPS Dago Resik (600 m)'
-  },
-  {
-    id: 'kel-lengkong-rw02',
-    kecamatan: 'Kecamatan Lengkong',
-    kelurahan: 'Kelurahan Malabar',
-    rw: 'RW 02 (Jl. Palasari & sekitarnya)',
-    tpsTerdekat: 'TPS 3R Lengkong Lestari (350 m)'
-  },
-  {
-    id: 'kel-cicendo-rw04',
-    kecamatan: 'Kecamatan Cicendo',
-    kelurahan: 'Kelurahan Pasirkaliki',
-    rw: 'RW 04 (Jl. Kebon Jati)',
-    tpsTerdekat: 'TPS Pasirkaliki Bersih (500 m)'
-  }
+/**
+ * Data Jadwal Pengangkutan Sampah Kota Makassar
+ * Dari prototipe Binfinity (app-schedules.js)
+ */
+
+export const MAKASSAR_DISTRICTS = [
+  "Panakkukang",
+  "Rappocini",
+  "Ujung Pandang",
+  "Tamalanrea",
+  "Bontoala",
+  "Mariso",
+  "Manggala",
+  "Tamalate"
 ]
 
-export const jadwalMaster = {
-  'kel-sukajadi-rw03': [
+export const schedulesDatabase = {
+  "Panakkukang": [
     {
-      id: 'j-1',
-      hari: 'Senin',
-      hariIndex: 1, // 0: Ahad, 1: Isnin, dst.
-      waktu: '06:30 - 08:30 WIB',
-      jenisSampah: 'Organik (Sisa Makanan & Dedaunan)',
-      kategori: 'organik',
-      petugas: 'Armada Gerobak Motor DLH',
-      catatan: 'Ikat rapat kantung sampah organik. Taruh di depan pagar sebelum jam 06:30 WIB.',
-      diterima: ['Sisa sayur & buah', 'Kulit telur', 'Dedaunan kering', 'Sisa nasi'],
-      tidakDiterima: ['Plastik pembungkus', 'Pampers', 'Baterai']
+      day: "Senin",
+      status: "Ada Penjemputan",
+      statusDot: "bg-emerald-500",
+      time: "06.30 - 09.00 WITA",
+      category: "Sampah Organik & Sisa Dapur",
+      badge: "bg-emerald-50 text-emerald-800 border-emerald-200",
+      icon: "leaf",
+      iconBg: "bg-emerald-100 text-emerald-800",
+      vehicle: "Truk Sampah Organik TPS 3R",
+      notes: "Letakkan wadah tertutup di depan pagar sebelum pukul 06.00 WITA."
     },
     {
-      id: 'j-2',
-      hari: 'Rabu',
-      hariIndex: 3,
-      waktu: '07:00 - 09:00 WIB',
-      jenisSampah: 'Anorganik (Plastik, Kertas, Kardus)',
-      kategori: 'anorganik',
-      petugas: 'Armada Truk Pilah Wilayah',
-      catatan: 'Pastikan botol atau wadah plastik dalam keadaan dibilas dan kering.',
-      diterima: ['Botol plastik bersih', 'Kardus terlipat', 'Kertas bekas', 'Kaleng minuman'],
-      tidakDiterima: ['Sisa makanan berminyak', 'Styrofoam kotor']
+      day: "Selasa",
+      status: "Tidak Ada Penjemputan",
+      statusDot: "bg-slate-400",
+      time: "-",
+      category: "Libur Operasional Armada Wilayah",
+      badge: "bg-slate-100 text-slate-500 border-slate-200",
+      icon: "calendar-off",
+      iconBg: "bg-slate-100 text-slate-400",
+      vehicle: "Armada Pemeliharaan Rutin",
+      notes: "Gunakan komposter mandiri untuk sisa sampah organik dapur rumah tangga."
     },
     {
-      id: 'j-3',
-      hari: 'Jumat',
-      hariIndex: 5,
-      waktu: '06:30 - 08:30 WIB',
-      jenisSampah: 'Organik (Sisa Dapur Mingguan)',
-      kategori: 'organik',
-      petugas: 'Armada Gerobak Motor DLH',
-      catatan: 'Pengangkutan kedua untuk sampah basah dapur agar tidak menimbulkan bau di akhir pekan.',
-      diterima: ['Sisa makanan', 'Ampas kelapa', 'Sisa masakan'],
-      tidakDiterima: ['Kemasan sachet plastik']
+      day: "Rabu",
+      status: "Ada Penjemputan",
+      statusDot: "bg-blue-500",
+      time: "08.00 - 11.00 WITA",
+      category: "Anorganik Daur Ulang & Kardus",
+      badge: "bg-blue-50 text-blue-800 border-blue-200",
+      icon: "recycle",
+      iconBg: "bg-blue-100 text-blue-800",
+      vehicle: "Gerobak Motor Bank Sampah Induk",
+      notes: "Kardus, botol plastik PET, dan kaleng siap timbang dalam kondisi bersih & pipih."
     },
     {
-      id: 'j-4',
-      hari: 'Sabtu',
-      hariIndex: 6,
-      waktu: '08:00 - 10:00 WIB',
-      jenisSampah: 'Residu (Popok, Pembalut, Puntung Rokok)',
-      kategori: 'residu',
-      petugas: 'Truk Sampah Residural Kota',
-      catatan: 'Khusus sampah yang tidak bisa didaur ulang atau dikomposkan.',
-      diterima: ['Popok sekali pakai', 'Pembalut bekas', 'Tisu basah kotor', 'Pecahan keramik kecil'],
-      tidakDiterima: ['Baterai/Limbah B3 (Serahkan ke Dropbox TPS)']
+      day: "Kamis",
+      status: "Ada Penjemputan",
+      statusDot: "bg-amber-500",
+      time: "06.00 - 08.30 WITA",
+      category: "Sampah Residu Umum",
+      badge: "bg-slate-100 text-slate-700 border-slate-200",
+      icon: "trash-2",
+      iconBg: "bg-slate-100 text-slate-700",
+      vehicle: "Truk Kompaktor DLH Kota Makassar",
+      notes: "Kemasan sachet, styrofoam, dan pembalut menuju TPA Tamangapa Antang."
+    },
+    {
+      day: "Jumat",
+      status: "Tidak Ada Penjemputan",
+      statusDot: "bg-slate-400",
+      time: "-",
+      category: "Pembersihan Rutin Drainase Lingkungan",
+      badge: "bg-slate-100 text-slate-500 border-slate-200",
+      icon: "calendar-off",
+      iconBg: "bg-slate-100 text-slate-400",
+      vehicle: "Tim Satgas Kebersihan Kecamatan",
+      notes: "Fokus kerja bakti saluran drainase warga RT/RW setempat."
+    },
+    {
+      day: "Sabtu",
+      status: "Ada Penjemputan",
+      statusDot: "bg-amber-500",
+      time: "07.00 - 10.00 WITA",
+      category: "Sampah Residu Akhir Pekan",
+      badge: "bg-slate-100 text-slate-700 border-slate-200",
+      icon: "trash-2",
+      iconBg: "bg-slate-100 text-slate-700",
+      vehicle: "Truk Kompaktor DLH Kota Makassar",
+      notes: "Pastikan tempat sampah tertutup rapat agar tidak diacak hewan liar."
+    },
+    {
+      day: "Minggu",
+      status: "Penyetoran Bank Sampah",
+      statusDot: "bg-emerald-500",
+      time: "08.00 - 12.00 WITA",
+      category: "Layanan Tabungan Bank Sampah Unit",
+      badge: "bg-emerald-50 text-emerald-800 border-emerald-200",
+      icon: "award",
+      iconBg: "bg-emerald-100 text-emerald-800",
+      vehicle: "Pos Pelayanan Bank Sampah Induk Toddopuli",
+      notes: "Bawa buku tabungan nasabah bank sampah dan setoran anorganik terpilah."
     }
   ],
-  'kel-coblong-rw05': [
+  "Rappocini": [
     {
-      id: 'j-5',
-      hari: 'Selasa',
-      hariIndex: 2,
-      waktu: '06:00 - 08:00 WIB',
-      jenisSampah: 'Organik',
-      kategori: 'organik',
-      petugas: 'Armada DLH Kecamatan',
-      catatan: 'Keluarkan wadah sampah organik sebelum jam 06:00 WIB.',
-      diterima: ['Sisa dapur', 'Sayuran', 'Buah-buahan'],
-      tidakDiterima: ['Plastik kresek']
+      day: "Senin",
+      status: "Ada Penjemputan",
+      statusDot: "bg-amber-500",
+      time: "06.00 - 08.30 WITA",
+      category: "Sampah Residu Awal Pekan",
+      badge: "bg-slate-100 text-slate-700 border-slate-200",
+      icon: "trash-2",
+      iconBg: "bg-slate-100 text-slate-700",
+      vehicle: "Truk Kompaktor DLH Kota Makassar",
+      notes: "Pengangkutan residu padat rumah tangga pasca akhir pekan."
     },
     {
-      id: 'j-6',
-      hari: 'Kamis',
-      hariIndex: 4,
-      waktu: '07:00 - 09:00 WIB',
-      jenisSampah: 'Anorganik (Daur Ulang)',
-      kategori: 'anorganik',
-      petugas: 'Mitra Bank Sampah Unit Coblong',
-      catatan: 'Dipilah dan dipres bila memungkinkan.',
-      diterima: ['Kardus', 'Plastik PET', 'Aluminium'],
-      tidakDiterima: ['Sampah basah']
+      day: "Selasa",
+      status: "Ada Penjemputan",
+      statusDot: "bg-emerald-500",
+      time: "07.00 - 09.30 WITA",
+      category: "Sampah Organik & Kebun",
+      badge: "bg-emerald-50 text-emerald-800 border-emerald-200",
+      icon: "leaf",
+      iconBg: "bg-emerald-100 text-emerald-800",
+      vehicle: "Truk TPS 3R Sejahtera",
+      notes: "Sisa pangkasan dahan pohon, daun kering, dan sisa bahan dapur."
     },
     {
-      id: 'j-7',
-      hari: 'Sabtu',
-      hariIndex: 6,
-      waktu: '06:00 - 08:30 WIB',
-      jenisSampah: 'Organik & Residu Terpisah',
-      kategori: 'residu',
-      petugas: 'Armada DLH Kecamatan',
-      catatan: 'Gunakan wadah terpisah berlabel warna.',
-      diterima: ['Sisa makanan', 'Residu rumah tangga'],
-      tidakDiterima: ['B3/Elektronik']
-    }
-  ],
-  'kel-lengkong-rw02': [
-    {
-      id: 'j-8',
-      hari: 'Senin',
-      hariIndex: 1,
-      waktu: '06:30 - 08:30 WIB',
-      jenisSampah: 'Organik',
-      kategori: 'organik',
-      petugas: 'Tim Kebersihan Kelurahan',
-      catatan: 'Sampah organik diolah langsung ke rumah kompos TPS 3R.',
-      diterima: ['Sisa makanan', 'Daun taman'],
-      tidakDiterima: ['Plastik']
+      day: "Rabu",
+      status: "Tidak Ada Penjemputan",
+      statusDot: "bg-slate-400",
+      time: "-",
+      category: "Proses Pengolahan Kompos di Fasilitas",
+      badge: "bg-slate-100 text-slate-500 border-slate-200",
+      icon: "calendar-off",
+      iconBg: "bg-slate-100 text-slate-400",
+      vehicle: "Unit Operasional Depo",
+      notes: "Fasilitas TPS 3R melakukan proses aerasi dan fermentasi pupuk kompos."
     },
     {
-      id: 'j-9',
-      hari: 'Rabu',
-      hariIndex: 3,
-      waktu: '07:30 - 09:30 WIB',
-      jenisSampah: 'Anorganik',
-      kategori: 'anorganik',
-      petugas: 'Mobil Pengangkut Anorganik',
-      catatan: 'Kertas dan plastik kering.',
-      diterima: ['Buku bekas', 'Botol plastik', 'Kaleng'],
-      tidakDiterima: ['Residu basah']
+      day: "Kamis",
+      status: "Ada Penjemputan",
+      statusDot: "bg-amber-500",
+      time: "06.30 - 09.00 WITA",
+      category: "Sampah Residu Umum",
+      badge: "bg-slate-100 text-slate-700 border-slate-200",
+      icon: "trash-2",
+      iconBg: "bg-slate-100 text-slate-700",
+      vehicle: "Truk Kompaktor DLH Kota Makassar",
+      notes: "Sampah plastik kresek kotor, kemasan sachet, dan residu kering."
     },
     {
-      id: 'j-10',
-      hari: 'Jumat',
-      hariIndex: 5,
-      waktu: '06:30 - 08:30 WIB',
-      jenisSampah: 'Organik & Residu',
-      kategori: 'residu',
-      petugas: 'Tim Kebersihan Kelurahan',
-      catatan: 'Penjemputan rutin akhir pekan.',
-      diterima: ['Semua sampah terpilah'],
-      tidakDiterima: ['Limbah B3']
-    }
-  ],
-  'kel-cicendo-rw04': [
-    {
-      id: 'j-11',
-      hari: 'Selasa',
-      hariIndex: 2,
-      waktu: '07:00 - 09:00 WIB',
-      jenisSampah: 'Organik',
-      kategori: 'organik',
-      petugas: 'Gerobak Kebersihan RW',
-      catatan: 'Taruh di depan rumah maksimal pukul 07:00.',
-      diterima: ['Sisa sayur/buah/lauk'],
-      tidakDiterima: ['Bahan kimia']
+      day: "Jumat",
+      status: "Ada Penjemputan",
+      statusDot: "bg-blue-500",
+      time: "08.00 - 11.00 WITA",
+      category: "Anorganik (Plastik, Kertas, Jelantah)",
+      badge: "bg-blue-50 text-blue-800 border-blue-200",
+      icon: "recycle",
+      iconBg: "bg-blue-100 text-blue-800",
+      vehicle: "Armada Motor Bank Sampah Induk",
+      notes: "Penyetoran minyak jelantah dalam botol tertutup dan kardus terikat."
     },
     {
-      id: 'j-12',
-      hari: 'Jumat',
-      hariIndex: 5,
-      waktu: '07:00 - 09:30 WIB',
-      jenisSampah: 'Anorganik & Residu',
-      kategori: 'anorganik',
-      petugas: 'Armada Truk Wilayah',
-      catatan: 'Pisahkan kardus dan plastik dalam karung terpisah.',
-      diterima: ['Kardus', 'Plastik', 'Residu'],
-      tidakDiterima: ['Limbah jarum suntik/medis']
+      day: "Sabtu",
+      status: "Ada Penjemputan",
+      statusDot: "bg-emerald-500",
+      time: "07.00 - 09.30 WITA",
+      category: "Sampah Organik Rumah Tangga",
+      badge: "bg-emerald-50 text-emerald-800 border-emerald-200",
+      icon: "leaf",
+      iconBg: "bg-emerald-100 text-emerald-800",
+      vehicle: "Truk TPS 3R Sejahtera",
+      notes: "Pengangkutan sampah sisa makanan dan sayuran akhir pekan."
+    },
+    {
+      day: "Minggu",
+      status: "Tidak Ada Penjemputan",
+      statusDot: "bg-slate-400",
+      time: "-",
+      category: "Libur Operasional Armada",
+      badge: "bg-slate-100 text-slate-500 border-slate-200",
+      icon: "calendar-off",
+      iconBg: "bg-slate-100 text-slate-400",
+      vehicle: "-",
+      notes: "Simpan sampah terpilah di wadah tertutup teduh."
     }
   ]
+}
+
+export function getDistrictSchedule(district) {
+  if (schedulesDatabase[district]) {
+    return schedulesDatabase[district]
+  }
+  return schedulesDatabase["Panakkukang"].map((item) => ({ ...item }))
+}
+
+// Backwards-compatible aliases
+export const wilayahList = MAKASSAR_DISTRICTS.map((d, index) => ({
+  id: `w-${index + 1}`,
+  kecamatan: d,
+  kelurahan: 'Pusat Kota',
+  rw: 'RW 01-08',
+  tpsTerdekat: `TPS 3R Wilayah ${d}`
+}))
+
+export const jadwalMaster = {
+  'w-1': (schedulesDatabase["Panakkukang"] || []).map(s => ({
+    hari: s.day,
+    waktu: s.time,
+    jenisSampah: s.category,
+    kategori: s.category,
+    catatan: s.notes
+  }))
 }

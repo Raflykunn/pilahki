@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
-import { sendChatMessageToPilahAI } from '@/services/geminiService'
+import { sendChatMessageToPilahAI, cleanDashes } from '@/services/geminiService'
 import {
   startNewSession,
   setActiveSessionId,
@@ -35,13 +35,24 @@ const route = useRoute()
 const router = useRouter()
 const { user, isAuthenticated, initAuth } = useAuth()
 
+const userDistrict = computed(() => {
+  try {
+    const raw = localStorage.getItem('pilahki_domicile')
+    if (raw) {
+      const d = JSON.parse(raw)
+      return d.district || 'Panakkukang'
+    }
+  } catch (e) {}
+  return 'Panakkukang'
+})
+
 // Template Pesan Awal Bersih
-const defaultWelcomeMessage = {
+const defaultWelcomeMessage = computed(() => ({
   id: 'm-default-welcome',
   role: 'model',
-  text: 'Halo! Saya **PilahAI**, asisten cerdas Pilahki. Anda bisa menanyakan kategori sampah (Organik, Anorganik, B3, Residu), mencari bank sampah/TPS terdekat di Makassar, mengecek jadwal angkut wilayah, atau panduan pengolahan. Ada yang bisa saya bantu hari ini?',
+  text: `Halo! Saya **PilahAI**, asisten cerdas PilahKi' Kota Makassar. Domisili Anda terhubung di **Kecamatan ${userDistrict.value}**. Anda bisa langsung menanyakan jadwal armada angkut di wilayah Anda tanpa perlu menyebut ulang kecamatan, lokasi Bank Sampah terdekat, atau panduan pilah sampah. Ada yang bisa saya bantu hari ini?`,
   time: 'Baru saja'
-}
+}))
 
 const sessionId = ref('')
 const sessionsList = ref([])
@@ -49,18 +60,18 @@ const isSidebarOpen = ref(true)
 const isMobileSidebarOpen = ref(false)
 const isLoadingSessions = ref(false)
 
-const messages = ref([defaultWelcomeMessage])
+const messages = ref([defaultWelcomeMessage.value])
 const userInput = ref('')
 const isLoading = ref(false)
 const isFetchingHistory = ref(false)
 const chatScrollRef = ref(null)
 
-const samplePrompts = [
-  'Baterai bekas harus diapakan dan dibawa ke mana?',
-  'Kapan jadwal angkut sampah organik di Tamalanrea?',
-  'Bank sampah terdekat yang terima kardus & botol plastik',
+const samplePrompts = computed(() => [
+  `Kapan jadwal truk angkut sampah di wilayah saya (${userDistrict.value})?`,
+  `Di mana Bank Sampah terdekat dari ${userDistrict.value}?`,
+  'Baterai bekas harus diapakan dan disetor ke mana?',
   'Gimana cara mencuci botol plastik minyak sebelum disetor?'
-]
+])
 
 const scrollToBottom = async () => {
   await nextTick()
@@ -99,7 +110,7 @@ const selectSession = async (id) => {
     if (data && data.length > 0) {
       messages.value = data
     } else {
-      messages.value = [defaultWelcomeMessage]
+      messages.value = [defaultWelcomeMessage.value]
     }
   } catch (err) {
     console.warn('[PilahAI] Gagal memuat pesan sesi:', err)
@@ -141,9 +152,13 @@ const handleDeleteSession = async (id, event) => {
   }
 }
 
-// Inisialisasi: Setiap kali halaman PilahAI dibuka kembali, SELALU buat obrolan baru
 onMounted(async () => {
   await initAuth()
+
+  if (!isAuthenticated.value) {
+    router.replace({ path: '/login', query: { redirect: '/pilah-ai' } })
+    return
+  }
 
   // 1. Mulai sesi obrolan baru otomatis (seperti ChatGPT / Claude)
   handleStartNewChat()
@@ -273,9 +288,7 @@ const formatRelativeTime = (isoString) => {
 
 const formatMarkdown = (text) => {
   if (!text) return ''
-  let res = text
-  // Bersihkan tanda strip panjang em-dash agar bahasa mengalir natural tanpa kesan kaku AI
-  res = res.replace(/—/g, ', ').replace(/–/g, ' - ')
+  let res = cleanDashes(text)
   res = res.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   res = res.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
   res = res.replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -589,13 +602,13 @@ const formatMarkdown = (text) => {
               v-model="userInput"
               type="text"
               placeholder="Tanyakan sampah apa saja, jadwal angkut, atau lokasi bank sampah..."
-              class="h-11 text-sm bg-zinc-50/50 border-zinc-200 focus:bg-white"
+              class="h-12 text-sm sm:text-base bg-zinc-50/50 border-zinc-200 focus:bg-white px-4 placeholder:text-sm placeholder:text-zinc-400"
               :disabled="isLoading"
             />
             <Button
               type="submit"
               size="lg"
-              class="h-11 px-5 bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 font-semibold gap-2 shadow-xs"
+              class="h-12 px-5 sm:px-6 bg-brand-800 hover:bg-brand-700 text-white shrink-0 font-bold gap-2 shadow-xs cursor-pointer"
               :disabled="!userInput.trim() || isLoading"
             >
               <Send class="h-4 w-4" />
