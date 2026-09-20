@@ -22,8 +22,7 @@ defineEmits(['close'])
     @click.self="$emit('close')"
   >
     <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-10 shadow-2xl space-y-6 relative max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-150 border border-slate-100 text-left">
-      
-      <!-- Modal Header -->
+
       <div class="flex items-start justify-between gap-4 pb-4 border-b border-slate-100">
         <div class="space-y-2.5">
           <div class="flex items-center gap-3">
@@ -51,16 +50,13 @@ defineEmits(['close'])
         </button>
       </div>
 
-      <!-- Summary / Intro -->
       <p class="text-sm text-slate-600 bg-slate-50 border border-slate-200/60 p-4 sm:p-5 rounded-2xl leading-relaxed">
         {{ guide.summary }}
       </p>
 
-      <!-- HTML Content Area -->
       <div class="space-y-4 text-slate-700 text-sm leading-relaxed" v-html="guide.contentHtml">
       </div>
 
-      <!-- Modal Footer -->
       <div class="pt-6 border-t border-slate-100 flex justify-end">
         <button
           type="button"

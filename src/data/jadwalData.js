@@ -1,7 +1,4 @@
-/**
- * Data Jadwal Pengangkutan Sampah 8 Kecamatan Kota Makassar
- * Terhubung dengan armada DLH Kota Makassar, TPS 3R, Bank Sampah, dan TPA Tamangapa
- */
+
 
 export const MAKASSAR_DISTRICTS = [
   "Panakkukang",
@@ -712,7 +709,6 @@ export function getDistrictSchedule(district) {
   return schedulesDatabase["Panakkukang"].map((item) => ({ ...item }))
 }
 
-// Backwards-compatible aliases
 export const wilayahList = MAKASSAR_DISTRICTS.map((d, index) => ({
   id: `w-${index + 1}`,
   kecamatan: d,

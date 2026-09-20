@@ -1,7 +1,4 @@
-/**
- * Data Panduan Edukasi & Literasi Keberlanjutan Warga Makassar
- * Dari prototipe Binfinity (app-guides.js)
- */
+
 
 export const guidesData = [
   {
@@ -106,7 +103,6 @@ export const guidesData = [
   }
 ]
 
-// Backwards-compatible aliases
 export const kategoriEdukasiList = [
   {
     id: 'organik',

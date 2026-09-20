@@ -3,9 +3,6 @@ import { supabase } from '@/lib/supabase'
 const CURRENT_SESSION_KEY = 'pilahki_chat_session_id'
 const LOCAL_SESSIONS_LIST_KEY = 'pilahki_known_session_ids'
 
-/**
- * Simpan ID sesi ke daftar lokal untuk isolasi sesi guest
- */
 function saveLocalSessionId(sessionId) {
   try {
     const raw = localStorage.getItem(LOCAL_SESSIONS_LIST_KEY)
@@ -17,9 +14,6 @@ function saveLocalSessionId(sessionId) {
   } catch {}
 }
 
-/**
- * Hapus ID sesi dari daftar lokal
- */
 function removeLocalSessionId(sessionId) {
   try {
     const raw = localStorage.getItem(LOCAL_SESSIONS_LIST_KEY)
@@ -29,9 +23,6 @@ function removeLocalSessionId(sessionId) {
   } catch {}
 }
 
-/**
- * Ambil daftar ID sesi lokal
- */
 function getLocalSessionIds() {
   try {
     const raw = localStorage.getItem(LOCAL_SESSIONS_LIST_KEY)
@@ -41,9 +32,6 @@ function getLocalSessionIds() {
   }
 }
 
-/**
- * Dapatkan atau buat Session ID aktif
- */
 export function getOrCreateSessionId() {
   try {
     let sessionId = localStorage.getItem(CURRENT_SESSION_KEY)
@@ -60,9 +48,6 @@ export function getOrCreateSessionId() {
   }
 }
 
-/**
- * Buat sesi obrolan baru (+ Percakapan Baru)
- */
 export function startNewSession() {
   try {
     const newId = (typeof crypto !== 'undefined' && crypto.randomUUID)
@@ -76,9 +61,6 @@ export function startNewSession() {
   }
 }
 
-/**
- * Set sesi aktif
- */
 export function setActiveSessionId(sessionId) {
   try {
     localStorage.setItem(CURRENT_SESSION_KEY, sessionId)
@@ -86,9 +68,6 @@ export function setActiveSessionId(sessionId) {
   } catch {}
 }
 
-/**
- * Muat daftar semua sesi percakapan dari Supabase
- */
 export async function fetchUserSessions(userId = null) {
   if (!supabase) return { data: [], error: 'Supabase tidak terhubung' }
 
@@ -109,7 +88,6 @@ export async function fetchUserSessions(userId = null) {
       return { data: [], error }
     }
 
-    // Kelompokkan pesan berdasarkan session_id
     const sessionsMap = new Map()
     for (const msg of (data || [])) {
       if (!sessionsMap.has(msg.session_id)) {
@@ -134,7 +112,6 @@ export async function fetchUserSessions(userId = null) {
 
     let list = Array.from(sessionsMap.values())
 
-    // Jika guest, filter dengan ID lokal yang pernah dibuat
     if (!userId) {
       const localIds = getLocalSessionIds()
       if (localIds.length > 0) {
@@ -142,7 +119,6 @@ export async function fetchUserSessions(userId = null) {
       }
     }
 
-    // Urutkan berdasarkan waktu pesan terbaru
     list.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
 
     return { data: list, error: null }
@@ -152,9 +128,6 @@ export async function fetchUserSessions(userId = null) {
   }
 }
 
-/**
- * Muat pesan spesifik untuk satu session_id tertentu dari Supabase
- */
 export async function fetchChatMessages(sessionId) {
   if (!supabase || !sessionId) return { data: [], error: null }
 
@@ -187,9 +160,6 @@ export async function fetchChatMessages(sessionId) {
   }
 }
 
-/**
- * Simpan pesan tunggal ke dalam tabel chat_messages di Supabase
- */
 export async function saveChatMessage({
   sessionId,
   userId = null,
@@ -230,9 +200,6 @@ export async function saveChatMessage({
   }
 }
 
-/**
- * Hapus seluruh pesan dalam satu session_id dari Supabase
- */
 export async function deleteSession(sessionId) {
   if (!supabase || !sessionId) return { success: false }
 

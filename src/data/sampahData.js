@@ -1,7 +1,4 @@
-/**
- * Database Jenis Sampah Rumah Tangga PilahKi'
- * 22 Sampah Umum terverifikasi Kota Makassar dengan nilai ekonomis, langkah penanganan, penyaluran, dan pantangan.
- */
+
 
 export const CATEGORY_THEMES = {
   organik: {
@@ -463,7 +460,6 @@ export const wasteData = [
   }
 ]
 
-// Backwards-compatible aliases
 export const daftarSampah = wasteData.map(w => ({
   id: w.id,
   nama: w.name,

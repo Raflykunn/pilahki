@@ -28,7 +28,6 @@ const city = ref(domicile.value.city)
 const selectedDistrict = ref(domicile.value.district)
 const detailAddress = ref(domicile.value.detail)
 
-// Sinkronkan form saat modal dibuka
 watch(() => props.isOpen, (open) => {
   if (open) {
     city.value = domicile.value.city || 'Kota Makassar'

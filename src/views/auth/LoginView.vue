@@ -57,16 +57,14 @@ const handleLogin = async () => {
 
 <template>
   <div class="bg-[#ebf4ed] text-slate-800 font-sans min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-8 selection:bg-brand-500 selection:text-white">
-    <!-- Modal Login Card (2 Kolom) -->
+    
     <main class="w-full max-w-4xl bg-white rounded-3xl shadow-sm border border-brand-100/80 overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[560px]">
-      
-      <!-- KOLOM KIRI: Panel Ringkasan PilahKi' -->
+
       <div class="hidden md:flex md:col-span-5 bg-gradient-to-br from-brand-900 via-brand-800 to-[#0b2216] text-white p-8 lg:p-10 flex-col justify-between relative overflow-hidden">
-        <!-- Dekorasi Cahaya Halus -->
+        
         <div class="absolute -top-20 -left-20 w-56 h-56 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -bottom-20 -right-20 w-56 h-56 bg-accent-light/15 rounded-full blur-3xl pointer-events-none"></div>
 
-        <!-- Header Brand Sisi Kiri -->
         <div class="relative z-10">
           <router-link to="/" class="inline-flex items-center gap-3 group">
             <div class="w-10 h-10 rounded-xl overflow-hidden bg-white p-1 shadow-sm group-hover:scale-105 transition-transform">
@@ -78,7 +76,6 @@ const handleLogin = async () => {
           </router-link>
         </div>
 
-        <!-- Pesan Inspiratif & Poin Ringkas -->
         <div class="relative z-10 my-auto py-6 space-y-6">
           <blockquote class="text-xl lg:text-2xl font-bold leading-snug text-white/95">
             “Mulai dari Pilahan, Ciptakan Perubahan”
@@ -100,13 +97,11 @@ const handleLogin = async () => {
           </div>
         </div>
 
-        <!-- Footer Info Sisi Kiri -->
         <div class="relative z-10 pt-4 border-t border-white/10 text-xs text-white/70">
           &copy; {{ new Date().getFullYear() }} PilahKi' Makassar. All rights reserved.
         </div>
       </div>
 
-      <!-- KOLOM KANAN: Form Login -->
       <div class="md:col-span-7 p-8 sm:p-12 flex flex-col justify-center bg-white">
         
         <div class="mb-8 text-left">
@@ -116,13 +111,11 @@ const handleLogin = async () => {
           </p>
         </div>
 
-        <!-- Info jika diarahkan dari halaman PilahAI -->
         <div v-if="route.query.redirect && String(route.query.redirect).includes('pilah-ai')" class="mb-5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2.5">
           <Lock class="w-4 h-4 text-amber-600 shrink-0" />
           <span>Silakan masuk ke akun warga Anda untuk mengakses asisten pintar PilahAI.</span>
         </div>
 
-        <!-- Notification / Error Toast -->
         <div v-if="localError || authError" class="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2.5">
           <AlertCircle class="w-4 h-4 text-red-600 flex-shrink-0" />
           <span>{{ localError || authError }}</span>
@@ -133,10 +126,8 @@ const handleLogin = async () => {
           <span>{{ successMessage }}</span>
         </div>
 
-        <!-- Form Login -->
         <form @submit.prevent="handleLogin" class="space-y-5">
-          
-          <!-- Input Email -->
+
           <div>
             <label for="email" class="block text-sm font-semibold text-slate-700 mb-2 text-left">
               Email atau Username
@@ -157,7 +148,6 @@ const handleLogin = async () => {
             </div>
           </div>
 
-          <!-- Input Kata Sandi -->
           <div>
             <label for="password" class="block text-sm font-semibold text-slate-700 mb-2">
               Kata Sandi
@@ -186,7 +176,6 @@ const handleLogin = async () => {
             </div>
           </div>
 
-          <!-- Ingat Saya -->
           <div class="flex items-center pt-1">
             <label class="flex items-center gap-2.5 cursor-pointer text-sm text-slate-600 select-none">
               <input v-model="rememberMe" type="checkbox" id="remember" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 border-slate-300" />
@@ -194,7 +183,6 @@ const handleLogin = async () => {
             </label>
           </div>
 
-          <!-- Tombol Masuk -->
           <button 
             type="submit" 
             :disabled="isSubmitting"
@@ -212,7 +200,6 @@ const handleLogin = async () => {
 
         </form>
 
-        <!-- Navigasi Bawah -->
         <div class="mt-8 pt-6 border-t border-slate-100 text-center text-sm">
           <p class="text-slate-600">
             Belum punya akun? 

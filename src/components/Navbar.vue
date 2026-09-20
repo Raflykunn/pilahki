@@ -78,14 +78,12 @@ const handleLogout = async () => {
   <header class="sticky top-0 z-40 w-full glass-nav border-b border-slate-100 bg-white/95 backdrop-blur-md transition-all">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-20">
-        
-        <!-- Sisi Kiri: Logo & Navigasi -->
+
         <div class="flex items-center gap-6 lg:gap-10">
           <router-link to="/" class="flex items-center py-1 shrink-0">
             <img :src="appConfig.logo" :alt="appConfig.name" class="h-11 sm:h-13 w-auto object-contain" />
           </router-link>
 
-          <!-- 1. Menu Navigasi Landing Page (Jika di Beranda) -->
           <nav v-if="isLandingRoute" class="hidden md:flex items-center gap-8 font-medium text-slate-600 text-sm">
             <button
               v-for="sec in landingSections"
@@ -98,7 +96,6 @@ const handleLogout = async () => {
             </button>
           </nav>
 
-          <!-- 2. Menu Navigasi Tab Internal Aplikasi (Jika di Halaman App) -->
           <nav v-else-if="!isAuthRoute" class="hidden md:flex items-center space-x-1 lg:space-x-2" aria-label="Navigasi Menu Utama">
             <router-link
               v-for="tab in appNavTabs"
@@ -116,10 +113,8 @@ const handleLogout = async () => {
           </nav>
         </div>
 
-        <!-- Sisi Kanan: Action & Profile Area -->
         <div class="flex items-center gap-3">
-          
-          <!-- Mode Landing Page: Masuk & Daftar -->
+
           <template v-if="isLandingRoute">
             <template v-if="!isAuthenticated">
               <router-link
@@ -136,18 +131,27 @@ const handleLogout = async () => {
               </router-link>
             </template>
             <template v-else>
-              <router-link
-                to="/pilah"
-                class="hidden md:inline-flex items-center px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-800 hover:bg-brand-700 shadow-sm"
+              <div
+                @click="$emit('open-profile')"
+                class="hidden md:flex items-center gap-3 cursor-pointer group p-1.5 rounded-xl hover:bg-slate-100/70 transition-colors"
+                title="Buka profil warga"
               >
-                Buka Aplikasi
-              </router-link>
+                <div class="flex flex-col text-right">
+                  <span class="text-sm font-bold text-slate-900 leading-tight group-hover:text-brand-800 transition-colors">{{ userName }}</span>
+                  <span class="text-[11px] text-slate-500">{{ userEmail || 'warga@pilahki.id' }}</span>
+                </div>
+
+                <div
+                  class="w-10 h-10 rounded-xl bg-brand-800 text-white flex items-center justify-center font-bold text-sm shadow-xs select-none group-hover:bg-brand-700 transition-colors"
+                >
+                  <span>{{ userInitial }}</span>
+                </div>
+              </div>
             </template>
           </template>
 
-          <!-- Mode In-App Header (Sesuai App/index.html Binfinity) -->
           <template v-else-if="!isAuthRoute">
-            <!-- User Display & Avatar (Desktop, Jika Login) -->
+            
             <div
               v-if="isAuthenticated"
               @click="$emit('open-profile')"
@@ -166,7 +170,6 @@ const handleLogout = async () => {
               </div>
             </div>
 
-            <!-- Tombol Masuk & Daftar (Desktop, Jika Tamu) -->
             <div v-else class="hidden md:flex items-center gap-2">
               <router-link
                 :to="{ path: '/login', query: { redirect: route.fullPath } }"
@@ -183,7 +186,6 @@ const handleLogout = async () => {
             </div>
           </template>
 
-          <!-- Mode Auth Route (Login/Register): Link Kembali -->
           <template v-else>
             <router-link
               to="/"
@@ -193,7 +195,6 @@ const handleLogout = async () => {
             </router-link>
           </template>
 
-          <!-- Mobile Menu Hamburger Button (Hanya di mode Landing Page) -->
           <div v-if="isLandingRoute" class="md:hidden flex items-center">
             <button
               type="button"
@@ -210,7 +211,6 @@ const handleLogout = async () => {
       </div>
     </div>
 
-    <!-- Mobile Drawer Navigation (Khusus Landing Page) -->
     <div
       v-if="isLandingRoute && isMobileMenuOpen"
       class="md:hidden border-t border-slate-100 bg-white/95 backdrop-blur-md px-4 pt-3 pb-6 space-y-3 transition-all"
@@ -226,20 +226,38 @@ const handleLogout = async () => {
       </button>
 
       <div class="pt-4 border-t border-slate-100 flex flex-col gap-2">
-        <router-link
-          to="/login"
-          class="w-full text-center py-2.5 rounded-xl border border-brand-800 text-brand-800 font-bold text-sm hover:bg-brand-50"
-          @click="isMobileMenuOpen = false"
-        >
-          Masuk
-        </router-link>
-        <router-link
-          to="/register"
-          class="w-full text-center py-2.5 rounded-xl bg-brand-800 text-white font-bold text-sm hover:bg-brand-700 shadow-sm"
-          @click="isMobileMenuOpen = false"
-        >
-          Daftar
-        </router-link>
+        <template v-if="isAuthenticated">
+          <router-link
+            to="/pilah"
+            class="w-full text-center py-2.5 rounded-xl bg-brand-800 text-white font-bold text-sm hover:bg-brand-700 shadow-sm"
+            @click="isMobileMenuOpen = false"
+          >
+            Buka Aplikasi
+          </router-link>
+          <button
+            type="button"
+            class="w-full text-center py-2.5 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 cursor-pointer"
+            @click="isMobileMenuOpen = false; $emit('open-profile')"
+          >
+            Profil Saya ({{ userName }})
+          </button>
+        </template>
+        <template v-else>
+          <router-link
+            to="/login"
+            class="w-full text-center py-2.5 rounded-xl border border-brand-800 text-brand-800 font-bold text-sm hover:bg-brand-50"
+            @click="isMobileMenuOpen = false"
+          >
+            Masuk
+          </router-link>
+          <router-link
+            to="/register"
+            class="w-full text-center py-2.5 rounded-xl bg-brand-800 text-white font-bold text-sm hover:bg-brand-700 shadow-sm"
+            @click="isMobileMenuOpen = false"
+          >
+            Daftar
+          </router-link>
+        </template>
       </div>
     </div>
   </header>

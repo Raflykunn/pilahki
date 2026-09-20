@@ -1,4 +1,4 @@
-// Perkhidmatan Gemini AI dengan Function Calling untuk PilahKi' Makassar (PRD Seksyen 7.5 & 8)
+
 import { wasteData, CATEGORY_THEMES, daftarSampah, kategoriConfig } from '../data/sampahData.js'
 import { makassarFacilities, jenisFasilitasConfig, daftarFasilitas } from '../data/lokasiData.js'
 import { MAKASSAR_DISTRICTS, schedulesDatabase, wilayahList, jadwalMaster } from '../data/jadwalData.js'
@@ -16,25 +16,23 @@ function getGeminiEndpoint(modelName = GEMINI_PRIMARY_MODEL) {
   return `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`
 }
 
-// Fungsi pembersih karakter em-dash (—) dan en-dash (–) agar tidak terkesan kaku seperti robot AI
 export function cleanDashes(text) {
   if (!text || typeof text !== 'string') return ''
   let cleaned = text
-  // 1. Rentang angka/jam: 06.30 — 09.00 atau 5–10 -> "sampai"
+  
   cleaned = cleaned.replace(/(\d+)\s*[—–]\s*(\d+)/g, '$1 sampai $2')
-  // 2. Awal baris tanda strip -> bullet
+  
   cleaned = cleaned.replace(/(^|\n)\s*[—–]\s*/g, '$1• ')
-  // 3. Penghubung antar-klausa kata -> koma
+  
   cleaned = cleaned.replace(/\s*[—–]\s*/g, ', ')
-  // 4. Semua sisa em-dash atau en-dash
+  
   cleaned = cleaned.replace(/[—–]/g, ', ')
-  // 5. Rapikan koma berlebih
+  
   cleaned = cleaned.replace(/,\s*,/g, ', ')
   cleaned = cleaned.replace(/,\s*([.?!:])/g, '$1')
   return cleaned
 }
 
-// Mendapatkan waktu dan hari saat ini di zona waktu Makassar (WITA, UTC+8)
 export function getCurrentMakassarTime() {
   const now = new Date()
   let dayName = 'Senin'
@@ -59,7 +57,6 @@ export function getCurrentMakassarTime() {
   return { dayName, timeString, fullDate, now }
 }
 
-// Mendapatkan domisili Makassar yang telah dipilih pengguna di sistem
 export function getUserDomicile() {
   try {
     const raw = localStorage.getItem('pilahki_domicile')
@@ -75,7 +72,6 @@ export function getUserDomicile() {
   return { city: 'Kota Makassar', district: 'Panakkukang', detail: '' }
 }
 
-// Mendapatkan profil pengguna
 export function getUserProfile() {
   try {
     const raw = localStorage.getItem('pilahki_user')
@@ -87,11 +83,6 @@ export function getUserProfile() {
   return { name: "Warga PilahKi'", email: '' }
 }
 
-// ============================================================================
-// 1. Fungsi-Fungsi Internal (Tools Execution)
-// ============================================================================
-
-// Fitur 1: Cek Kategori Sampah
 export function toolCekKategoriSampah(args) {
   const query = (args?.namaSampah || '').toLowerCase().trim()
   if (!query) return { status: 'error', pesan: 'Nama sampah tidak boleh kosong.' }
@@ -122,7 +113,6 @@ export function toolCekKategoriSampah(args) {
   }
 }
 
-// Fitur 2: Cari Fasilitas Terdekat (Menggunakan Domisili Pengguna Secara Default)
 export function toolCariFasilitas(args) {
   const domicile = getUserDomicile()
   let inputWilayah = (args?.wilayah || '').toLowerCase().trim()
@@ -171,7 +161,6 @@ export function toolCariFasilitas(args) {
   }
 }
 
-// Fitur 3: Cek Jadwal Angkut (Sadar Waktu & Domisili Makassar)
 export function toolCekJadwal(args) {
   const domicile = getUserDomicile()
   const { dayName, fullDate, timeString } = getCurrentMakassarTime()
@@ -198,10 +187,8 @@ export function toolCekJadwal(args) {
     if (filtered.length) jadwal = filtered
   }
 
-  // Cari jadwal hari ini
   const hariIniJadwal = jadwal.find(j => j.day.toLowerCase() === dayName.toLowerCase())
 
-  // Cari jadwal penjemputan aktif berikutnya (selain hari ini jika hari ini libur, atau jadwal besok/lusa)
   const dayOrder = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
   const todayIdx = dayOrder.findIndex(d => d.toLowerCase() === dayName.toLowerCase())
   let nextPickup = null
@@ -235,7 +222,6 @@ export function toolCekJadwal(args) {
   }
 }
 
-// Fitur 4: Cari Panduan Edukasi
 export function toolCariPanduan(args) {
   const topik = (args?.topik || '').toLowerCase().trim()
 
@@ -262,9 +248,6 @@ export function toolCariPanduan(args) {
   }
 }
 
-// ============================================================================
-// 2. Definisi Tools untuk Gemini Function Calling
-// ============================================================================
 const toolsDefinition = [
   {
     functionDeclarations: [
@@ -341,7 +324,6 @@ const toolsDefinition = [
   }
 ]
 
-// Membangun System Instruction dinamis dengan konteks waktu dan domisili
 function buildSystemInstruction() {
   const dom = getUserDomicile()
   const user = getUserProfile()
@@ -374,9 +356,6 @@ ATURAN DOMAIN & FORMAT KETAT:
 6. DILARANG MENGGUNAKAN TANDA HUBUNG PANJANG EM-DASH ("—" atau "–"). Gunakan tanda baca alami seperti koma, titik dua (:), atau tanda kurung.`
 }
 
-// ============================================================================
-// 3. Penghantaran Pesan ke Gemini API
-// ============================================================================
 export async function sendChatMessageToPilahAI(messagesHistory) {
   const apiKey = getGeminiApiKey()
 
@@ -428,7 +407,6 @@ export async function sendChatMessageToPilahAI(messagesHistory) {
     const candidate = result?.candidates?.[0]
     const modelPart = candidate?.content?.parts?.[0]
 
-    // Jika Gemini melakukan Function Calling
     if (modelPart?.functionCall) {
       const call = modelPart.functionCall
       let functionResult = null
@@ -504,7 +482,6 @@ export async function sendChatMessageToPilahAI(messagesHistory) {
   }
 }
 
-// Format hasil fungsi jika dipanggil sebagai teks langsung
 function formatFunctionResultAsText(funcName, res) {
   if (funcName === 'cekKategoriSampah') {
     if (res.status === 'found') {
@@ -549,15 +526,11 @@ function formatFunctionResultAsText(funcName, res) {
   return 'Informasi telah ditemukan di sistem PilahKi Makassar.'
 }
 
-// ============================================================================
-// 4. Asisten Lokal Cerdas (Sadar Waktu Hari Ini & Domisili Makassar)
-// ============================================================================
 function handleLocalSmartAssistant(messagesHistory) {
   const latestMessage = messagesHistory[messagesHistory.length - 1]?.text || ''
   const lower = latestMessage.toLowerCase()
   const domicile = getUserDomicile()
 
-  // 1. Cek topik di luar sampah
   const offTopic = ['politik', 'presiden', 'pemilu', 'koding', 'javascript', 'resep martabak', 'sepak bola']
   if (offTopic.some(w => lower.includes(w))) {
     return {
@@ -565,7 +538,6 @@ function handleLocalSmartAssistant(messagesHistory) {
     }
   }
 
-  // 2. Permintaan Jadwal (Sadar Hari Ini & Waktu Real-Time)
   if (lower.includes('jadwal') || lower.includes('kapan') || lower.includes('diangkut') || lower.includes('hari apa') || lower.includes('truk') || lower.includes('jemput') || lower.includes('ambil')) {
     let targetDistrict = domicile.district
 
@@ -581,7 +553,6 @@ function handleLocalSmartAssistant(messagesHistory) {
     const isAskingAll = lower.includes('semua') || lower.includes('lengkap') || lower.includes('seminggu') || lower.includes('1 minggu') || lower.includes('sepekan')
     const isAskingNow = lower.includes('sekarang') || lower.includes('hari ini') || lower.includes('saat ini') || lower.includes('terdekat') || lower.includes('berikutnya') || lower.includes('kapan')
 
-    // Jika pengguna menanyakan jadwal sekarang / hari ini / besok / terdekat (TIDAK minta seminggu penuh)
     if (!isAskingAll && (isAskingNow || isAskingBesok)) {
       let responseText = `Untuk wilayah domisili Anda di **${res.wilayahLengkap}**:\n\n`
 
@@ -600,7 +571,7 @@ function handleLocalSmartAssistant(messagesHistory) {
             `• *Catatan:* ${tomorrowJadwal.catatan}`
         }
       } else {
-        // Hari ini
+        
         responseText += `📅 **Jadwal Hari Ini (${res.hariIni}, ${res.tanggalHariIni}):**\n`
         if (res.jadwalHariIni) {
           responseText += `• **Status:** ${res.jadwalHariIni.status}\n` +
@@ -627,7 +598,6 @@ function handleLocalSmartAssistant(messagesHistory) {
       }
     }
 
-    // Jika pengguna meminta jadwal seminggu penuh
     return {
       text: `Berdasarkan wilayah domisili Anda di **${res.wilayahLengkap}**, berikut agenda jadwal pengangkutan mingguan:\n\n` +
         res.jadwalLengkap.map(j => `• **${j.hari}** (${j.waktu})\n  - **Status:** ${j.status}\n  - **Kategori:** ${j.kategoriSampah}\n  - **Armada:** ${j.armada}\n  - *Catatan:* ${j.catatan}`).join('\n\n') +
@@ -637,7 +607,6 @@ function handleLocalSmartAssistant(messagesHistory) {
     }
   }
 
-  // 3. Permintaan Lokasi Fasilitas / Bank Sampah
   if (lower.includes('lokasi') || lower.includes('bank sampah') || lower.includes('tps') || lower.includes('tpa') || lower.includes('tamangapa') || lower.includes('antang') || lower.includes('buang ke mana') || lower.includes('di mana') || lower.includes('setor') || lower.includes('jual sampah')) {
     let targetDistrict = domicile.district
 
@@ -663,7 +632,6 @@ function handleLocalSmartAssistant(messagesHistory) {
     }
   }
 
-  // 4. Kategori Sampah
   let cleanItemName = latestMessage
     .replace(/(bagaimana|cara|buang|kategori|masuk|apa|ke mana|apakah|bisa|saya|punya|tolong|cek|tanya)/gi, '')
     .trim()
@@ -682,7 +650,6 @@ function handleLocalSmartAssistant(messagesHistory) {
     }
   }
 
-  // 5. Panduan Edukasi
   const panduanRes = toolCariPanduan({ topik: lower })
   if (lower.includes('panduan') || lower.includes('kompos') || lower.includes('biopori') || lower.includes('takakura') || lower.includes('plastik') || lower.includes('b3') || lower.includes('cara')) {
     return {
@@ -692,7 +659,6 @@ function handleLocalSmartAssistant(messagesHistory) {
     }
   }
 
-  // Default sapaan ramah sadar domisili
   return {
     text: `Halo! Saya PilahAI. Domisili Anda terhubung di **Kecamatan ${domicile.district}, Makassar**.\n\nAnda bisa menanyakan seputar:\n` +
       `1. *"Kapan jadwal truk sampah sekarang?"*\n` +
@@ -703,7 +669,6 @@ function handleLocalSmartAssistant(messagesHistory) {
   }
 }
 
-// Wrapper fungsi untuk kemudahan pemanggilan komponen
 export async function sendMessageToGemini(prompt) {
   const reply = await sendChatMessageToPilahAI([{ role: 'user', text: prompt }])
   if (reply && typeof reply.text === 'string') {

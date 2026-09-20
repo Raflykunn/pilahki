@@ -88,8 +88,7 @@ const handleModalAskAi = (prompt) => {
 <template>
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 text-left">
     <div class="space-y-6">
-      
-      <!-- Top Title & Search Controls -->
+
       <div class="space-y-4">
         <div class="space-y-1">
           <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Katalog & Panduan Pemilahan Sampah</h1>
@@ -98,10 +97,8 @@ const handleModalAskAi = (prompt) => {
           </p>
         </div>
 
-        <!-- Search Bar & Filters -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2">
-          
-          <!-- Search Input -->
+
           <div class="relative flex-1 max-w-md">
             <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input 
@@ -112,7 +109,6 @@ const handleModalAskAi = (prompt) => {
             />
           </div>
 
-          <!-- Category Filter Buttons -->
           <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
             <button
               v-for="cat in categories"
@@ -132,7 +128,6 @@ const handleModalAskAi = (prompt) => {
 
         </div>
 
-        <!-- Result count badge -->
         <div class="flex items-center justify-between text-xs text-slate-500 pt-1">
           <span class="font-bold text-slate-700">
             {{ filteredWaste.length }} Jenis Sampah
@@ -141,7 +136,6 @@ const handleModalAskAi = (prompt) => {
         </div>
       </div>
 
-      <!-- Waste Grid (Dynamic) -->
       <div v-if="filteredWaste.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
           v-for="item in filteredWaste"
@@ -150,7 +144,7 @@ const handleModalAskAi = (prompt) => {
           class="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-2xs hover:shadow-card-hover transition-all duration-300 cursor-pointer group flex flex-col justify-between space-y-4 hover:border-brand-300"
         >
           <div class="space-y-3">
-            <!-- Header: Category Badge & Icon -->
+            
             <div class="flex items-center justify-between">
               <span
                 :class="[
@@ -171,7 +165,6 @@ const handleModalAskAi = (prompt) => {
               </div>
             </div>
 
-            <!-- Title & Short Description -->
             <div>
               <h3 class="text-base sm:text-lg font-bold text-slate-900 group-hover:text-brand-800 transition-colors leading-snug">
                 {{ item.name }}
@@ -181,14 +174,12 @@ const handleModalAskAi = (prompt) => {
               </p>
             </div>
 
-            <!-- Recyclable Value Tag -->
             <div class="pt-2 flex items-center gap-1.5 text-xs text-slate-500">
               <Tag class="w-3.5 h-3.5 text-brand-600 shrink-0" />
               <span class="truncate font-medium text-[11px] sm:text-xs">{{ item.recyclableValue }}</span>
             </div>
           </div>
 
-          <!-- Bottom Card Action -->
           <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-700 group-hover:text-brand-800">
             <span>Lihat Solusi Lengkap</span>
             <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -196,7 +187,6 @@ const handleModalAskAi = (prompt) => {
         </div>
       </div>
 
-      <!-- Empty State -->
       <div v-else class="text-center py-16 bg-white rounded-2xl border border-slate-200">
         <SearchX class="w-12 h-12 text-slate-400 mx-auto mb-3" />
         <p class="text-sm font-bold text-slate-800">Sampah tidak ditemukan</p>
@@ -207,7 +197,6 @@ const handleModalAskAi = (prompt) => {
 
     </div>
 
-    <!-- Detail Modal Component -->
     <WasteDetailModal
       :is-open="isModalOpen"
       :waste="selectedWaste"

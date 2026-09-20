@@ -18,10 +18,9 @@ const isActive = (path) => {
 </script>
 
 <template>
-  <!-- MOBILE FLOATING BOTTOM MENUBAR (< md) -->
+  
   <nav class="md:hidden fixed bottom-4 inset-x-4 max-w-md mx-auto z-40 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-xl px-2 py-1.5 flex items-center justify-around select-none">
-    
-    <!-- 1. Pilah -->
+
     <router-link
       to="/pilah"
       :class="[
@@ -35,7 +34,6 @@ const isActive = (path) => {
       <span class="text-[10px] tracking-tight">Pilah</span>
     </router-link>
 
-    <!-- 2. Lokasi -->
     <router-link
       to="/lokasi"
       :class="[
@@ -49,7 +47,6 @@ const isActive = (path) => {
       <span class="text-[10px] tracking-tight">Lokasi</span>
     </router-link>
 
-    <!-- 3. Jadwal -->
     <router-link
       to="/jadwal"
       :class="[
@@ -63,7 +60,6 @@ const isActive = (path) => {
       <span class="text-[10px] tracking-tight">Jadwal</span>
     </router-link>
 
-    <!-- 4. Panduan -->
     <router-link
       to="/panduan"
       :class="[
@@ -77,7 +73,6 @@ const isActive = (path) => {
       <span class="text-[10px] tracking-tight">Panduan</span>
     </router-link>
 
-    <!-- 5. Profile -->
     <button
       type="button"
       @click="$emit('open-profile')"

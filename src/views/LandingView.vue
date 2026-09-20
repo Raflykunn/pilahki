@@ -40,29 +40,26 @@ const faqs = [
 
 <template>
   <div class="relative w-full overflow-hidden bg-[#fafdfa]">
-    
-    <!-- ================= 1. HERO SECTION ================= -->
+
     <section id="tentang" class="relative overflow-hidden py-24 sm:py-32 lg:py-40 bg-[#fafdfa]">
-      <!-- Background Image & Contrast Overlays -->
+      
       <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
         <img 
           src="/img/hero-sampah.jpg" 
           alt="Tumpukan sampah daur ulang" 
           class="w-full h-full object-cover object-right md:object-center opacity-75 lg:opacity-85 filter contrast-105"
         />
-        <!-- Horizontal mask: Ensures left side text is 100% readable with smooth fade to the waste pile on right -->
+        
         <div class="absolute inset-0 bg-gradient-to-r from-[#fafdfa] via-[#fafdfa]/95 sm:via-[#fafdfa]/90 lg:via-[#fafdfa]/80 to-[#fafdfa]/60 lg:to-transparent"></div>
-        <!-- Vertical edge blend: Seamless transitions from top navbar and into bottom section -->
+        
         <div class="absolute inset-0 bg-gradient-to-b from-[#fafdfa] via-transparent to-[#fafdfa]"></div>
-        <!-- Subtle atmospheric eco tint -->
+        
         <div class="absolute inset-0 bg-emerald-950/10 mix-blend-multiply"></div>
       </div>
 
-      <!-- Content (Left-aligned, ample breathing room) -->
       <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="max-w-3xl text-left space-y-8">
-          
-          <!-- Headline Tagline -->
+
           <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-brand-950 leading-[1.15]">
             Mulai dari Pilahan, <br class="hidden sm:inline" />
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-800 via-brand-700 to-brand-500">
@@ -70,12 +67,10 @@ const faqs = [
             </span>
           </h1>
 
-          <!-- Deskripsi -->
           <p class="text-base sm:text-lg lg:text-xl text-slate-700 max-w-2xl leading-relaxed font-normal">
             Hilangkan keraguan memilah sampah rumah tangga. Cek kategori secara instan, temukan bank sampah terdekat, pantau jadwal angkut, atau tanyakan langsung pada AI.
           </p>
 
-          <!-- CTA Buttons -->
           <div class="pt-2 flex flex-wrap items-center gap-4">
             <router-link
               :to="isAuthenticated ? '/pilah' : '/register'"
@@ -89,7 +84,6 @@ const faqs = [
       </div>
     </section>
 
-    <!-- ================= 2. TANTANGAN / PROBLEM SECTION ================= -->
     <section id="masalah" class="py-16 bg-white border-y border-slate-100">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -103,8 +97,7 @@ const faqs = [
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          
-          <!-- Problem 1 -->
+
           <div class="p-6 rounded-2xl bg-[#fafdfa] border border-slate-100 hover:border-brand-200 hover:shadow-card-hover transition-all duration-300 text-left">
             <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 border border-brand-100 flex items-center justify-center mb-4">
               <HelpCircle class="w-6 h-6" />
@@ -115,7 +108,6 @@ const faqs = [
             </p>
           </div>
 
-          <!-- Problem 2 -->
           <div class="p-6 rounded-2xl bg-[#fafdfa] border border-slate-100 hover:border-brand-200 hover:shadow-card-hover transition-all duration-300 text-left">
             <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 border border-brand-100 flex items-center justify-center mb-4">
               <MapPinOff class="w-6 h-6" />
@@ -126,7 +118,6 @@ const faqs = [
             </p>
           </div>
 
-          <!-- Problem 3 -->
           <div class="p-6 rounded-2xl bg-[#fafdfa] border border-slate-100 hover:border-brand-200 hover:shadow-card-hover transition-all duration-300 text-left">
             <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 border border-brand-100 flex items-center justify-center mb-4">
               <Clock class="w-6 h-6" />
@@ -137,7 +128,6 @@ const faqs = [
             </p>
           </div>
 
-          <!-- Problem 4 -->
           <div class="p-6 rounded-2xl bg-[#fafdfa] border border-slate-100 hover:border-brand-200 hover:shadow-card-hover transition-all duration-300 text-left">
             <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 border border-brand-100 flex items-center justify-center mb-4">
               <Compass class="w-6 h-6" />
@@ -150,7 +140,6 @@ const faqs = [
 
         </div>
 
-        <!-- Solution Bridge Banner -->
         <div class="mt-12 bg-gradient-to-r from-brand-800 to-brand-700 text-white rounded-3xl p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-glow">
           <div class="space-y-2 text-center md:text-left">
             <span class="text-xs uppercase font-bold tracking-wider text-accent-light">Jawaban Masalah</span>
@@ -170,11 +159,9 @@ const faqs = [
       </div>
     </section>
 
-    <!-- ================= 3. 5 FITUR UTAMA SECTION ================= -->
     <section id="fitur" class="py-24 sm:py-32 bg-[#fafdfa]">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <!-- Section Header -->
+
         <div class="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
           <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-950 tracking-tight">
             5 Fitur Unggulan di Dalam PilahKi'
@@ -184,10 +171,8 @@ const faqs = [
           </p>
         </div>
 
-        <!-- Open Features Layout (Editorial - Informational Only) -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 lg:gap-x-16 gap-y-12 lg:gap-y-16 text-left">
-          
-          <!-- Fitur 1: Pilah Sampah -->
+
           <div class="space-y-3">
             <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 01</span>
             <h3 class="text-xl font-bold text-brand-950">
@@ -198,7 +183,6 @@ const faqs = [
             </p>
           </div>
 
-          <!-- Fitur 2: Cari Lokasi -->
           <div class="space-y-3">
             <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 02</span>
             <h3 class="text-xl font-bold text-brand-950">
@@ -209,7 +193,6 @@ const faqs = [
             </p>
           </div>
 
-          <!-- Fitur 3: Jadwal Angkut -->
           <div class="space-y-3">
             <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 03</span>
             <h3 class="text-xl font-bold text-brand-950">
@@ -220,7 +203,6 @@ const faqs = [
             </p>
           </div>
 
-          <!-- Fitur 4: Panduan Edukasi -->
           <div class="space-y-3">
             <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 04</span>
             <h3 class="text-xl font-bold text-brand-950">
@@ -231,7 +213,6 @@ const faqs = [
             </p>
           </div>
 
-          <!-- Fitur 5: PilahAI -->
           <div class="space-y-3">
             <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 05</span>
             <h3 class="text-xl font-bold text-brand-950">
@@ -247,7 +228,6 @@ const faqs = [
       </div>
     </section>
 
-    <!-- ================= 4. ALIGNMENT DENGAN SDG ================= -->
     <section id="sdg" class="py-20 bg-brand-950 text-white relative overflow-hidden">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
@@ -261,7 +241,7 @@ const faqs = [
         </div>
 
         <div class="max-w-3xl mx-auto text-left">
-          <!-- SDG 11 -->
+          
           <div class="bg-white/5 border border-white/10 rounded-3xl p-8 sm:p-10 hover:bg-white/10 transition-all duration-300 flex flex-col justify-between shadow-glow">
             <div>
               <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-2xl mb-6 border border-emerald-500/30">
@@ -282,7 +262,6 @@ const faqs = [
       </div>
     </section>
 
-    <!-- ================= 5. CARA KERJA / WORKFLOW SECTION ================= -->
     <section class="py-20 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -296,11 +275,9 @@ const faqs = [
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-          
-          <!-- Connecting Dashed Line between Step 1, 2, and 3 (Desktop) -->
+
           <div class="hidden md:block absolute top-14 left-[16.6%] right-[16.6%] border-t-2 border-dashed border-brand-200 z-0" aria-hidden="true"></div>
 
-          <!-- Step 1 -->
           <div class="text-center p-6 space-y-4 relative">
             <div class="relative z-10 w-16 h-16 rounded-full bg-brand-100 text-brand-800 font-extrabold text-2xl mx-auto flex items-center justify-center border-4 border-white shadow-md">
               1
@@ -311,7 +288,6 @@ const faqs = [
             </p>
           </div>
 
-          <!-- Step 2 -->
           <div class="text-center p-6 space-y-4 relative">
             <div class="relative z-10 w-16 h-16 rounded-full bg-brand-500 text-white font-extrabold text-2xl mx-auto flex items-center justify-center border-4 border-white shadow-md">
               2
@@ -322,7 +298,6 @@ const faqs = [
             </p>
           </div>
 
-          <!-- Step 3 -->
           <div class="text-center p-6 space-y-4 relative">
             <div class="relative z-10 w-16 h-16 rounded-full bg-brand-800 text-white font-extrabold text-2xl mx-auto flex items-center justify-center border-4 border-white shadow-md">
               3
@@ -338,7 +313,6 @@ const faqs = [
       </div>
     </section>
 
-    <!-- ================= 6. FAQ SECTION ================= -->
     <section id="faq" class="py-20 bg-[#fafdfa] border-t border-slate-100">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -379,7 +353,6 @@ const faqs = [
       </div>
     </section>
 
-    <!-- ================= 7. FINAL CALL TO ACTION BANNER ================= -->
     <section class="py-20 bg-gradient-to-br from-brand-900 via-brand-800 to-brand-950 text-white relative overflow-hidden">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-6">
 

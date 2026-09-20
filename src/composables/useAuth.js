@@ -4,7 +4,6 @@ import { supabase } from '../lib/supabase'
 const ACCOUNTS_KEY = 'pilahki_registered_accounts'
 const CURRENT_USER_KEY = 'pilahki_user'
 
-// Helper untuk membaca daftar akun yang telah terdaftar
 function getStoredAccounts() {
   try {
     const raw = localStorage.getItem(ACCOUNTS_KEY)
@@ -13,39 +12,29 @@ function getStoredAccounts() {
   return {}
 }
 
-// Helper untuk menyimpan daftar akun ke localStorage
 function saveStoredAccounts(accounts) {
   try {
     localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts))
   } catch (e) {}
 }
 
-// Restore session pengguna dari localStorage HANYA jika akun valid dan terdaftar
 function getInitialUser() {
   try {
     const raw = localStorage.getItem(CURRENT_USER_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (parsed && parsed.email) {
-        const normalized = parsed.email.trim().toLowerCase()
-        const accounts = getStoredAccounts()
-        // Pastikan akun tersebut benar-benar ada di daftar akun terdaftar
-        if (accounts[normalized]) {
-          const acc = accounts[normalized]
-          return {
-            id: acc.id,
-            email: acc.email,
-            name: acc.name || parsed.name || "Warga PilahKi'",
-            user_metadata: { name: acc.name || parsed.name || "Warga PilahKi'" }
-          }
+      if (parsed && (parsed.email || parsed.id)) {
+        return {
+          id: parsed.id || 'usr_' + Date.now(),
+          email: parsed.email || '',
+          name: parsed.name || parsed.user_metadata?.name || "Warga PilahKi'",
+          user_metadata: { name: parsed.name || parsed.user_metadata?.name || "Warga PilahKi'" }
         }
       }
     }
-  } catch (e) {}
-  // Jika tidak terdaftar, bersihkan sisa login palsu sebelumnya
-  try {
-    localStorage.removeItem(CURRENT_USER_KEY)
-  } catch (e) {}
+  } catch (e) {
+    console.warn('[useAuth] Error parsing initial user session:', e)
+  }
   return null
 }
 
@@ -86,13 +75,18 @@ export function useAuth() {
           if (newSession?.user) {
             session.value = newSession
             user.value = newSession.user
+            const name = newSession.user.user_metadata?.name || newSession.user.email?.split('@')[0]
+            localStorage.setItem(CURRENT_USER_KEY, JSON.stringify({
+              name,
+              email: newSession.user.email,
+              id: newSession.user.id
+            }))
           }
         })
       }
     } catch (e) {}
   }
 
-  // Masuk menggunakan Email & Kata Sandi
   const signInWithEmail = async (email, password) => {
     loading.value = true
     authError.value = null
@@ -110,7 +104,6 @@ export function useAuth() {
       let loggedInUser = null
       let loggedInSession = null
 
-      // 1. Coba verifikasi dengan Supabase Auth jika online
       if (supabase && typeof supabase.auth?.signInWithPassword === 'function') {
         try {
           const { data, error } = await supabase.auth.signInWithPassword({
@@ -126,7 +119,6 @@ export function useAuth() {
         }
       }
 
-      // 2. Jika Supabase belum mengonfirmasi, cek dari daftar akun lokal yang pernah terdaftar
       const accounts = getStoredAccounts()
       const localAcc = accounts[normalizedEmail]
 
@@ -140,22 +132,18 @@ export function useAuth() {
           }
           loggedInSession = { user: loggedInUser }
         } else {
-          // Email ditemukan di database, tapi kata sandinya salah!
           loading.value = false
           authError.value = 'Kata sandi yang Anda masukkan salah. Silakan periksa kembali.'
           return { success: false, error: authError.value }
         }
       }
 
-      // 3. JIKA AKUN TIDAK DITEMUKAN (TIDAK PERNAH REGISTRASI)
-      // JANGAN PERNAH LOGINKAN USER PALSU SECARA OTOMATIS!
       if (!loggedInUser) {
         loading.value = false
         authError.value = 'Akun belum terdaftar. Silakan periksa kembali email Anda atau klik "Daftar" untuk membuat akun baru terlebih dahulu.'
         return { success: false, error: authError.value }
       }
 
-      // 4. Kredensial valid: set user aktif
       user.value = loggedInUser
       session.value = loggedInSession
 
@@ -166,6 +154,14 @@ export function useAuth() {
         id: loggedInUser.id
       }))
 
+      accounts[normalizedEmail] = {
+        id: loggedInUser.id,
+        email: normalizedEmail,
+        password: rawPassword,
+        name: finalName
+      }
+      saveStoredAccounts(accounts)
+
       return { success: true, data: { user: loggedInUser, session: loggedInSession } }
     } catch (err) {
       authError.value = err.message || 'Gagal masuk. Silakan periksa email dan kata sandi Anda.'
@@ -175,7 +171,6 @@ export function useAuth() {
     }
   }
 
-  // Daftar akun baru
   const signUpWithEmail = async (email, password, displayName = '') => {
     loading.value = true
     authError.value = null
@@ -199,7 +194,6 @@ export function useAuth() {
     try {
       const accounts = getStoredAccounts()
 
-      // Cek apakah email sudah terdaftar sebelumnya
       if (accounts[normalizedEmail]) {
         loading.value = false
         authError.value = 'Email ini sudah terdaftar. Silakan langsung masuk dengan akun Anda.'
@@ -209,7 +203,6 @@ export function useAuth() {
       let registeredUser = null
       let registeredSession = null
 
-      // 1. Coba daftarkan ke Supabase
       if (supabase && typeof supabase.auth?.signUp === 'function') {
         try {
           const { data, error } = await supabase.auth.signUp({
@@ -234,7 +227,6 @@ export function useAuth() {
         }
       }
 
-      // 2. Buat ID akun jika belum ada dari Supabase
       const newUserId = registeredUser?.id || 'usr_' + Date.now()
       registeredUser = {
         id: newUserId,
@@ -244,7 +236,6 @@ export function useAuth() {
       }
       registeredSession = registeredSession || { user: registeredUser }
 
-      // 3. Simpan akun ke database akun lokal terdaftar
       accounts[normalizedEmail] = {
         id: newUserId,
         email: normalizedEmail,
@@ -254,7 +245,6 @@ export function useAuth() {
       }
       saveStoredAccounts(accounts)
 
-      // 4. Loginkan pengguna yang baru terdaftar
       user.value = registeredUser
       session.value = registeredSession
 
@@ -273,7 +263,6 @@ export function useAuth() {
     }
   }
 
-  // Reset kata sandi lokal (jika user menggunakan modal Lupa Kata Sandi)
   const resetPassword = (email, newPassword) => {
     const normalizedEmail = (email || '').trim().toLowerCase()
     const accounts = getStoredAccounts()
@@ -285,7 +274,6 @@ export function useAuth() {
     return false
   }
 
-  // Masuk dengan Google OAuth
   const signInWithGoogle = async () => {
     loading.value = true
     authError.value = null
@@ -309,7 +297,6 @@ export function useAuth() {
     }
   }
 
-  // Keluar dari akun
   const signOut = async () => {
     loading.value = true
     try {
@@ -319,6 +306,7 @@ export function useAuth() {
       user.value = null
       session.value = null
       localStorage.removeItem(CURRENT_USER_KEY)
+      localStorage.removeItem('pilahki_chat_session_id')
     } catch (err) {
       console.error('[useAuth] Gagal keluar:', err)
     } finally {

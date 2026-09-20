@@ -109,7 +109,6 @@ const handleSend = async (customQuery = null) => {
   }
 }
 
-// Parser markdown & pemformat pesan cantik
 const formatBotResponse = (text) => {
   if (!text) return ''
   let html = cleanDashes(text)
@@ -122,12 +121,10 @@ const formatBotResponse = (text) => {
     const trimmed = line.trim()
     if (!trimmed) return '<div class="h-2"></div>'
 
-    // Callout header
     if (trimmed.startsWith('📅') || trimmed.startsWith('🚚') || trimmed.startsWith('📍') || trimmed.startsWith('💡')) {
       return `<div class="font-bold text-brand-900 text-xs sm:text-sm mt-3 mb-1.5 flex items-center gap-1.5 bg-brand-50/70 border border-brand-100/80 px-2.5 py-1 rounded-lg">${trimmed}</div>`
     }
 
-    // Bullet points (•)
     if (trimmed.startsWith('•')) {
       const content = trimmed.substring(1).trim()
       return `<div class="flex items-start gap-2 my-1 pl-1 text-slate-700 text-xs sm:text-[13px] leading-relaxed">
@@ -136,7 +133,6 @@ const formatBotResponse = (text) => {
       </div>`
     }
 
-    // Sub-bullet (-)
     if (trimmed.startsWith('-')) {
       const content = trimmed.substring(1).trim()
       return `<div class="flex items-start gap-2 my-0.5 pl-4 text-slate-600 text-[11.5px] sm:text-xs leading-relaxed">
@@ -145,7 +141,6 @@ const formatBotResponse = (text) => {
       </div>`
     }
 
-    // Numbered item (1. 2.)
     const numMatch = trimmed.match(/^(\d+)\.\s+(.*)/)
     if (numMatch) {
       return `<div class="flex items-start gap-2 my-1 pl-1 text-slate-700 text-xs sm:text-[13px] leading-relaxed">
@@ -182,7 +177,7 @@ defineExpose({
         : 'bottom-4 sm:bottom-6 right-4 sm:right-6'
     ]"
   >
-    <!-- Floating Chat Window (Toggled via FAB) -->
+    
     <div
       v-if="isOpen"
       id="pilahai-chat-window"
@@ -193,7 +188,7 @@ defineExpose({
           : 'max-h-[calc(100dvh-6.5rem)] sm:max-h-[80vh]'
       ]"
     >
-      <!-- Chat Header -->
+      
       <div class="bg-gradient-to-r from-brand-900 via-brand-800 to-[#0b2216] text-white px-5 py-4 flex items-center justify-between shadow-xs shrink-0">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 rounded-xl bg-white/10 border border-white/20 text-white flex items-center justify-center shadow-xs">
@@ -234,7 +229,6 @@ defineExpose({
         </div>
       </div>
 
-      <!-- 1. GUEST LOCK GATE (Khusus Tamu / Belum Login) -->
       <div v-if="!isAuthenticated" class="flex-1 p-6 flex flex-col items-center justify-center text-center space-y-4 bg-slate-50/70">
         <div class="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-700 shadow-xs">
           <Lock class="w-7 h-7" />
@@ -263,9 +257,8 @@ defineExpose({
         </div>
       </div>
 
-      <!-- 2. MEMBER ACTIVE CHAT (Warga Login) -->
       <template v-else>
-        <!-- Messages Scroll Area -->
+        
         <div ref="messagesContainer" class="flex-1 p-4 overflow-y-auto space-y-3.5 bg-slate-50/70">
           <div 
             v-for="(msg, i) in messages" 
@@ -273,7 +266,7 @@ defineExpose({
             class="flex items-start gap-2.5"
             :class="msg.role === 'user' ? 'justify-end' : ''"
           >
-            <!-- Bot Avatar -->
+            
             <div
               v-if="msg.role === 'model'"
               class="w-7 h-7 rounded-xl bg-brand-800 text-white flex items-center justify-center shrink-0 shadow-2xs mt-1"
@@ -281,7 +274,6 @@ defineExpose({
               <Bot class="w-4 h-4 text-accent-light" />
             </div>
 
-            <!-- Message Container -->
             <div
               :class="[
                 'max-w-[88%] rounded-2xl shadow-xs transition-all',
@@ -290,7 +282,7 @@ defineExpose({
                   : 'bg-white border border-slate-200/90 text-slate-800 rounded-tl-xs p-3.5 sm:p-4'
               ]"
             >
-              <!-- 1. KARTU JADWAL ANGKUT (Jika ada data tool jadwal) -->
+              
               <div
                 v-if="msg.toolUsed === 'cekJadwal' && msg.toolData"
                 class="mb-3 rounded-2xl border border-brand-100 bg-brand-50/50 p-3.5 space-y-2.5 text-left"
@@ -305,7 +297,6 @@ defineExpose({
                   </span>
                 </div>
 
-                <!-- Kartu Status Hari Ini -->
                 <div v-if="msg.toolData.jadwalHariIni" class="bg-white rounded-xl p-2.5 border border-brand-100 shadow-2xs space-y-1">
                   <div class="flex items-center justify-between">
                     <span class="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">Hari Ini</span>
@@ -332,7 +323,6 @@ defineExpose({
                   </p>
                 </div>
 
-                <!-- Kartu Penjemputan Terdekat -->
                 <div v-if="msg.toolData.penjemputanTerdekat" class="bg-white/90 rounded-xl p-2.5 border border-slate-200/70 text-[11px] space-y-0.5">
                   <div class="flex items-center justify-between text-slate-700">
                     <span class="font-bold flex items-center gap-1 text-brand-900">
@@ -345,7 +335,6 @@ defineExpose({
                 </div>
               </div>
 
-              <!-- 2. KARTU FASILITAS (Jika ada data tool fasilitas) -->
               <div
                 v-else-if="msg.toolUsed === 'cariFasilitas' && msg.toolData?.fasilitas?.length"
                 class="mb-3 rounded-2xl border border-teal-100 bg-teal-50/40 p-3 space-y-2 text-left"
@@ -374,7 +363,6 @@ defineExpose({
                 </div>
               </div>
 
-              <!-- 3. KARTU KATEGORI SAMPAH (Jika ada data kategori) -->
               <div
                 v-else-if="msg.toolUsed === 'cekKategoriSampah' && msg.toolData?.nama"
                 class="mb-3 rounded-2xl border border-brand-100 bg-brand-50/50 p-3 space-y-2 text-left"
@@ -399,7 +387,6 @@ defineExpose({
                 </div>
               </div>
 
-              <!-- Teks Pesan Terformat Cantik -->
               <div
                 v-if="msg.role === 'model'"
                 class="space-y-1 text-left"
@@ -411,7 +398,6 @@ defineExpose({
             </div>
           </div>
 
-          <!-- Typing Indicator -->
           <div v-if="isLoading" class="flex items-start gap-2.5">
             <div class="w-7 h-7 rounded-xl bg-brand-800 text-white flex items-center justify-center shrink-0 shadow-2xs">
               <Bot class="w-4 h-4 text-accent-light" />
@@ -426,7 +412,6 @@ defineExpose({
           </div>
         </div>
 
-        <!-- Prompt Chips -->
         <div class="px-4 py-2 bg-white border-t border-slate-100 overflow-x-auto no-scrollbar flex items-center gap-1.5 shrink-0">
           <button
             v-for="chip in promptChips"
@@ -440,7 +425,6 @@ defineExpose({
           </button>
         </div>
 
-        <!-- Form Input -->
         <form @submit.prevent="handleSend()" class="p-3 bg-white border-t border-slate-200/80 flex items-center gap-2 shrink-0">
           <input 
             v-model="inputQuery"
@@ -460,7 +444,6 @@ defineExpose({
       </template>
     </div>
 
-    <!-- Floating Action Button (FAB) -->
     <button 
       type="button" 
       id="btn-toggle-pilahai"

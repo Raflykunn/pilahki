@@ -30,3 +30,6 @@ dist-ssr
 # SQL files
 *.sql
 supabase/  
+
+# Vercel
+.vercel

@@ -66,7 +66,6 @@ const handleGoRegister = () => {
         </button>
       </div>
 
-      <!-- Mode Tamu (Belum Login) -->
       <div v-if="!isAuthenticated" class="space-y-4 py-2">
         <div class="flex items-center gap-3">
           <div class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-xl select-none">
@@ -104,7 +103,6 @@ const handleGoRegister = () => {
         </div>
       </div>
 
-      <!-- Mode Warga Terdaftar (Sudah Login) -->
       <template v-else>
         <div class="flex items-center gap-3 py-2">
           <div class="w-14 h-14 rounded-2xl bg-brand-800 text-white flex items-center justify-center font-bold text-xl shadow-xs select-none">

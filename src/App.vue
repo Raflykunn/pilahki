@@ -7,7 +7,10 @@ import MobileBottomNav from '@/components/MobileBottomNav.vue'
 import FloatingPilahAi from '@/components/FloatingPilahAi.vue'
 import ProfileModal from '@/components/ProfileModal.vue'
 
+import { useAuth } from '@/composables/useAuth'
+
 const route = useRoute()
+const { initAuth } = useAuth()
 
 const isProfileOpen = ref(false)
 
@@ -28,7 +31,9 @@ const showFloatingAi = computed(() => {
 })
 
 onMounted(() => {
-  // Bersihkan flag lama jika ada agar modal tidak pernah muncul otomatis saat refresh
+  
+  initAuth()
+
   try {
     localStorage.removeItem('pilahki_is_new_user')
   } catch (e) {}
@@ -37,12 +42,11 @@ onMounted(() => {
 
 <template>
   <div class="min-h-screen flex flex-col bg-[#fafdfa] text-slate-900 font-sans selection:bg-brand-500 selection:text-white">
-    <!-- Top Sticky Adaptive Navigation -->
+    
     <Navbar
       @open-profile="isProfileOpen = true"
     />
 
-    <!-- Main Dynamic Content -->
     <main
       class="flex-1 w-full"
       :class="{ 'pb-24 md:pb-0': showMobileBottomNav }"
@@ -50,22 +54,18 @@ onMounted(() => {
       <router-view />
     </main>
 
-    <!-- Global Floating PilahAI Assistant -->
     <FloatingPilahAi v-if="showFloatingAi" />
 
-    <!-- Mobile Floating Bottom Bar for In-App Routes -->
     <MobileBottomNav
       v-if="showMobileBottomNav"
       @open-profile="isProfileOpen = true"
     />
 
-    <!-- Global Modals -->
     <ProfileModal
       :isOpen="isProfileOpen"
       @close="isProfileOpen = false"
     />
 
-    <!-- Footer -->
     <Footer v-if="showFooter" />
   </div>
 </template>

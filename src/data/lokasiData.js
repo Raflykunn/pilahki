@@ -1,11 +1,7 @@
-/**
- * Data Fasilitas Pengelolaan Sampah Kota Makassar
- * Termasuk Bank Sampah, TPS 3R, dan TPA (Tempat Pemrosesan Akhir)
- */
+
 
 export const MAKASSAR_CENTER = { lat: -5.1342, lng: 119.4140 }
 
-// Titik Koordinat Pusat Setiap Kecamatan di Makassar (untuk kalkulasi wilayah terdekat)
 export const MAKASSAR_DISTRICT_COORDS = {
   "Panakkukang": { lat: -5.1488, lng: 119.4445 },
   "Rappocini": { lat: -5.1680, lng: 119.4350 },
@@ -39,7 +35,7 @@ export const jenisFasilitasConfig = {
     accentColor: '#d97706',
     desc: 'Tempat Pemrosesan Akhir (TPA) terpusat untuk pemrosesan sampah residu dan penanganan limbah akhir perkotaan.'
   },
-  drop_box_b3: { // Alias kompatibilitas
+  drop_box_b3: { 
     label: 'TPA',
     typeName: 'TPA',
     badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
@@ -141,9 +137,8 @@ export const makassarFacilities = [
   }
 ]
 
-// Haversine formula distance calculation in kilometers
 export function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371 // Radius of earth in KM
+  const R = 6371 
   const dLat = ((lat2 - lat1) * Math.PI) / 180
   const dLon = ((lon2 - lon1) * Math.PI) / 180
   const a =
@@ -156,21 +151,13 @@ export function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c
 }
 
-/**
- * Menghasilkan fasilitas terdekat berdasarkan koordinat pengguna.
- * Jika pengguna berada di dalam radius 35 km dari Makassar, gunakan data fasilitas riil Makassar.
- * Jika pengguna menguji dari luar Makassar (misal di kota lain), buat simulasi fasilitas terdekat
- * realistis di sekitar koordinat pengguna agar peta dan kartu tetap hidup dan terisi.
- */
 export function getNearbyFacilitiesForCoords(lat, lng, addressInfo = null, districtName = '', cityName = '') {
   const distToMakassar = calculateDistance(lat, lng, MAKASSAR_CENTER.lat, MAKASSAR_CENTER.lng)
-  
-  // Jika dalam radius 35 km dari Makassar, gunakan fasilitas asli Makassar
+
   if (distToMakassar < 35) {
     return makassarFacilities.map(f => ({ ...f }))
   }
 
-  // Jika di luar Makassar (mode adaptif lokasi lokal pengujian)
   const sub = districtName || "Wilayah Anda"
   const city = cityName || "Kota Anda"
   const road = addressInfo && addressInfo.road ? addressInfo.road + ", " : ""
@@ -269,7 +256,6 @@ export function getNearbyFacilitiesForCoords(lat, lng, addressInfo = null, distr
   ]
 }
 
-// Cari kecamatan Makassar terdekat berdasarkan koordinat (lat, lng)
 export function findNearestMakassarDistrict(lat, lng) {
   let closestDistrict = "Panakkukang"
   let minDistance = Infinity
@@ -285,7 +271,6 @@ export function findNearestMakassarDistrict(lat, lng) {
   return closestDistrict
 }
 
-// Backwards-compatible aliases
 export const daftarFasilitas = makassarFacilities.map(f => ({
   id: f.id,
   nama: f.name,

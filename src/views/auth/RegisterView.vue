@@ -70,16 +70,14 @@ const handleRegister = async () => {
 
 <template>
   <div class="bg-[#ebf4ed] text-slate-800 font-sans min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-8 selection:bg-brand-500 selection:text-white">
-    <!-- Modal Register Card (2 Kolom) -->
+    
     <main class="w-full max-w-4xl bg-white rounded-3xl shadow-sm border border-brand-100/80 overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[560px]">
-      
-      <!-- KOLOM KIRI: Panel Ringkasan PilahKi' -->
+
       <div class="hidden md:flex md:col-span-5 bg-gradient-to-br from-brand-900 via-brand-800 to-[#0b2216] text-white p-8 lg:p-10 flex-col justify-between relative overflow-hidden">
-        <!-- Dekorasi Cahaya Halus -->
+        
         <div class="absolute -top-20 -left-20 w-56 h-56 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -bottom-20 -right-20 w-56 h-56 bg-accent-light/15 rounded-full blur-3xl pointer-events-none"></div>
 
-        <!-- Header Brand Sisi Kiri -->
         <div class="relative z-10">
           <router-link to="/" class="inline-flex items-center gap-3 group">
             <div class="w-10 h-10 rounded-xl overflow-hidden bg-white p-1 shadow-sm group-hover:scale-105 transition-transform">
@@ -91,7 +89,6 @@ const handleRegister = async () => {
           </router-link>
         </div>
 
-        <!-- Pesan Inspiratif & Poin Ringkas -->
         <div class="relative z-10 my-auto py-6 space-y-6">
           <blockquote class="text-xl lg:text-2xl font-bold leading-snug text-white/95">
             “Mulai dari Pilahan, Ciptakan Perubahan”
@@ -113,13 +110,11 @@ const handleRegister = async () => {
           </div>
         </div>
 
-        <!-- Footer Info Sisi Kiri -->
         <div class="relative z-10 pt-4 border-t border-white/10 text-xs text-white/70">
           &copy; {{ new Date().getFullYear() }} Binfinity. All rights reserved.
         </div>
       </div>
 
-      <!-- KOLOM KANAN: Form Register -->
       <div class="md:col-span-7 p-8 sm:p-12 flex flex-col justify-center bg-white">
         
         <div class="mb-6 text-left">
@@ -129,13 +124,11 @@ const handleRegister = async () => {
           </p>
         </div>
 
-        <!-- Info jika diarahkan dari halaman PilahAI -->
         <div v-if="route.query.redirect && String(route.query.redirect).includes('pilah-ai')" class="mb-5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2.5">
           <Lock class="w-4 h-4 text-amber-600 shrink-0" />
           <span>Daftar akun warga gratis untuk mulai bertanya ke asisten cerdas PilahAI.</span>
         </div>
 
-        <!-- Notification / Error Alert -->
         <div v-if="localError || authError" class="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2.5">
           <AlertCircle class="w-4 h-4 text-red-600 flex-shrink-0" />
           <span>{{ localError || authError }}</span>
@@ -146,10 +139,8 @@ const handleRegister = async () => {
           <span>{{ successMessage }}</span>
         </div>
 
-        <!-- Form Register -->
         <form @submit.prevent="handleRegister" class="space-y-4">
-          
-          <!-- Nama Lengkap -->
+
           <div>
             <label for="reg-name" class="block text-xs font-semibold text-slate-700 mb-1.5 text-left">
               Nama Lengkap
@@ -169,7 +160,6 @@ const handleRegister = async () => {
             </div>
           </div>
 
-          <!-- Email -->
           <div>
             <label for="reg-email" class="block text-xs font-semibold text-slate-700 mb-1.5 text-left">
               Alamat Email <span class="text-red-500">*</span>
@@ -190,7 +180,6 @@ const handleRegister = async () => {
             </div>
           </div>
 
-          <!-- Kata Sandi -->
           <div>
             <label for="reg-password" class="block text-xs font-semibold text-slate-700 mb-1.5 text-left">
               Kata Sandi <span class="text-red-500">*</span>
@@ -220,7 +209,6 @@ const handleRegister = async () => {
             </div>
           </div>
 
-          <!-- Konfirmasi Kata Sandi -->
           <div>
             <label for="reg-confirm" class="block text-xs font-semibold text-slate-700 mb-1.5 text-left">
               Ulangi Kata Sandi <span class="text-red-500">*</span>
@@ -242,7 +230,6 @@ const handleRegister = async () => {
             </div>
           </div>
 
-          <!-- Tombol Daftar -->
           <button 
             type="submit" 
             :disabled="isSubmitting"
@@ -260,7 +247,6 @@ const handleRegister = async () => {
 
         </form>
 
-        <!-- Navigasi Bawah -->
         <div class="mt-6 pt-4 border-t border-slate-100 text-center text-sm">
           <p class="text-slate-600">
             Sudah punya akun? 

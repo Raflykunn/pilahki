@@ -89,7 +89,6 @@ const handleSubmit = async () => {
         </DialogDescription>
       </DialogHeader>
 
-      <!-- Alert Error -->
       <div
         v-if="authError"
         class="mb-4 flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 leading-relaxed"
@@ -99,7 +98,6 @@ const handleSubmit = async () => {
         <span>{{ authError }}</span>
       </div>
 
-      <!-- Alert Success -->
       <div
         v-if="successMessage"
         class="mb-4 flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-700 leading-relaxed"
@@ -109,7 +107,6 @@ const handleSubmit = async () => {
         <span>{{ successMessage }}</span>
       </div>
 
-      <!-- Form -->
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <div class="space-y-1.5">
           <label for="auth-email" class="text-xs font-semibold text-zinc-700">Email</label>
@@ -158,7 +155,6 @@ const handleSubmit = async () => {
         </div>
       </form>
 
-      <!-- Switch Mode Footer -->
       <div class="mt-6 border-t border-zinc-100 pt-4 text-center">
         <p class="text-xs text-zinc-500">
           {{ isRegisterMode ? 'Sudah memiliki akun Pilahki?' : 'Belum memiliki akun?' }}

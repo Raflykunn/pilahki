@@ -29,8 +29,7 @@ const getFeatureTo = (targetPath) => {
   <footer class="bg-[#0b1c13] text-slate-400 text-sm py-14 border-t border-brand-900 text-left">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-        
-        <!-- Col 1: Brand Info -->
+
         <div class="space-y-4 md:col-span-1">
           <router-link to="/" class="inline-flex items-center p-2 bg-white rounded-xl shadow-xs">
             <img src="/img/logo-tulisan.jpeg" alt="Logo PilahKi'" class="h-10 w-auto object-contain" />
@@ -40,7 +39,6 @@ const getFeatureTo = (targetPath) => {
           </p>
         </div>
 
-        <!-- Col 2: Navigasi (Sesuai Nav) -->
         <div>
           <h4 class="text-white font-bold mb-4 text-xs uppercase tracking-wider">Navigasi</h4>
           <ul class="space-y-2 text-xs">
@@ -52,7 +50,6 @@ const getFeatureTo = (targetPath) => {
           </ul>
         </div>
 
-        <!-- Col 3: Fitur Unggulan -->
         <div>
           <h4 class="text-white font-bold mb-4 text-xs uppercase tracking-wider">Fitur Unggulan</h4>
           <ul class="space-y-2 text-xs">
@@ -64,7 +61,6 @@ const getFeatureTo = (targetPath) => {
           </ul>
         </div>
 
-        <!-- Col 4: Akses Pengguna -->
         <div>
           <h4 class="text-white font-bold mb-4 text-xs uppercase tracking-wider">Akses Pengguna</h4>
           <ul class="space-y-2 text-xs">
@@ -78,7 +74,6 @@ const getFeatureTo = (targetPath) => {
 
       </div>
 
-      <!-- Bottom Bar -->
       <div class="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
         <p>&copy; 2026 Binfinity. Hak Cipta Dilindungi Undang-Undang.</p>
         <p class="flex items-center gap-1.5">

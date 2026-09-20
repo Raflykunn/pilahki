@@ -46,7 +46,6 @@ const emit = defineEmits(['close', 'ask-ai'])
         </button>
       </div>
 
-      <!-- Economic / Recyclable Value -->
       <div class="bg-brand-50/60 border border-brand-100/80 rounded-2xl p-4 flex items-start gap-3 text-left">
         <Tag class="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
         <div>
@@ -57,7 +56,6 @@ const emit = defineEmits(['close', 'ask-ai'])
         </div>
       </div>
 
-      <!-- Steps List -->
       <div class="space-y-2 text-left">
         <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Langkah Pemilahan di Rumah</h3>
         <ul class="space-y-2.5">
@@ -74,7 +72,6 @@ const emit = defineEmits(['close', 'ask-ai'])
         </ul>
       </div>
 
-      <!-- Destination Recommendation -->
       <div class="space-y-1.5 pt-2 border-t border-slate-100 text-left">
         <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Rekomendasi Penyaluran</h3>
         <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
@@ -82,7 +79,6 @@ const emit = defineEmits(['close', 'ask-ai'])
         </p>
       </div>
 
-      <!-- Prohibitions -->
       <div v-if="waste.prohibitions && waste.prohibitions.length" class="space-y-1.5 pt-2 border-t border-slate-100 text-left">
         <h3 class="text-xs font-bold uppercase tracking-wider text-red-600">Hal yang Dilarang / Pantangan</h3>
         <ul class="space-y-1.5">
@@ -97,7 +93,6 @@ const emit = defineEmits(['close', 'ask-ai'])
         </ul>
       </div>
 
-      <!-- Action Buttons -->
       <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
         <button 
           type="button" 

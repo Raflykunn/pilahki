@@ -59,7 +59,6 @@ const router = createRouter({
   routes
 })
 
-// Route guard: Proteksi halaman internal aplikasi & redirect jika belum login
 router.beforeEach((to, from, next) => {
   let hasUser = false
   try {

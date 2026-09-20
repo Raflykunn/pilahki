@@ -34,7 +34,6 @@ const locationLabel = ref('Kota Makassar (Pusat Kota)')
 const userLocation = ref({ lat: MAKASSAR_CENTER.lat, lng: MAKASSAR_CENTER.lng })
 const activeFacilityId = ref(null)
 
-// Dataset fasilitas yang sedang aktif (dimulai dari Makassar, lalu adaptif via GPS)
 const currentFacilities = ref(makassarFacilities.map(f => ({ ...f })))
 
 const facilityTypes = [
@@ -64,7 +63,7 @@ const filteredFacilities = computed(() => {
   const type = selectedType.value
 
   let list = facilitiesWithDistance.value.filter((fac) => {
-    // Dukung alias bila ada data lama
+    
     const facType = (fac.type === 'drop_box_b3' ? 'tpa' : fac.type)
     const matchType = type === 'semua' || facType === type
     if (!matchType) return false
@@ -79,7 +78,6 @@ const filteredFacilities = computed(() => {
     return matchName || matchAddress || matchDistrict || matchAccepted
   })
 
-  // Urutkan selalu dari yang terdekat jika GPS aktif
   if (isGpsActive.value) {
     list.sort((a, b) => a.distanceKm - b.distanceKm)
   }
@@ -95,7 +93,7 @@ const formatDistance = (dist) => {
 }
 
 const createPinIcon = (type, typeName) => {
-  let bgColor = '#133826' // Bank Sampah
+  let bgColor = '#133826' 
   let labelLetter = 'B'
 
   if (type === 'tps_3r') {
@@ -169,7 +167,6 @@ const initMap = () => {
 
   markersGroup = L.layerGroup().addTo(leafletMap)
 
-  // Pasang user marker default
   userMarker = L.marker([userLocation.value.lat, userLocation.value.lng], {
     icon: createUserIcon()
   }).addTo(leafletMap)
@@ -220,7 +217,6 @@ const updateMapMarkers = () => {
     bounds.extend([fac.lat, fac.lng])
   })
 
-  // Sesuaikan batas peta
   if (filteredFacilities.value.length > 0 && isGpsActive.value) {
     leafletMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 })
   }
@@ -251,7 +247,6 @@ const centerMap = () => {
   }
 }
 
-// Live GPS Handler dengan Reverse Geocoding OSM Nominatim
 const handleLiveGps = async () => {
   if (!navigator.geolocation) {
     alert('Browser Anda tidak mendukung deteksi lokasi Geolocation.')
@@ -269,7 +264,6 @@ const handleLiveGps = async () => {
       userLocation.value = { lat, lng }
       isGpsActive.value = true
 
-      // 1. Reverse-geocode via OpenStreetMap Nominatim (dengan batas timeout 2.5s)
       let addressInfo = null
       let districtName = ''
       let cityName = ''
@@ -320,10 +314,8 @@ const handleLiveGps = async () => {
         gpsStatusText.value = 'GPS Terkunci'
       }
 
-      // 2. Perbarui dataset fasilitas (Makassar atau localized sekitar koordinat)
       currentFacilities.value = getNearbyFacilitiesForCoords(lat, lng, addressInfo, districtName, cityName)
 
-      // 3. Perbarui posisi pin user di Leaflet
       if (leafletMap) {
         if (userMarker) {
           userMarker.setLatLng([lat, lng])
@@ -364,8 +356,7 @@ onUnmounted(() => {
 
 <template>
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 text-left">
-    
-    <!-- Top Header Bar: Title, Live GPS Status & Action -->
+
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <div class="space-y-1">
         <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Fasilitas Pengelolaan Sampah</h1>
@@ -374,7 +365,6 @@ onUnmounted(() => {
         </p>
       </div>
 
-      <!-- Live GPS Trigger Button -->
       <div class="flex items-center gap-3 shrink-0">
         <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs">
           <span
@@ -404,10 +394,8 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Split-Screen Grid: MAP DI KIRI (lg:col-span-7), FILTER & CARDS DI KANAN (lg:col-span-5) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-      
-      <!-- ================= KIRI: PETA INTERAKTIF (STICKY ON DESKTOP) ================= -->
+
       <div class="lg:col-span-7 space-y-3 lg:sticky lg:top-28">
         
         <div class="flex items-center justify-between px-1">
@@ -424,7 +412,6 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <!-- Leaflet Map Container -->
         <div 
           ref="mapContainer"
           class="h-[380px] sm:h-[460px] lg:h-[calc(100vh-14rem)] w-full rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden relative z-10 bg-slate-100"
@@ -432,7 +419,6 @@ onUnmounted(() => {
         >
         </div>
 
-        <!-- Map Legend -->
         <div class="flex flex-wrap items-center justify-between gap-2.5 text-xs text-slate-600 px-4 py-2.5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs">
           <div class="flex flex-wrap items-center gap-4 text-[11px] font-medium">
             <div class="flex items-center gap-1.5 font-bold text-blue-700">
@@ -457,10 +443,8 @@ onUnmounted(() => {
 
       </div>
 
-      <!-- ================= KANAN: PENCARIAN, FILTER & DAFTAR KARTU ================= -->
       <div class="lg:col-span-5 space-y-4">
-        
-        <!-- Search Input -->
+
         <div class="relative">
           <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input 
@@ -472,7 +456,6 @@ onUnmounted(() => {
           />
         </div>
 
-        <!-- Filter Category Pills -->
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
           <button
             v-for="ft in facilityTypes"
@@ -490,13 +473,11 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <!-- Count Indicator -->
         <div class="flex items-center justify-between text-xs text-slate-500 px-1">
           <span class="font-bold text-slate-700">Ditemukan {{ filteredFacilities.length }} Fasilitas</span>
           <span v-if="isGpsActive" class="text-brand-700 font-medium">Diurutkan terdekat dari titik GPS</span>
         </div>
 
-        <!-- Facility Cards List -->
         <div v-if="filteredFacilities.length > 0" class="space-y-4">
           <div
             v-for="fac in filteredFacilities"
@@ -510,7 +491,7 @@ onUnmounted(() => {
                 : 'border-slate-200/80 hover:border-brand-300 hover:shadow-md'
             ]"
           >
-            <!-- Header: Kategori & Jarak -->
+            
             <div class="flex items-center justify-between gap-2">
               <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border', fac.typeBadge]">
                 {{ fac.typeName }}
@@ -526,7 +507,6 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <!-- Konten Utama: Nama Fasilitas & Alamat -->
             <div class="space-y-2">
               <h3 class="text-base font-bold text-slate-900 group-hover:text-brand-800 transition-colors leading-snug">
                 {{ fac.name }}
@@ -544,7 +524,6 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <!-- Footer: Petunjuk Rute Google Maps -->
             <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
               <span class="text-slate-400 text-[11px] group-hover:text-brand-700 transition-colors">
                 Klik kartu untuk fokus peta
@@ -566,7 +545,6 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Empty State -->
         <div v-else class="text-center py-12 bg-white rounded-3xl border border-slate-200/80 p-6 space-y-2">
           <MapPinOff class="w-10 h-10 text-slate-400 mx-auto" />
           <p class="text-sm font-bold text-slate-700">Tidak ada fasilitas yang cocok.</p>

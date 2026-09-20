@@ -30,7 +30,6 @@ onMounted(() => {
     }
   } catch (e) {}
 
-  // Dengarkan event pembaruan domisili global
   window.addEventListener('pilahki-domicile-changed', (ev) => {
     if (ev.detail && ev.detail.district && MAKASSAR_DISTRICTS.includes(ev.detail.district)) {
       selectedDistrict.value = ev.detail.district
@@ -82,7 +81,6 @@ const handleLiveGps = () => {
 
       let detectedDistrict = null
 
-      // Coba reverse geocode untuk mendeteksi kecamatan di Makassar
       try {
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 2500)
@@ -105,7 +103,6 @@ const handleLiveGps = () => {
         }
       } catch (e) {}
 
-      // Jika reverse geocoding offline atau posisi berada di sekitar titik Makassar
       if (!detectedDistrict) {
         detectedDistrict = findNearestMakassarDistrict(lat, lng)
       }
@@ -127,8 +124,7 @@ const handleLiveGps = () => {
 <template>
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 text-left">
     <div class="space-y-6">
-      
-      <!-- Top Title & Live GPS + District Selector -->
+
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="space-y-1">
           <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Pantau Jadwal Angkut Armada</h1>
@@ -137,7 +133,6 @@ const handleLiveGps = () => {
           </p>
         </div>
 
-        <!-- Live Location & District Selector Controls -->
         <div class="flex flex-wrap items-center gap-2.5 shrink-0">
           <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs">
             <span
@@ -165,7 +160,6 @@ const handleLiveGps = () => {
         </div>
       </div>
 
-      <!-- Status Jadwal Hari Ini Card (Hijau Elegan Sesuai Identitas Brand) -->
       <div class="bg-gradient-to-r from-brand-950 via-brand-900 to-[#0e2a1d] text-white rounded-3xl p-6 sm:p-8 shadow-sm">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div class="space-y-3">
@@ -213,7 +207,6 @@ const handleLiveGps = () => {
         </div>
       </div>
 
-      <!-- Subheading & Agenda Table -->
       <div class="space-y-3 pt-2">
         <div class="flex items-center justify-between px-1">
           <div class="flex items-center gap-2">
@@ -225,7 +218,6 @@ const handleLiveGps = () => {
           <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Agenda Mingguan (Senin s/d Minggu)</span>
         </div>
 
-        <!-- Tabel Agenda Mingguan Minimalis Container -->
         <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
           <div class="divide-y divide-slate-100">
             
@@ -239,7 +231,7 @@ const handleLiveGps = () => {
                   : 'hover:bg-slate-50/60'
               ]"
             >
-              <!-- Sisi Kiri: Hari (Tanpa Icon & Tanpa Indikator Active) -->
+              
               <div class="md:w-36 shrink-0 space-y-0.5">
                 <span
                   :class="[
@@ -259,7 +251,6 @@ const handleLiveGps = () => {
                 </span>
               </div>
 
-              <!-- Bagian Tengah: Kategori & Catatan Operasional -->
               <div class="flex-1 space-y-1">
                 <div class="flex flex-wrap items-center gap-2">
                   <h3
@@ -289,7 +280,6 @@ const handleLiveGps = () => {
                 </p>
               </div>
 
-              <!-- Sisi Kanan: Waktu & Armada -->
               <div
                 :class="[
                   'md:w-56 md:text-right shrink-0 space-y-1 pt-2 md:pt-0 border-t md:border-t-0',
