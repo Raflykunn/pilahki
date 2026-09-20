@@ -9,18 +9,28 @@
 
   <br />
 
+  [![Live Demo](https://img.shields.io/badge/Live_Demo-pilahki.vercel.app-133826?style=for-the-badge&logo=vercel&logoColor=white)](https://pilahki.vercel.app/)
   [![Vue.js](https://img.shields.io/badge/Vue.js-3.5-4FC08D?style=for-the-badge&logo=vuedotjs&logoColor=white)](https://vuejs.org/)
   [![Vite](https://img.shields.io/badge/Vite-8.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.3-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
   [![Google Gemini](https://img.shields.io/badge/Google_Gemini-2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
   [![Supabase](https://img.shields.io/badge/Supabase-BaaS-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
-  [![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 
 </div>
 
 ---
 
+> [!NOTE]
+> ### Live Demo & Akun Pengujian
+> Untuk mencoba dan mengevaluasi seluruh fitur aplikasi secara langsung tanpa instalasi lokal:
+> * **Tautan Demo**: [https://pilahki.vercel.app/](https://pilahki.vercel.app/)
+> * **Username / Email**: `juri@test.com`
+> * **Password**: `password`
+
+---
+
 ## Daftar Isi
+- [Live Demo & Akun Pengujian](#live-demo--akun-pengujian)
 - [Tentang Platform](#tentang-platform)
 - [Latar Belakang Masalah](#latar-belakang-masalah)
 - [Visi dan Misi](#visi-dan-misi)
