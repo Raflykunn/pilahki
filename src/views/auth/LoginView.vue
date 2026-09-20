@@ -9,14 +9,12 @@ import {
   EyeOff,
   CheckCircle2,
   AlertCircle,
-  Loader2,
-  X,
-  KeyRound
+  Loader2
 } from 'lucide-vue-next'
 
 const router = useRouter()
 const route = useRoute()
-const { signInWithEmail, resetPassword, authError } = useAuth()
+const { signInWithEmail, authError } = useAuth()
 
 const email = ref('')
 const password = ref('')
@@ -26,14 +24,6 @@ const isSubmitting = ref(false)
 const isSuccess = ref(false)
 const localError = ref('')
 const successMessage = ref('')
-
-// Modal Lupa Kata Sandi (Recovery PIN)
-const isForgotModalOpen = ref(false)
-const recoveryPin = ref('')
-const newPassword = ref('')
-const confirmNewPassword = ref('')
-const forgotAlert = ref('')
-const isSavingForgot = ref(false)
 
 const handleLogin = async () => {
   localError.value = ''
@@ -62,40 +52,6 @@ const handleLogin = async () => {
   } finally {
     isSubmitting.value = false
   }
-}
-
-// Handler Pemulihan PIN
-const handleForgotSubmit = () => {
-  forgotAlert.value = ''
-
-  if (recoveryPin.value.length < 4) {
-    forgotAlert.value = 'PIN pemulihan minimal terdiri dari 4-6 angka.'
-    return
-  }
-
-  if (newPassword.value.length < 6) {
-    forgotAlert.value = 'Kata sandi baru minimal harus 6 karakter.'
-    return
-  }
-
-  if (newPassword.value !== confirmNewPassword.value) {
-    forgotAlert.value = 'Konfirmasi kata sandi tidak cocok.'
-    return
-  }
-
-  isSavingForgot.value = true
-
-  setTimeout(() => {
-    if (email.value) {
-      resetPassword(email.value, newPassword.value)
-    }
-    isSavingForgot.value = false
-    isForgotModalOpen.value = false
-    recoveryPin.value = ''
-    newPassword.value = ''
-    confirmNewPassword.value = ''
-    successMessage.value = 'Kata sandi baru Anda berhasil disimpan! Silakan masuk.'
-  }, 600)
 }
 </script>
 
@@ -203,18 +159,9 @@ const handleForgotSubmit = () => {
 
           <!-- Input Kata Sandi -->
           <div>
-            <div class="flex items-center justify-between mb-2">
-              <label for="password" class="block text-sm font-semibold text-slate-700">
-                Kata Sandi
-              </label>
-              <button 
-                type="button" 
-                @click="isForgotModalOpen = true" 
-                class="text-xs font-medium text-brand-700 hover:text-brand-800 hover:underline focus:outline-none cursor-pointer"
-              >
-                Lupa kata sandi?
-              </button>
-            </div>
+            <label for="password" class="block text-sm font-semibold text-slate-700 mb-2">
+              Kata Sandi
+            </label>
             <div class="relative">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
                 <Lock class="w-4 h-4" />
@@ -278,99 +225,6 @@ const handleForgotSubmit = () => {
       </div>
 
     </main>
-
-    <!-- Modal Lupa Kata Sandi (Recovery PIN Sesuai login.html) -->
-    <div
-      v-if="isForgotModalOpen"
-      class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
-      @click.self="isForgotModalOpen = false"
-    >
-      <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative animate-in zoom-in-95 duration-150 border border-slate-100">
-        <button 
-          type="button" 
-          @click="isForgotModalOpen = false"
-          class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer"
-        >
-          <X class="w-5 h-5" />
-        </button>
-
-        <div class="mb-5 text-left">
-          <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-800 flex items-center justify-center mb-3">
-            <KeyRound class="w-5 h-5" />
-          </div>
-          <h2 class="text-xl font-bold text-brand-900">Pemulihan Kata Sandi</h2>
-          <p class="text-xs text-slate-500 mt-1">Masukkan PIN pemulihan Anda untuk membuat kata sandi baru.</p>
-        </div>
-
-        <div v-if="forgotAlert" class="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
-          {{ forgotAlert }}
-        </div>
-
-        <form @submit.prevent="handleForgotSubmit" class="space-y-4 text-left">
-          <div>
-            <label for="recovery-pin" class="block text-xs font-semibold text-slate-700 mb-1.5">
-              PIN Pemulihan (6 Angka)
-            </label>
-            <input 
-              v-model="recoveryPin"
-              type="password" 
-              id="recovery-pin" 
-              maxlength="6" 
-              required 
-              placeholder="••••••" 
-              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm tracking-widest focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all font-mono"
-            />
-            <p class="text-[11px] text-slate-400 mt-1">PIN 6-angka keamanan akun warga Anda.</p>
-          </div>
-
-          <div>
-            <label for="new-password" class="block text-xs font-semibold text-slate-700 mb-1.5">
-              Kata Sandi Baru
-            </label>
-            <input 
-              v-model="newPassword"
-              type="password" 
-              id="new-password" 
-              required 
-              placeholder="Minimal 6 karakter" 
-              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all"
-            />
-          </div>
-
-          <div>
-            <label for="confirm-new-password" class="block text-xs font-semibold text-slate-700 mb-1.5">
-              Ulangi Kata Sandi Baru
-            </label>
-            <input 
-              v-model="confirmNewPassword"
-              type="password" 
-              id="confirm-new-password" 
-              required 
-              placeholder="Ketik ulang kata sandi baru" 
-              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all"
-            />
-          </div>
-
-          <div class="pt-3 flex items-center justify-end gap-2.5">
-            <button 
-              type="button" 
-              @click="isForgotModalOpen = false"
-              class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-50 cursor-pointer"
-            >
-              Batal
-            </button>
-            <button 
-              type="submit" 
-              :disabled="isSavingForgot"
-              class="px-5 py-2.5 rounded-xl bg-brand-800 hover:bg-brand-700 text-white font-semibold text-xs transition-colors shadow-sm cursor-pointer disabled:opacity-75 flex items-center gap-1.5"
-            >
-              <Loader2 v-if="isSavingForgot" class="w-3.5 h-3.5 animate-spin" />
-              <span>{{ isSavingForgot ? 'Menyimpan...' : 'Simpan Sandi Baru' }}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
 
   </div>
 </template>

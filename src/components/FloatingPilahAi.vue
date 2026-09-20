@@ -25,6 +25,8 @@ const route = useRoute()
 const { userEmail, isAuthenticated } = useAuth()
 const { domicile } = useDomicile()
 
+const isInAppRoute = computed(() => ['/pilah', '/lokasi', '/jadwal', '/panduan'].some(p => route.path.startsWith(p)))
+
 const isOpen = ref(false)
 const inputQuery = ref('')
 const isLoading = ref(false)
@@ -173,13 +175,23 @@ defineExpose({
 <template>
   <div
     v-if="route.path !== '/pilah-ai'"
-    class="fixed bottom-24 md:bottom-6 right-4 sm:right-6 z-50 flex flex-col items-end pointer-events-none"
+    :class="[
+      'fixed z-50 flex flex-col items-end pointer-events-none transition-all duration-300',
+      isInAppRoute
+        ? 'bottom-24 md:bottom-6 right-4 sm:right-6'
+        : 'bottom-4 sm:bottom-6 right-4 sm:right-6'
+    ]"
   >
     <!-- Floating Chat Window (Toggled via FAB) -->
     <div
       v-if="isOpen"
       id="pilahai-chat-window"
-      class="mb-3 w-[calc(100vw-2rem)] sm:w-[440px] h-[520px] sm:h-[560px] max-h-[80vh] bg-white rounded-3xl shadow-2xl border border-slate-200/90 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 pointer-events-auto"
+      :class="[
+        'mb-3 w-[calc(100vw-2rem)] sm:w-[440px] h-[520px] sm:h-[560px] bg-white rounded-3xl shadow-2xl border border-slate-200/90 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 pointer-events-auto',
+        isInAppRoute
+          ? 'max-h-[calc(100dvh-11.5rem)] sm:max-h-[80vh]'
+          : 'max-h-[calc(100dvh-6.5rem)] sm:max-h-[80vh]'
+      ]"
     >
       <!-- Chat Header -->
       <div class="bg-gradient-to-r from-brand-900 via-brand-800 to-[#0b2216] text-white px-5 py-4 flex items-center justify-between shadow-xs shrink-0">
