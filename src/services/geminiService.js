@@ -4,14 +4,18 @@ import { makassarFacilities, jenisFasilitasConfig, daftarFasilitas } from '../da
 import { MAKASSAR_DISTRICTS, schedulesDatabase, wilayahList, jadwalMaster } from '../data/jadwalData.js'
 import { guidesData, kategoriEdukasiList, artikelPanduan, faqPanduan } from '../data/panduanData.js'
 
-const GEMINI_PRIMARY_MODEL = 'gemini-2.5-flash'
-const GEMINI_FALLBACK_MODEL = 'gemini-2.0-flash'
+const GEMINI_MODELS = [
+  'gemini-3.5-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
+  'gemini-3.8-flash'
+]
 
 function getGeminiApiKey() {
   return import.meta.env.VITE_GEMINI_API_KEY || ''
 }
 
-function getGeminiEndpoint(modelName = GEMINI_PRIMARY_MODEL) {
+function getGeminiEndpoint(modelName = GEMINI_MODELS[0]) {
   const key = getGeminiApiKey()
   return `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`
 }
@@ -374,8 +378,6 @@ export async function sendChatMessageToPilahAI(messagesHistory) {
     }))
 
     const systemInstruction = buildSystemInstruction()
-    let endpoint = getGeminiEndpoint(GEMINI_PRIMARY_MODEL)
-
     const payload = {
       systemInstruction: {
         parts: [{ text: systemInstruction }]
@@ -384,22 +386,29 @@ export async function sendChatMessageToPilahAI(messagesHistory) {
       tools: toolsDefinition
     }
 
-    let response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
+    let response = null
+    let activeEndpoint = null
 
-    if (!response.ok && (response.status === 429 || response.status === 503 || response.status === 404)) {
-      endpoint = getGeminiEndpoint(GEMINI_FALLBACK_MODEL)
-      response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
+    for (const modelName of GEMINI_MODELS) {
+      try {
+        const candidateEndpoint = getGeminiEndpoint(modelName)
+        const res = await fetch(candidateEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        if (res.ok) {
+          response = res
+          activeEndpoint = candidateEndpoint
+          break
+        }
+        console.warn(`[PilahAI] Model ${modelName} returned status ${res.status}, mencadangkan ke model berikutnya...`)
+      } catch (e) {
+        console.warn(`[PilahAI] Gagal menghubungi ${modelName}:`, e)
+      }
     }
 
-    if (!response.ok) {
+    if (!response || !response.ok) {
       return handleLocalSmartAssistant(messagesHistory)
     }
 
@@ -442,7 +451,7 @@ export async function sendChatMessageToPilahAI(messagesHistory) {
         }
       ]
 
-      const followUpResponse = await fetch(endpoint, {
+      const followUpResponse = await fetch(activeEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
