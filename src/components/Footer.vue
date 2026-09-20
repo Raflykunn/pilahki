@@ -1,9 +1,11 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
 import { Leaf } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
+const { isAuthenticated } = useAuth()
 
 const scrollToSection = (id) => {
   if (route.path !== '/') {
@@ -14,6 +16,12 @@ const scrollToSection = (id) => {
   if (el) {
     el.scrollIntoView({ behavior: 'smooth' })
   }
+}
+
+const getFeatureTo = (targetPath) => {
+  return isAuthenticated.value
+    ? targetPath
+    : { path: '/login', query: { redirect: targetPath } }
 }
 </script>
 
@@ -48,11 +56,11 @@ const scrollToSection = (id) => {
         <div>
           <h4 class="text-white font-bold mb-4 text-xs uppercase tracking-wider">Fitur Unggulan</h4>
           <ul class="space-y-2 text-xs">
-            <li><router-link to="/pilah" class="hover:text-white transition-colors">Pilah Sampah</router-link></li>
-            <li><router-link to="/lokasi" class="hover:text-white transition-colors">Cari Lokasi Fasilitas</router-link></li>
-            <li><router-link to="/jadwal" class="hover:text-white transition-colors">Jadwal Angkut Terpadu</router-link></li>
-            <li><router-link to="/panduan" class="hover:text-white transition-colors">Panduan Edukasi Warga</router-link></li>
-            <li><router-link to="/pilah-ai" class="hover:text-white transition-colors">PilahAI Asisten Cerdas</router-link></li>
+            <li><router-link :to="getFeatureTo('/pilah')" class="hover:text-white transition-colors">Pilah Sampah</router-link></li>
+            <li><router-link :to="getFeatureTo('/lokasi')" class="hover:text-white transition-colors">Cari Lokasi Fasilitas</router-link></li>
+            <li><router-link :to="getFeatureTo('/jadwal')" class="hover:text-white transition-colors">Jadwal Angkut Terpadu</router-link></li>
+            <li><router-link :to="getFeatureTo('/panduan')" class="hover:text-white transition-colors">Panduan Edukasi Warga</router-link></li>
+            <li><router-link :to="getFeatureTo('/pilah-ai')" class="hover:text-white transition-colors">PilahAI Asisten Cerdas</router-link></li>
           </ul>
         </div>
 

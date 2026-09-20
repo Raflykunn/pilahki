@@ -14,7 +14,6 @@ import {
   Clock,
   Navigation,
   MapPin,
-  Map,
   CheckCircle2,
   Loader2,
   MapPinOff
@@ -498,82 +497,69 @@ onUnmounted(() => {
         </div>
 
         <!-- Facility Cards List -->
-        <div v-if="filteredFacilities.length > 0" class="space-y-3.5">
+        <div v-if="filteredFacilities.length > 0" class="space-y-4">
           <div
             v-for="fac in filteredFacilities"
             :key="fac.id"
             :id="`facility-card-${fac.id}`"
             @click="focusFacility(fac)"
             :class="[
-              'bg-white border rounded-2xl p-5 shadow-2xs hover:shadow-card-hover transition-all duration-200 cursor-pointer space-y-3.5',
-              activeFacilityId === fac.id ? 'border-brand-600 ring-2 ring-brand-500/20' : 'border-slate-200/80 hover:border-brand-300'
+              'group bg-white border rounded-2xl p-6 transition-all duration-200 cursor-pointer text-left space-y-4',
+              activeFacilityId === fac.id
+                ? 'border-brand-700 ring-2 ring-brand-600/20 shadow-md bg-brand-50/10'
+                : 'border-slate-200/80 hover:border-brand-300 hover:shadow-md'
             ]"
           >
-            <div class="flex items-start justify-between gap-2">
-              <div class="space-y-1">
-                <span :class="['inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border', fac.typeBadge]">
-                  {{ fac.typeName }}
-                </span>
-                <h3 class="text-base font-bold text-slate-900 leading-snug">
-                  {{ fac.name }}
-                </h3>
-              </div>
-              <div class="flex items-center gap-1.5 shrink-0">
-                <span v-if="isGpsActive" class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
+            <!-- Header: Kategori & Jarak -->
+            <div class="flex items-center justify-between gap-2">
+              <span :class="['inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border', fac.typeBadge]">
+                {{ fac.typeName }}
+              </span>
+
+              <div class="flex items-center gap-1.5 text-xs">
+                <span v-if="isGpsActive && fac.distanceKm < 2" class="text-[10.5px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
                   Terdekat
                 </span>
-                <span class="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200/70">
+                <span class="px-2.5 py-1 rounded-xl bg-slate-100/80 text-slate-700 text-xs font-bold">
                   {{ formatDistance(fac.distanceKm) }}
                 </span>
               </div>
             </div>
 
-            <!-- Address & Hours -->
-            <div class="space-y-1.5 text-xs text-slate-600">
-              <div class="flex items-start gap-2">
-                <MapPin class="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                <span class="leading-relaxed">{{ fac.address }}</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <Clock class="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span>{{ fac.operatingHours }}</span>
+            <!-- Konten Utama: Nama Fasilitas & Alamat -->
+            <div class="space-y-2">
+              <h3 class="text-base font-bold text-slate-900 group-hover:text-brand-800 transition-colors leading-snug">
+                {{ fac.name }}
+              </h3>
+
+              <div class="space-y-1.5 text-xs text-slate-500">
+                <div class="flex items-start gap-2">
+                  <MapPin class="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                  <span class="leading-relaxed">{{ fac.address }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <Clock class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span>{{ fac.operatingHours }}</span>
+                </div>
               </div>
             </div>
 
-            <!-- Accepted Waste Chips -->
-            <div class="space-y-1.5 pt-1">
-              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Menerima:</span>
-              <div class="flex flex-wrap gap-1.5">
-                <span
-                  v-for="(acc, i) in fac.accepted"
-                  :key="i"
-                  class="inline-flex items-center px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 text-[11px] font-medium border border-emerald-200/60"
-                >
-                  {{ acc }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Bottom Action: Lihat di Peta & Google Maps Direction Link -->
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-              <button
-                type="button"
-                @click.stop="focusFacility(fac)"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-brand-50 hover:text-brand-800 text-slate-700 text-xs font-bold transition-all border border-slate-200/70 cursor-pointer"
-              >
-                <Map class="w-3.5 h-3.5 text-brand-700" />
-                <span>Lihat di Peta</span>
-              </button>
+            <!-- Footer: Petunjuk Rute Google Maps -->
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span class="text-slate-400 text-[11px] group-hover:text-brand-700 transition-colors">
+                Klik kartu untuk fokus peta
+              </span>
 
               <a
                 :href="`https://www.google.com/maps/dir/?api=1&destination=${fac.lat},${fac.lng}`"
                 target="_blank"
                 rel="noopener noreferrer"
                 @click.stop
-                class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-800 hover:text-brand-600 hover:underline"
+                class="inline-flex items-center gap-1.5 font-bold text-brand-800 hover:text-brand-600 transition-colors group/link cursor-pointer"
+                title="Buka petunjuk arah di Google Maps"
               >
-                <Navigation class="w-3.5 h-3.5" />
-                <span>Petunjuk Rute</span>
+                <Navigation class="w-3.5 h-3.5 group-hover/link:translate-x-0.5 transition-transform" />
+                <span class="hover:underline">Petunjuk Rute</span>
               </a>
             </div>
 

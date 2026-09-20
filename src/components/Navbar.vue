@@ -2,12 +2,10 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
-import { useDomicile } from '@/composables/useDomicile'
 import { appConfig } from '@/config/app'
 import {
   Menu,
   X,
-  MapPin,
   Sparkles,
   ChevronDown
 } from 'lucide-vue-next'
@@ -15,11 +13,10 @@ import {
 const route = useRoute()
 const router = useRouter()
 const { isAuthenticated, userEmail, signOut } = useAuth()
-const { domicile } = useDomicile()
 
 const isMobileMenuOpen = ref(false)
 
-defineEmits(['open-domicile', 'open-profile', 'open-auth'])
+defineEmits(['open-profile', 'open-auth'])
 
 const isLandingRoute = computed(() => route.path === '/')
 const isAuthRoute = computed(() => route.path === '/login' || route.path === '/register')
@@ -150,18 +147,6 @@ const handleLogout = async () => {
 
           <!-- Mode In-App Header (Sesuai App/index.html Binfinity) -->
           <template v-else-if="!isAuthRoute">
-            
-            <!-- Domicile Pill Button -->
-            <button
-              type="button"
-              @click="$emit('open-domicile')"
-              class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-50 border border-brand-100/80 text-brand-800 text-xs font-bold hover:bg-brand-100 transition-colors cursor-pointer"
-              title="Ubah wilayah domisili Anda"
-            >
-              <MapPin class="w-3.5 h-3.5 text-brand-600" />
-              <span>{{ domicile.district || 'Panakkukang' }}, {{ domicile.city || 'Makassar' }}</span>
-            </button>
-
             <!-- User Display & Avatar (Desktop, Jika Login) -->
             <div
               v-if="isAuthenticated"

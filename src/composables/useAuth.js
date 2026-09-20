@@ -263,7 +263,6 @@ export function useAuth() {
         email: normalizedEmail,
         id: newUserId
       }))
-      localStorage.setItem('pilahki_is_new_user', 'true')
 
       return { success: true, data: { user: registeredUser, session: registeredSession } }
     } catch (err) {

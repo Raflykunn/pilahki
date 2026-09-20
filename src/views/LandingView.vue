@@ -160,8 +160,8 @@ const faqs = [
             </p>
           </div>
           <router-link
-            to="/pilah"
-            class="whitespace-nowrap px-6 py-3.5 rounded-xl bg-white text-brand-800 hover:bg-brand-50 font-bold text-sm shadow-md transition-all duration-200"
+            :to="isAuthenticated ? '/pilah' : { path: '/login', query: { redirect: '/pilah' } }"
+            class="whitespace-nowrap px-6 py-3.5 rounded-xl bg-white text-brand-800 hover:bg-brand-50 font-bold text-sm shadow-md transition-all duration-200 cursor-pointer"
           >
             Coba Fitur
           </router-link>

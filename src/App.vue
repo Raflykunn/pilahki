@@ -6,12 +6,10 @@ import Footer from '@/components/Footer.vue'
 import MobileBottomNav from '@/components/MobileBottomNav.vue'
 import FloatingPilahAi from '@/components/FloatingPilahAi.vue'
 import ProfileModal from '@/components/ProfileModal.vue'
-import DomicileModal from '@/components/DomicileModal.vue'
 
 const route = useRoute()
 
 const isProfileOpen = ref(false)
-const isDomicileOpen = ref(false)
 
 const isAuthRoute = computed(() => route.path === '/login' || route.path === '/register')
 const isAiFullRoute = computed(() => route.path === '/pilah-ai')
@@ -30,13 +28,9 @@ const showFloatingAi = computed(() => {
 })
 
 onMounted(() => {
-  // Check if new user needs to set domicile
+  // Bersihkan flag lama jika ada agar modal tidak pernah muncul otomatis saat refresh
   try {
-    const isNew = localStorage.getItem('pilahki_is_new_user')
-    const hasDomicile = localStorage.getItem('pilahki_domicile')
-    if (isNew && !hasDomicile) {
-      isDomicileOpen.value = true
-    }
+    localStorage.removeItem('pilahki_is_new_user')
   } catch (e) {}
 })
 </script>
@@ -46,7 +40,6 @@ onMounted(() => {
     <!-- Top Sticky Adaptive Navigation -->
     <Navbar
       @open-profile="isProfileOpen = true"
-      @open-domicile="isDomicileOpen = true"
     />
 
     <!-- Main Dynamic Content -->
@@ -70,11 +63,6 @@ onMounted(() => {
     <ProfileModal
       :isOpen="isProfileOpen"
       @close="isProfileOpen = false"
-    />
-
-    <DomicileModal
-      :isOpen="isDomicileOpen"
-      @close="isDomicileOpen = false"
     />
 
     <!-- Footer -->

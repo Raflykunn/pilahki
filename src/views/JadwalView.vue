@@ -9,14 +9,7 @@ import {
   Calendar,
   Crosshair,
   Clock,
-  Truck,
-  Leaf,
-  Recycle,
-  Trash2,
-  CalendarOff,
-  Award,
   CheckCircle2,
-  Info,
   Loader2
 } from 'lucide-vue-next'
 
@@ -71,23 +64,6 @@ const isPickupToday = computed(() => {
     todaySchedule.value.status.includes('Penyetoran')
   )
 })
-
-const getScheduleIcon = (iconName) => {
-  switch (iconName) {
-    case 'leaf':
-      return Leaf
-    case 'recycle':
-      return Recycle
-    case 'trash-2':
-      return Trash2
-    case 'award':
-      return Award
-    case 'calendar-off':
-      return CalendarOff
-    default:
-      return Truck
-  }
-}
 
 const handleLiveGps = () => {
   if (!navigator.geolocation) {
@@ -186,70 +162,59 @@ const handleLiveGps = () => {
             <Crosshair v-else class="w-4 h-4 text-accent-light group-hover:rotate-45 transition-transform" />
             <span>{{ isGpsLoading ? 'Mendeteksi...' : (isGpsActive ? 'Perbarui GPS' : 'Live GPS Saya') }}</span>
           </button>
-
-          <div class="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
-            <label for="district-select" class="text-xs font-bold text-slate-500 whitespace-nowrap">Wilayah:</label>
-            <select 
-              id="district-select"
-              v-model="selectedDistrict"
-              class="text-xs sm:text-sm font-bold text-slate-900 bg-transparent focus:outline-none cursor-pointer pr-1"
-            >
-              <option v-for="d in MAKASSAR_DISTRICTS" :key="d" :value="d">
-                Kecamatan {{ d }}
-              </option>
-            </select>
-          </div>
         </div>
       </div>
 
-      <!-- Upcoming Pickup Highlight Banner -->
-      <div class="bg-gradient-to-r from-brand-900 via-brand-800 to-brand-900 rounded-3xl p-6 sm:p-8 text-white shadow-sm">
+      <!-- Status Jadwal Hari Ini Card (Hijau Elegan Sesuai Identitas Brand) -->
+      <div class="bg-gradient-to-r from-brand-950 via-brand-900 to-[#0e2a1d] text-white rounded-3xl p-6 sm:p-8 shadow-sm">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div class="space-y-2">
-            <div
-              :class="[
-                'inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold border',
-                isPickupToday
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                  : 'bg-white/10 text-slate-200 border-white/15'
-              ]"
-            >
+          <div class="space-y-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-emerald-200 border border-white/15">
+                <Clock class="w-3.5 h-3.5 text-emerald-300" />
+                <span>Jadwal Hari Ini: {{ todaySchedule.day }}</span>
+              </span>
               <span
-                class="w-2 h-2 rounded-full"
-                :class="isPickupToday ? 'bg-emerald-400 animate-ping' : 'bg-slate-400'"
-              ></span>
-              <span>Jadwal Terdekat: Hari {{ todaySchedule.day }} (Hari Ini)</span>
+                v-if="isPickupToday"
+                class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+              >
+                Ada Penjemputan
+              </span>
+              <span
+                v-else
+                class="px-2.5 py-1 rounded-full text-xs font-semibold bg-white/10 text-slate-300 border border-white/10"
+              >
+                Tidak Ada Penjemputan
+              </span>
             </div>
-            
-            <h3 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-              {{ todaySchedule.category }}
-            </h3>
 
-            <p class="text-xs sm:text-sm text-brand-100 leading-relaxed max-w-xl">
-              <span v-if="isPickupToday">
-                Waktu operasional penjemputan: <strong class="text-white">{{ todaySchedule.time }}</strong> menggunakan armada <em class="text-white font-medium">{{ todaySchedule.vehicle }}</em>.
-              </span>
-              <span v-else>
-                {{ todaySchedule.notes }}
-              </span>
-            </p>
+            <div class="space-y-1">
+              <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                {{ todaySchedule.category }}
+              </h2>
+              <p class="text-xs sm:text-sm text-emerald-100/90 leading-relaxed max-w-2xl">
+                <span v-if="isPickupToday">
+                  Operasional penjemputan armada <strong class="text-white font-bold">{{ todaySchedule.vehicle }}</strong>. {{ todaySchedule.notes }}
+                </span>
+                <span v-else>
+                  {{ todaySchedule.notes }}
+                </span>
+              </p>
+            </div>
           </div>
 
-          <!-- Quick Tip Box inside Banner -->
-          <div class="bg-white/10 border border-white/15 rounded-2xl p-4 sm:p-5 max-w-sm shrink-0 space-y-1">
-            <span class="text-[11px] uppercase font-bold text-accent-light tracking-wider flex items-center gap-1.5">
-              <Info class="w-3.5 h-3.5" />
-              <span>Petunjuk Warga</span>
-            </span>
-            <p class="text-xs text-brand-100 leading-relaxed">
-              {{ todaySchedule.notes }}
-            </p>
+          <div
+            v-if="isPickupToday"
+            class="flex flex-col sm:flex-row md:flex-col items-start md:items-end justify-center gap-1 shrink-0 p-4 sm:p-5 rounded-2xl bg-white/10 border border-white/15"
+          >
+            <span class="text-[11px] font-semibold text-emerald-200/80 uppercase tracking-wider">Jam Operasional</span>
+            <span class="text-lg sm:text-xl font-extrabold text-white">{{ todaySchedule.time }}</span>
           </div>
         </div>
       </div>
 
       <!-- Subheading & Agenda Table -->
-      <div class="space-y-3">
+      <div class="space-y-3 pt-2">
         <div class="flex items-center justify-between px-1">
           <div class="flex items-center gap-2">
             <Calendar class="w-5 h-5 text-brand-700" />
@@ -261,68 +226,96 @@ const handleLiveGps = () => {
         </div>
 
         <!-- Tabel Agenda Mingguan Minimalis Container -->
-        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-2xs overflow-hidden">
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
           <div class="divide-y divide-slate-100">
             
             <div
               v-for="item in weeklySchedule"
               :key="item.day"
               :class="[
-                'p-4 sm:p-5 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4',
-                item.day.toLowerCase() === todayName.toLowerCase()
-                  ? 'bg-brand-50/70 border-l-4 border-brand-600'
-                  : 'hover:bg-slate-50/70'
+                'p-5 sm:py-6 sm:px-8 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 text-left',
+                item.category.toLowerCase().includes('tabungan')
+                  ? 'bg-emerald-50/60 border-l-4 border-l-emerald-600 hover:bg-emerald-50/80'
+                  : 'hover:bg-slate-50/60'
               ]"
             >
-              <!-- Left: Day & Status -->
-              <div class="flex items-center gap-4 min-w-[180px]">
-                <div
+              <!-- Sisi Kiri: Hari (Tanpa Icon & Tanpa Indikator Active) -->
+              <div class="md:w-36 shrink-0 space-y-0.5">
+                <span
                   :class="[
-                    'w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-xs shrink-0 select-none shadow-2xs',
-                    item.day.toLowerCase() === todayName.toLowerCase()
-                      ? 'bg-brand-800 text-white'
-                      : item.iconBg
+                    'font-bold text-base block',
+                    item.category.toLowerCase().includes('tabungan') ? 'text-emerald-950' : 'text-slate-900'
                   ]"
                 >
-                  <component :is="getScheduleIcon(item.icon)" class="w-4 h-4" />
-                </div>
-
-                <div>
-                  <div class="flex items-center gap-2">
-                    <span class="font-extrabold text-sm sm:text-base text-slate-900">{{ item.day }}</span>
-                    <span
-                      v-if="item.day.toLowerCase() === todayName.toLowerCase()"
-                      class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-800 text-white uppercase tracking-wider"
-                    >
-                      Hari Ini
-                    </span>
-                  </div>
-                  <div class="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
-                    <span :class="['w-2 h-2 rounded-full', item.statusDot]"></span>
-                    <span>{{ item.status }}</span>
-                  </div>
-                </div>
+                  {{ item.day }}
+                </span>
+                <span
+                  :class="[
+                    'text-xs block',
+                    item.category.toLowerCase().includes('tabungan') ? 'text-emerald-700 font-medium' : 'text-slate-500'
+                  ]"
+                >
+                  {{ item.status }}
+                </span>
               </div>
 
-              <!-- Middle: Category & Vehicle -->
+              <!-- Bagian Tengah: Kategori & Catatan Operasional -->
               <div class="flex-1 space-y-1">
                 <div class="flex flex-wrap items-center gap-2">
-                  <span :class="['inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border', item.badge]">
+                  <h3
+                    :class="[
+                      'text-sm sm:text-base font-bold',
+                      item.category.toLowerCase().includes('tabungan')
+                        ? 'text-emerald-950'
+                        : 'text-slate-800'
+                    ]"
+                  >
                     {{ item.category }}
-                  </span>
-                  <span class="text-xs text-slate-500 font-medium flex items-center gap-1">
-                    <Clock class="w-3.5 h-3.5 text-slate-400" />
-                    <span>{{ item.time }}</span>
+                  </h3>
+                  <span
+                    v-if="item.category.toLowerCase().includes('tabungan')"
+                    class="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200"
+                  >
+                    Setor Tabungan
                   </span>
                 </div>
-                <p class="text-xs text-slate-600 leading-relaxed">
-                  Armada: <strong class="text-slate-800">{{ item.vehicle }}</strong>
+                <p
+                  :class="[
+                    'text-xs leading-relaxed max-w-xl',
+                    item.category.toLowerCase().includes('tabungan') ? 'text-emerald-800/90' : 'text-slate-500'
+                  ]"
+                >
+                  {{ item.notes }}
                 </p>
               </div>
 
-              <!-- Right: Operational Notes -->
-              <div class="md:max-w-xs text-xs text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 leading-relaxed">
-                {{ item.notes }}
+              <!-- Sisi Kanan: Waktu & Armada -->
+              <div
+                :class="[
+                  'md:w-56 md:text-right shrink-0 space-y-1 pt-2 md:pt-0 border-t md:border-t-0',
+                  item.category.toLowerCase().includes('tabungan') ? 'border-emerald-100' : 'border-slate-100'
+                ]"
+              >
+                <div
+                  :class="[
+                    'inline-flex md:flex md:justify-end items-center gap-1.5 text-xs sm:text-sm font-bold',
+                    item.category.toLowerCase().includes('tabungan') ? 'text-emerald-900' : 'text-slate-900'
+                  ]"
+                >
+                  <Clock
+                    class="w-3.5 h-3.5 shrink-0"
+                    :class="item.category.toLowerCase().includes('tabungan') ? 'text-emerald-600' : 'text-slate-400'"
+                  />
+                  <span>{{ item.time }}</span>
+                </div>
+                <p
+                  :class="[
+                    'text-xs',
+                    item.category.toLowerCase().includes('tabungan') ? 'text-emerald-700 font-medium' : 'text-slate-500'
+                  ]"
+                >
+                  {{ item.vehicle }}
+                </p>
               </div>
 
             </div>
