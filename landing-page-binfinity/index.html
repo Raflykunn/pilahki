@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pilahki — Solusi Cerdas Kelola & Pilah Sampah Berkelanjutan</title>
+  <meta name="description" content="Pilahki membantu warga memilah sampah, menemukan bank sampah terdekat, cek jadwal angkut, dan edukasi lingkungan terintegrasi asisten pintar PilahAI." />
+  <link rel="icon" type="image/jpeg" href="img/logo.jpeg" />
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f2f8f4',
+              100: '#e1f0e7',
+              200: '#c5e2d1',
+              300: '#9bceb3',
+              400: '#69b28f',
+              500: '#59a544', // Leaf green accent (from logo)
+              600: '#388339',
+              700: '#1b4d34', // Brand mid dark
+              800: '#133826', // Deep forest green (from logo)
+              900: '#0d261a',
+              950: '#07160f',
+            },
+            accent: {
+              light: '#80cf66',
+              DEFAULT: '#59a544',
+              dark: '#3f822d',
+            },
+          },
+          boxShadow: {
+            'glow': '0 0 40px -10px rgba(89, 165, 68, 0.3)',
+            'card-hover': '0 20px 35px -10px rgba(19, 56, 38, 0.12)',
+          }
+        },
+      },
+    };
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bg-[#fafdfa] text-slate-800 font-sans antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- ================= NAVBAR ================= -->
+  <header class="sticky top-0 z-50 glass-nav border-b border-slate-100 transition-all duration-300" id="navbar">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Logo & Brand Name -->
+        <a href="index.html" class="flex items-center py-1">
+          <img src="img/logo-tulisan.jpeg" alt="Logo PilahKi'" class="h-12 sm:h-14 w-auto object-contain" />
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="hidden md:flex items-center gap-8 font-medium text-slate-600 text-sm">
+          <a href="#tentang" class="hover:text-brand-800 transition-colors">Tentang</a>
+          <a href="#masalah" class="hover:text-brand-800 transition-colors">Tantangan</a>
+          <a href="#fitur" class="hover:text-brand-800 transition-colors">Fitur</a>
+          <a href="#sdg" class="hover:text-brand-800 transition-colors">Dampak</a>
+          <a href="#faq" class="hover:text-brand-800 transition-colors">FAQ</a>
+        </nav>
+
+        <!-- Desktop Auth CTA Buttons -->
+        <div class="hidden md:flex items-center gap-3">
+          <a href="login.html" class="px-4 py-2 text-sm font-semibold text-brand-800 hover:text-brand-600 transition-colors">
+            Masuk
+          </a>
+          <a href="register.html" class="inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-brand-800 hover:bg-brand-700 shadow-sm hover:shadow transition-all duration-200">
+            Daftar
+          </a>
+        </div>
+
+        <!-- Mobile Menu Toggle Button -->
+        <div class="md:hidden flex items-center">
+          <button id="mobile-menu-btn" type="button" aria-label="Buka Menu" class="p-2 rounded-lg text-slate-600 hover:text-brand-800 hover:bg-brand-50 focus:outline-none">
+            <i data-lucide="menu" class="w-6 h-6" id="menu-icon"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-100 bg-white/95 backdrop-blur-md px-4 pt-3 pb-6 space-y-3 transition-all">
+      <a href="#tentang" class="block py-2 text-slate-700 font-medium hover:text-brand-800 mobile-nav-link">Tentang</a>
+      <a href="#masalah" class="block py-2 text-slate-700 font-medium hover:text-brand-800 mobile-nav-link">Tantangan</a>
+      <a href="#fitur" class="block py-2 text-slate-700 font-medium hover:text-brand-800 mobile-nav-link">Fitur</a>
+      <a href="#sdg" class="block py-2 text-slate-700 font-medium hover:text-brand-800 mobile-nav-link">Dampak</a>
+      <a href="#faq" class="block py-2 text-slate-700 font-medium hover:text-brand-800 mobile-nav-link">FAQ</a>
+      <div class="pt-4 border-t border-slate-100 flex flex-col gap-2">
+        <a href="login.html" class="w-full text-center py-2.5 rounded-xl border border-brand-800 text-brand-800 font-semibold text-sm hover:bg-brand-50">
+          Masuk
+        </a>
+        <a href="register.html" class="w-full text-center py-2.5 rounded-xl bg-brand-800 text-white font-semibold text-sm hover:bg-brand-700 shadow-sm">
+          Daftar
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HERO SECTION ================= -->
+  <section id="tentang" class="relative overflow-hidden py-24 sm:py-32 lg:py-40 bg-[#fafdfa]">
+    <!-- Background Image & Contrast Overlays -->
+    <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
+      <img 
+        src="img/hero-sampah.jpg" 
+        alt="Tumpukan sampah daur ulang" 
+        class="w-full h-full object-cover object-right md:object-center opacity-75 lg:opacity-85 filter contrast-105"
+      />
+      <!-- Horizontal mask: Ensures left side text is 100% readable with smooth fade to the waste pile on right -->
+      <div class="absolute inset-0 bg-gradient-to-r from-[#fafdfa] via-[#fafdfa]/95 sm:via-[#fafdfa]/90 lg:via-[#fafdfa]/80 to-[#fafdfa]/60 lg:to-transparent"></div>
+      <!-- Vertical edge blend: Seamless transitions from top navbar and into bottom section -->
+      <div class="absolute inset-0 bg-gradient-to-b from-[#fafdfa] via-transparent to-[#fafdfa]"></div>
+      <!-- Subtle atmospheric eco tint -->
+      <div class="absolute inset-0 bg-emerald-950/10 mix-blend-multiply"></div>
+    </div>
+
+    <!-- Content (Left-aligned, ample breathing room) -->
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-3xl text-left space-y-8">
+        
+        <!-- Headline Tagline -->
+        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-brand-950 leading-[1.15]">
+          Mulai dari Pilahan, <br class="hidden sm:inline" />
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-800 via-brand-700 to-brand-500">
+            Ciptakan Perubahan
+          </span>
+        </h1>
+
+        <!-- Deskripsi Baru -->
+        <p class="text-base sm:text-lg lg:text-xl text-slate-700 max-w-2xl leading-relaxed font-normal">
+          Hilangkan keraguan memilah sampah rumah tangga. Cek kategori secara instan, temukan bank sampah terdekat, pantau jadwal angkut, atau tanyakan langsung pada AI.
+        </p>
+
+        <!-- CTA Button Tunggal (Rounded-xl, Tanpa Arrow, Rata Kiri) -->
+        <div class="pt-2 flex justify-start">
+          <a href="register.html" class="inline-flex items-center justify-center px-8 py-4 rounded-xl font-bold text-white bg-brand-800 hover:bg-brand-700 shadow-md hover:shadow-lg transition-all duration-200 text-base">
+            Mulai Pilah Sekarang
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TANTANGAN / PROBLEM SECTION ================= -->
+  <section id="masalah" class="py-16 bg-white border-y border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-brand-950">
+          Mengapa Mengelola Sampah Rumah Tangga Masih Terasa Sulit?
+        </h2>
+        <p class="text-slate-600 text-sm sm:text-base mt-3">
+          Sebagian besar warga ingin berpartisipasi menjaga lingkungan, namun sering terbentur oleh 4 kendala utama ini:
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Problem 1 -->
+        <div class="p-6 rounded-2xl bg-[#fafdfa] border border-slate-100 hover:border-brand-200 hover:shadow-card-hover transition-all duration-300">
+          <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 border border-brand-100 flex items-center justify-center mb-4">
+            <i data-lucide="help-circle" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Bingung Memilah</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Tidak tahu kategori sampah (organik, anorganik, B3, atau residu) dan cara penanganan yang aman sebelum dibuang.
+          </p>
+        </div>
+
+        <!-- Problem 2 -->
+        <div class="p-6 rounded-2xl bg-[#fafdfa] border border-slate-100 hover:border-brand-200 hover:shadow-card-hover transition-all duration-300">
+          <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 border border-brand-100 flex items-center justify-center mb-4">
+            <i data-lucide="map-pin-off" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Sulit Cari Lokasi</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Tidak mengetahui keberadaan Bank Sampah atau TPS terdekat, jam buka, dan jenis sampah yang mereka terima.
+          </p>
+        </div>
+
+        <!-- Problem 3 -->
+        <div class="p-6 rounded-2xl bg-[#fafdfa] border border-slate-100 hover:border-brand-200 hover:shadow-card-hover transition-all duration-300">
+          <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 border border-brand-100 flex items-center justify-center mb-4">
+            <i data-lucide="clock" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Jadwal Tidak Jelas</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Jadwal truk pengangkut sampah tidak transparan, menyebabkan sampah menumpuk di depan rumah dan berbau.
+          </p>
+        </div>
+
+        <!-- Problem 4 -->
+        <div class="p-6 rounded-2xl bg-[#fafdfa] border border-slate-100 hover:border-brand-200 hover:shadow-card-hover transition-all duration-300">
+          <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 border border-brand-100 flex items-center justify-center mb-4">
+            <i data-lucide="compass" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Bingung Penyaluran</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Setelah dipilah, warga bingung ke mana sampah bernilai harus disalurkan agar tidak kembali tercampur di TPA.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Solution Bridge Banner -->
+      <div class="mt-12 bg-gradient-to-r from-brand-800 to-brand-700 text-white rounded-3xl p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-glow">
+        <div class="space-y-2 text-center md:text-left">
+          <span class="text-xs uppercase font-bold tracking-wider text-accent-light">Jawaban Masalah</span>
+          <h3 class="text-2xl sm:text-3xl font-extrabold">PilahKi' Hadir Menjawab Semua Masalah Tersebut</h3>
+          <p class="text-brand-100 text-sm sm:text-base max-w-2xl">
+            Semua kebutuhan informasi pemilahan, fasilitas terdekat, jadwal, dan asisten AI terangkum dalam satu pintu web yang ramah dan mudah diakses siapa saja.
+          </p>
+        </div>
+        <a href="register.html" class="whitespace-nowrap px-6 py-3 rounded-xl bg-white text-brand-800 hover:bg-brand-50 font-bold text-sm shadow-md transition-all duration-200">
+          Coba Fitur
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= 5 FITUR UTAMA SECTION ================= -->
+  <section id="fitur" class="py-24 sm:py-32 bg-[#fafdfa]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header (Clean & Uncluttered) -->
+      <div class="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-950 tracking-tight">
+          5 Fitur Unggulan di Dalam PilahKi'
+        </h2>
+        <p class="text-slate-600 text-base sm:text-lg mt-4 max-w-2xl mx-auto leading-relaxed">
+          Dirancang spesifik untuk mendukung warga hidup bersih dan berkelanjutan, mulai dari pemilahan harian hingga bantuan kecerdasan buatan.
+        </p>
+      </div>
+
+      <!-- Open Features Layout (No Cards, No Icons, Clean Editorial) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 lg:gap-x-16 gap-y-12 lg:gap-y-16">
+        
+        <!-- Fitur 1: Pilah Sampah -->
+        <div class="space-y-2">
+          <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 01</span>
+          <h3 class="text-xl font-bold text-brand-950">Pilah Sampah</h3>
+          <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+            Kenali kategori sampah rumah tangga dalam hitungan detik. Dapatkan panduan tepat apakah sampah termasuk <strong>Organik, Anorganik, B3, atau Residu</strong> beserta instruksi penanganannya yang aman sebelum dibuang.
+          </p>
+        </div>
+
+        <!-- Fitur 2: Cari Lokasi -->
+        <div class="space-y-2">
+          <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 02</span>
+          <h3 class="text-xl font-bold text-brand-950">Cari Lokasi Fasilitas</h3>
+          <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+            Temukan Bank Sampah dan TPS terdekat dari tempat tinggal Anda lewat GPS atau pemilihan wilayah manual, lengkap dengan jam operasional, petunjuk arah rute, dan jenis sampah yang diterima.
+          </p>
+        </div>
+
+        <!-- Fitur 3: Jadwal Angkut -->
+        <div class="space-y-2">
+          <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 03</span>
+          <h3 class="text-xl font-bold text-brand-950">Jadwal Angkut</h3>
+          <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+            Pantau jadwal penjemputan sampah rutin di lingkungan RT/RW tempat tinggal Anda. Tidak ada lagi tumpukan sampah berhari-hari di depan rumah karena jadwal pengangkutan yang transparan dan tepat waktu.
+          </p>
+        </div>
+
+        <!-- Fitur 4: Panduan Edukasi -->
+        <div class="space-y-2">
+          <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 04</span>
+          <h3 class="text-xl font-bold text-brand-950">Panduan Edukasi Warga</h3>
+          <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+            Akses artikel informatif, infografis praktis, dan tips gaya hidup minim sampah (<em>zero waste</em>). Pelajari teknik komposting mandiri dari sisa dapur hingga cara tepat mengisolasi limbah B3.
+          </p>
+        </div>
+
+        <!-- Fitur 5: PilahAI -->
+        <div class="space-y-2">
+          <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 05</span>
+          <h3 class="text-xl font-bold text-brand-950">PilahAI Asisten Cerdas</h3>
+          <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+            Tidak perlu berpindah-pindah menu secara manual. Cukup tanyakan langsung pada chatbot PilahAI.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= ALIGNMENT DENGAN SDG ================= -->
+  <section id="sdg" class="py-20 bg-brand-950 text-white relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white">
+          Komitmen Nyata PilahKi' untuk Keberlanjutan Lingkungan
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- SDG 11 -->
+        <div class="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-300 flex flex-col justify-between">
+          <div>
+            <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-2xl mb-6 border border-emerald-500/30">
+              11
+            </div>
+            <h3 class="text-xl font-bold mb-2 text-white">Kota & Permukiman Berkelanjutan</h3>
+            <p class="text-sm text-slate-300 leading-relaxed mb-4">
+              Fitur <strong>Cari Lokasi</strong> dan <strong>Jadwal Angkut</strong> mempermudah warga mengakses infrastruktur pengolahan sampah kota, mencegah TPS liar, dan menata sanitasi lingkungan pemukiman.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-white/10 text-xs font-medium text-emerald-300 flex items-center gap-1.5">
+            <i data-lucide="check-circle" class="w-4 h-4"></i> Mewujudkan kota bersih & tertata
+          </div>
+        </div>
+
+        <!-- SDG 13 -->
+        <div class="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-300 flex flex-col justify-between">
+          <div>
+            <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-2xl mb-6 border border-emerald-500/30">
+              13
+            </div>
+            <h3 class="text-xl font-bold mb-2 text-white">Penanganan Perubahan Iklim</h3>
+            <p class="text-sm text-slate-300 leading-relaxed mb-4">
+              Fitur <strong>Pilah Sampah</strong> memfasilitasi pengolahan kompos organik rumahan, secara langsung memangkas emisi gas metana (CH₄) berbahaya dari penumpukan sampah busuk di TPA.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-white/10 text-xs font-medium text-emerald-300 flex items-center gap-1.5">
+            <i data-lucide="check-circle" class="w-4 h-4"></i> Kurangi jejak karbon rumah tangga
+          </div>
+        </div>
+
+        <!-- SDG 4 -->
+        <div class="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-300 flex flex-col justify-between">
+          <div>
+            <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-2xl mb-6 border border-emerald-500/30">
+              04
+            </div>
+            <h3 class="text-xl font-bold mb-2 text-white">Pendidikan & Literasi Lingkungan</h3>
+            <p class="text-sm text-slate-300 leading-relaxed mb-4">
+              Fitur <strong>Panduan Edukasi</strong> dan <strong>PilahAI</strong> mendemokratisasi akses literasi pemilahan sampah dengan bahasa santai yang dapat dipahami segala umur tanpa sekat teknis.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-white/10 text-xs font-medium text-emerald-300 flex items-center gap-1.5">
+            <i data-lucide="check-circle" class="w-4 h-4"></i> Edukasi inklusif bagi seluruh lapisan warga
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= CARA KERJA / WORKFLOW SECTION ================= -->
+  <section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-brand-950">
+          3 Langkah Mudah Menggunakan PilahKi'
+        </h2>
+        <p class="text-slate-600 text-sm sm:text-base mt-3">
+          Hanya butuh beberapa menit untuk memulai kebiasaan baik menjaga lingkungan sekitar.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+        
+        <!-- Connecting Dashed Line between Step 1, 2, and 3 (Desktop) -->
+        <div class="hidden md:block absolute top-14 left-[16.6%] right-[16.6%] border-t-2 border-dashed border-brand-200 z-0" aria-hidden="true"></div>
+
+        <!-- Step 1 -->
+        <div class="text-center p-6 space-y-4 relative">
+          <div class="relative z-10 w-16 h-16 rounded-full bg-brand-100 text-brand-800 font-extrabold text-2xl mx-auto flex items-center justify-center border-4 border-white shadow-md">
+            1
+          </div>
+          <h3 class="text-xl font-bold text-brand-950">Daftar & Pilih Wilayah</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Buat akun gratis dalam 30 detik dan tentukan domisili tempat tinggalmu agar sistem dapat menampilkan info yang relevan.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="text-center p-6 space-y-4 relative">
+          <div class="relative z-10 w-16 h-16 rounded-full bg-brand-500 text-white font-extrabold text-2xl mx-auto flex items-center justify-center border-4 border-white shadow-md">
+            2
+          </div>
+          <h3 class="text-xl font-bold text-brand-950">Kenali & Pilah Sampah</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Gunakan fitur cari kategori sampah untuk mengidentifikasi sampah organik, daur ulang anorganik, residu, maupun limbah B3.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="text-center p-6 space-y-4 relative">
+          <div class="relative z-10 w-16 h-16 rounded-full bg-brand-800 text-white font-extrabold text-2xl mx-auto flex items-center justify-center border-4 border-white shadow-md">
+            3
+          </div>
+          <h3 class="text-xl font-bold text-brand-950">Salurkan & Pantau Jadwal</h3>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Kirim sampah ke Bank Sampah terdekat untuk ditukar manfaat atau siapkan di depan rumah saat jadwal angkut tiba.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= FAQ SECTION ================= -->
+  <section id="faq" class="py-20 bg-[#fafdfa] border-t border-slate-100">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-2xl mx-auto mb-14">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-brand-950">
+          Pertanyaan yang Sering Diajukan
+        </h2>
+        <p class="text-slate-600 text-sm sm:text-base mt-3">
+          Seputar fungsionalitas aplikasi dan cara kerja platform PilahKi'.
+        </p>
+      </div>
+
+      <div class="space-y-4">
+        
+        <!-- FAQ 1 -->
+        <div class="faq-item bg-white border border-slate-200 rounded-2xl p-5 cursor-pointer transition-all">
+          <div class="flex items-center justify-between font-bold text-brand-950 text-base sm:text-lg">
+            <span>Apakah PilahKi' memerlukan instalasi aplikasi di HP?</span>
+            <i data-lucide="chevron-down" class="faq-icon w-5 h-5 text-slate-400 transition-transform"></i>
+          </div>
+          <p class="faq-answer hidden text-slate-600 text-sm mt-3 pt-3 border-t border-slate-100 leading-relaxed">
+            Tidak perlu! PilahKi' berbasis web murni yang responsif. Anda dapat langsung membukanya dari browser Chrome, Safari, atau Firefox di smartphone maupun laptop tanpa membebani memori HP.
+          </p>
+        </div>
+
+        <!-- FAQ 2 -->
+        <div class="faq-item bg-white border border-slate-200 rounded-2xl p-5 cursor-pointer transition-all">
+          <div class="flex items-center justify-between font-bold text-brand-950 text-base sm:text-lg">
+            <span>Bagaimana cara kerja chatbot PilahAI?</span>
+            <i data-lucide="chevron-down" class="faq-icon w-5 h-5 text-slate-400 transition-transform"></i>
+          </div>
+          <p class="faq-answer hidden text-slate-600 text-sm mt-3 pt-3 border-t border-slate-100 leading-relaxed">
+            PilahAI menggunakan teknologi LLM Gemini dengan <em>Function Calling</em>. Ketika Anda bertanya, AI secara otomatis mendeteksi kebutuhan data Anda (misal mengecek kategori sampah, mencari Bank Sampah terdekat, atau mencari jadwal angkut) dan memanggil database sistem untuk memberikan respon yang akurat.
+          </p>
+        </div>
+
+        <!-- FAQ 3 -->
+        <div class="faq-item bg-white border border-slate-200 rounded-2xl p-5 cursor-pointer transition-all">
+          <div class="flex items-center justify-between font-bold text-brand-950 text-base sm:text-lg">
+            <span>Apakah data lokasi dan jadwal mencakup seluruh Indonesia?</span>
+            <i data-lucide="chevron-down" class="faq-icon w-5 h-5 text-slate-400 transition-transform"></i>
+          </div>
+          <p class="faq-answer hidden text-slate-600 text-sm mt-3 pt-3 border-t border-slate-100 leading-relaxed">
+            Untuk demonstrasi kompetisi lomba saat ini, data difokuskan pada wilayah contoh pemukiman perkotaan. Namun arsitektur sistem dirancang agar data wilayah lain dapat ditambahkan dengan mudah melalui panel pengelola.
+          </p>
+        </div>
+
+        <!-- FAQ 4 -->
+        <div class="faq-item bg-white border border-slate-200 rounded-2xl p-5 cursor-pointer transition-all">
+          <div class="flex items-center justify-between font-bold text-brand-950 text-base sm:text-lg">
+            <span>Apakah saya harus mendaftar untuk mencoba PilahKi'?</span>
+            <i data-lucide="chevron-down" class="faq-icon w-5 h-5 text-slate-400 transition-transform"></i>
+          </div>
+          <p class="faq-answer hidden text-slate-600 text-sm mt-3 pt-3 border-t border-slate-100 leading-relaxed">
+            Anda dapat melihat informasi umum dan panduan di halaman landing page ini. Namun untuk menikmati semua fitur interaktif lengkap (asisten pintar PilahAI, bookmark Bank Sampah, dan notifikasi jadwal), Anda cukup membuat akun gratis melalui tombol Daftar.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= FINAL CALL TO ACTION BANNER ================= -->
+  <section class="py-20 bg-gradient-to-br from-brand-900 via-brand-800 to-brand-950 text-white relative overflow-hidden">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-6">
+      
+      <div class="w-16 h-16 rounded-2xl overflow-hidden mx-auto bg-white p-1 shadow-lg">
+        <img src="img/logo.jpeg" alt="Logo PilahKi'" class="w-full h-full object-contain" />
+      </div>
+
+      <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight">
+        Siap Melangkah Menuju Lingkungan yang Lebih Bersih?
+      </h2>
+
+      <p class="text-base sm:text-lg text-brand-100 max-w-2xl mx-auto leading-relaxed">
+        Bergabunglah dengan ribuan warga yang telah merasakan kemudahan memilah sampah dari rumah dengan bantuan teknologi cerdas PilahKi'.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+        <a href="register.html" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-xl font-bold text-brand-900 bg-white hover:bg-brand-50 shadow-lg hover:shadow-glow transition-all text-base">
+          Daftar Sekarang
+        </a>
+        <a href="login.html" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-xl font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all text-base">
+          Masuk Sekarang
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-[#0b1c13] text-slate-400 text-sm py-14 border-t border-brand-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+        
+        <!-- Col 1: Brand Info -->
+        <div class="space-y-4 md:col-span-1">
+          <a href="index.html" class="inline-flex items-center p-2 bg-white rounded-xl shadow-xs">
+            <img src="img/logo-tulisan.jpeg" alt="Logo PilahKi'" class="h-10 w-auto object-contain" />
+          </a>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Mulai dari Pilahan, Ciptakan Perubahan. Platform web terpadu edukasi dan pengelolaan sampah rumah tangga berkelanjutan untuk Indonesia yang lebih bersih.
+          </p>
+        </div>
+
+        <!-- Col 2: Navigasi (Sesuai Nav) -->
+        <div>
+          <h4 class="text-white font-bold mb-4 text-xs uppercase tracking-wider">Navigasi</h4>
+          <ul class="space-y-2 text-xs">
+            <li><a href="#tentang" class="hover:text-white transition-colors">Tentang</a></li>
+            <li><a href="#masalah" class="hover:text-white transition-colors">Tantangan</a></li>
+            <li><a href="#fitur" class="hover:text-white transition-colors">Fitur</a></li>
+            <li><a href="#sdg" class="hover:text-white transition-colors">Dampak</a></li>
+            <li><a href="#faq" class="hover:text-white transition-colors">FAQ</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Fitur Unggulan -->
+        <div>
+          <h4 class="text-white font-bold mb-4 text-xs uppercase tracking-wider">Fitur Unggulan</h4>
+          <ul class="space-y-2 text-xs">
+            <li><a href="#fitur" class="hover:text-white transition-colors">Pilah Sampah</a></li>
+            <li><a href="#fitur" class="hover:text-white transition-colors">Cari Lokasi Fasilitas</a></li>
+            <li><a href="#fitur" class="hover:text-white transition-colors">Jadwal Angkut Terpadu</a></li>
+            <li><a href="#fitur" class="hover:text-white transition-colors">Panduan Edukasi Warga</a></li>
+            <li><a href="#fitur" class="hover:text-white transition-colors">PilahAI Asisten Cerdas</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Akses Pengguna -->
+        <div>
+          <h4 class="text-white font-bold mb-4 text-xs uppercase tracking-wider">Akses Pengguna</h4>
+          <ul class="space-y-2 text-xs">
+            <li><a href="login.html" class="hover:text-white transition-colors">Masuk</a></li>
+            <li><a href="register.html" class="hover:text-white transition-colors">Daftar</a></li>
+          </ul>
+          <p class="text-xs text-slate-400 leading-relaxed mt-4">
+            Bersama mewujudkan lingkungan bersih, sehat, dan minim sampah untuk masa depan.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <p>&copy; 2026 Binfinity. Hak Cipta Dilindungi Undang-Undang.</p>
+        <p class="flex items-center gap-1">
+          Dibuat dengan semangat keberlanjutan &nbsp;🌱
+        </p>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script src="js/main.js"></script>
+</body>
+</html>

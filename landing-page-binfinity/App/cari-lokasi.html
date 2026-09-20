@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cari Lokasi Fasilitas — PilahKi' Dashboard</title>
+  <meta name="description" content="Temukan Bank Sampah, TPS 3R, dan Drop Box B3 terdekat di Makassar dengan kalkulasi jarak otomatis dari domisili Anda." />
+  <link rel="icon" type="image/jpeg" href="../img/logo.jpeg" />
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f2f8f0',
+              100: '#e1efe0',
+              200: '#c5e0c2',
+              300: '#9ecaa0',
+              400: '#71ae75',
+              500: '#4d9253',
+              600: '#3a763f',
+              700: '#2f5e33',
+              800: '#133826',
+              900: '#0d261a',
+              950: '#07160f',
+            },
+            accent: {
+              light: '#80cf66',
+              DEFAULT: '#59a544',
+              dark: '#3f822d',
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Leaflet Map CSS & JS (For Live Location & Facilities Map) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body class="bg-[#fafdfa] text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
+
+  <!-- ================= TOP APP HEADER ================= -->
+  <header class="sticky top-0 z-30 glass-nav border-b border-slate-100 bg-white/95 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Left: Logo & Desktop Navigation Tabs (No Icons, Exact Order) -->
+        <div class="flex items-center gap-6 lg:gap-10">
+          <a href="index.html" class="flex items-center py-1 shrink-0">
+            <img src="../img/logo-tulisan.jpeg" alt="Logo PilahKi'" class="h-11 sm:h-13 w-auto object-contain" />
+          </a>
+
+          <!-- Desktop Navigation Tabs: Pilah Sampah, Cari Lokasi, Jadwal Angkut, Panduan (No Icons) -->
+          <nav class="hidden md:flex items-center space-x-1 lg:space-x-2" aria-label="Navigasi Menu Utama">
+            <!-- 1. Pilah Sampah -->
+            <a 
+              href="index.html" 
+              class="px-3.5 lg:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-slate-600 hover:text-brand-800 hover:bg-slate-100/70"
+            >
+              Pilah Sampah
+            </a>
+
+            <!-- 2. Cari Lokasi (Active) -->
+            <a 
+              href="cari-lokasi.html" 
+              class="px-3.5 lg:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-brand-800 text-white shadow-xs"
+            >
+              Cari Lokasi
+            </a>
+
+            <!-- 3. Jadwal Angkut -->
+            <a 
+              href="jadwal-angkut.html" 
+              class="px-3.5 lg:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-slate-600 hover:text-brand-800 hover:bg-slate-100/70"
+            >
+              Jadwal Angkut
+            </a>
+
+            <!-- 4. Panduan -->
+            <a 
+              href="panduan.html" 
+              class="px-3.5 lg:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-slate-600 hover:text-brand-800 hover:bg-slate-100/70"
+            >
+              Panduan
+            </a>
+          </nav>
+        </div>
+
+        <!-- Right: User Profile & Actions (Desktop Only, Hidden on Mobile) -->
+        <div class="hidden md:flex items-center gap-3">
+          <div class="flex flex-col text-right">
+            <span id="user-display-name" class="text-sm font-bold text-slate-900 leading-tight">Warga PilahKi'</span>
+            <span id="user-display-email" class="text-[11px] text-slate-500">warga@pilahki.id</span>
+          </div>
+
+          <!-- User Avatar Icon -->
+          <div class="w-10 h-10 rounded-xl bg-brand-800 text-white flex items-center justify-center font-bold text-sm shadow-xs select-none">
+            <span id="user-avatar-initial">W</span>
+          </div>
+
+          <!-- Desktop Logout Button -->
+          <button 
+            type="button" 
+            id="btn-logout" 
+            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-red-600 hover:bg-red-50 border border-slate-200/80 transition-colors cursor-pointer"
+            title="Keluar dari akun"
+          >
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span>Keluar</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN APP CONTENT: CARI LOKASI ================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-32 md:pb-12">
+    
+    <!-- Top Header Bar: Title, Live GPS Status & Action -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div class="space-y-1">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Fasilitas Pengelolaan Sampah</h1>
+        <p id="location-target-label" class="text-xs sm:text-sm text-slate-600">
+          Menampilkan titik terdekat dari lokasi Anda di Makassar
+        </p>
+      </div>
+
+      <!-- Live GPS Trigger Button -->
+      <div class="flex items-center gap-3 shrink-0">
+        <span id="gps-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs">
+          <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+          <span>Makassar</span>
+        </span>
+
+        <button 
+          type="button" 
+          id="btn-live-gps" 
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-800 hover:bg-brand-700 text-white text-xs font-bold transition-all shadow-xs hover:shadow-md cursor-pointer group"
+          title="Kunci posisi presisi Anda via Live GPS browser"
+        >
+          <i data-lucide="crosshair" class="w-4 h-4 text-accent-light group-hover:rotate-45 transition-transform"></i>
+          <span id="btn-live-gps-text">Live GPS Saya</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Split-Screen Grid: MAP DI KIRI (lg:col-span-7), FILTER & CARDS DI KANAN (lg:col-span-5) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      
+      <!-- ================= KIRI: PETA INTERAKTIF (STICKY ON DESKTOP) ================= -->
+      <div class="lg:col-span-7 space-y-3 lg:sticky lg:top-28">
+        
+        <div class="flex items-center justify-between px-1">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Peta Interaktif Titik Sampah</span>
+          </div>
+
+          <button 
+            type="button" 
+            id="btn-center-map" 
+            class="text-xs font-bold text-brand-800 hover:text-brand-900 inline-flex items-center gap-1.5 cursor-pointer hover:underline"
+            title="Pusatkan kamera peta ke titik lokasi saya"
+          >
+            <i data-lucide="locate" class="w-3.5 h-3.5"></i>
+            <span>Pusatkan</span>
+          </button>
+        </div>
+
+        <!-- Leaflet Map Container -->
+        <div 
+          id="facility-map" 
+          class="h-[380px] sm:h-[460px] lg:h-[calc(100vh-14rem)] w-full rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden relative z-10 bg-slate-100"
+          style="isolation: isolate;"
+        >
+          <!-- Leaflet Map rendered here -->
+        </div>
+
+        <!-- Map Legend -->
+        <div class="flex flex-wrap items-center justify-between gap-2.5 text-xs text-slate-600 px-4 py-2.5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs">
+          <div class="flex flex-wrap items-center gap-4 text-[11px] font-medium">
+            <div class="flex items-center gap-1.5 font-bold text-blue-700">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-600 ring-2 ring-blue-200"></span>
+              <span>Posisi Anda</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-emerald-800 font-semibold">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-700"></span>
+              <span>Bank Sampah</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-teal-800 font-semibold">
+              <span class="w-2.5 h-2.5 rounded-full bg-teal-700"></span>
+              <span>TPS 3R</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-amber-800 font-semibold">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
+              <span>Drop Box B3</span>
+            </div>
+          </div>
+          <span class="text-[11px] text-slate-400 hidden xl:inline">Klik pin peta untuk detail rute</span>
+        </div>
+
+      </div>
+
+      <!-- ================= KANAN: FILTER KATEGORI, SEARCH, & DAFTAR KARTU ================= -->
+      <div class="lg:col-span-5 space-y-4">
+        
+        <!-- Filter Bar & Search Container (Clean with Generous White Space) -->
+        <div class="space-y-3 bg-white p-5 rounded-3xl border border-slate-200/80 shadow-2xs">
+          
+          <!-- Category Filter Pills (No Emojis, Clean & Airy) -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Kategori Fasilitas</label>
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+              <button type="button" data-type="semua" class="facility-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-brand-800 text-white shadow-xs whitespace-nowrap cursor-pointer">
+                Semua
+              </button>
+              <button type="button" data-type="bank_sampah" class="facility-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-100/80 hover:bg-brand-50 text-slate-700 hover:text-brand-800 whitespace-nowrap cursor-pointer">
+                Bank Sampah
+              </button>
+              <button type="button" data-type="tps_3r" class="facility-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-100/80 hover:bg-brand-50 text-slate-700 hover:text-brand-800 whitespace-nowrap cursor-pointer">
+                TPS 3R
+              </button>
+              <button type="button" data-type="drop_box_b3" class="facility-filter-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-100/80 hover:bg-brand-50 text-slate-700 hover:text-brand-800 whitespace-nowrap cursor-pointer">
+                Drop Box B3
+              </button>
+            </div>
+          </div>
+
+          <!-- Search Input -->
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input 
+              type="text" 
+              id="facility-search-input" 
+              placeholder="Cari fasilitas, jalan, jenis sampah..." 
+              class="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 bg-slate-50/50"
+            />
+          </div>
+
+          <!-- Result Info -->
+          <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-100">
+            <span id="facility-count-text">Menampilkan 6 lokasi</span>
+            <span>Diurutkan terdekat</span>
+          </div>
+
+        </div>
+
+        <!-- Scrollable Facilities Cards Column (Airy Modern Design) -->
+        <div 
+          id="facility-list" 
+          class="space-y-4 lg:max-h-[calc(100vh-21rem)] lg:overflow-y-auto lg:pr-1.5"
+        >
+          <!-- Cards injected dynamically by js/app-facilities.js -->
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================= USER PROFILE MODAL ================= -->
+  <div id="profile-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-5 relative animate-in fade-in zoom-in duration-200 border border-slate-100">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="text-base font-bold text-slate-900">Profil Warga</h3>
+        <button type="button" id="btn-close-profile-modal" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3 py-2">
+        <div class="w-14 h-14 rounded-2xl bg-brand-800 text-white flex items-center justify-center font-bold text-xl shadow-xs select-none">
+          <span id="profile-modal-avatar">W</span>
+        </div>
+        <div>
+          <h4 id="profile-modal-name" class="text-base font-bold text-slate-900">Warga PilahKi'</h4>
+          <p id="profile-modal-email" class="text-xs text-slate-500">warga@pilahki.id</p>
+          <span class="inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Warga Aktif Makassar
+          </span>
+        </div>
+      </div>
+
+      <div class="pt-2 space-y-2 border-t border-slate-100">
+        <button 
+          type="button" 
+          id="btn-profile-logout" 
+          class="w-full py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          <span>Keluar dari Akun</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FLOATING PILAHAI (ABOVE BOTTOM MENUBAR ON MOBILE) ================= -->
+  <div class="fixed bottom-24 sm:bottom-6 right-4 sm:right-6 z-50 flex flex-col items-end pointer-events-none">
+    
+    <!-- Floating Chat Window (Toggled via FAB) -->
+    <div 
+      id="pilahai-chat-window" 
+      class="hidden mb-3 w-[calc(100vw-2rem)] sm:w-[420px] h-[480px] sm:h-[520px] max-h-[70vh] bg-white rounded-3xl shadow-2xl border border-slate-200/90 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 pointer-events-auto"
+    >
+      <!-- Chat Header -->
+      <div class="bg-brand-900 text-white px-5 py-3.5 flex items-center justify-between shadow-xs shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-brand-700 text-white flex items-center justify-center shadow-2xs">
+            <i data-lucide="bot" class="w-4 h-4 text-accent-light"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold leading-tight">PilahAI Companion</h3>
+            <div class="flex items-center gap-1.5 text-[11px] text-emerald-300 font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Online & Siap Membantu</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1">
+          <button 
+            type="button" 
+            id="btn-clear-chat" 
+            class="text-[11px] font-semibold text-slate-300 hover:text-white px-2 py-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+            title="Bersihkan Percakapan"
+          >
+            Reset
+          </button>
+          <button 
+            type="button" 
+            id="btn-close-pilahai" 
+            class="text-slate-300 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+            title="Tutup Chat"
+          >
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages Scroll Area -->
+      <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50/50">
+        <div class="flex items-start gap-2.5">
+          <div class="w-7 h-7 rounded-xl bg-brand-800 text-white flex items-center justify-center shrink-0 shadow-2xs">
+            <i data-lucide="bot" class="w-3.5 h-3.5 text-accent-light"></i>
+          </div>
+          <div class="max-w-[85%] bg-white border border-slate-200/90 text-slate-800 p-3.5 rounded-2xl rounded-tl-none shadow-2xs space-y-1.5">
+            <p class="text-xs sm:text-sm leading-relaxed">
+              Halo <strong id="chat-welcome-name">Warga</strong>! Saya <strong>PilahAI</strong>. Tanyakan apa saja tentang pemilahan sampah, lokasi bank sampah, atau jadwal truk angkut.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prompt Chips -->
+      <div class="px-4 py-2 bg-white border-t border-slate-100 overflow-x-auto no-scrollbar flex items-center gap-1.5 shrink-0">
+        <button type="button" data-query="Cara penanganan baterai bekas?" class="prompt-chip inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-medium bg-slate-100 hover:bg-brand-50 hover:text-brand-800 text-slate-600 transition-colors whitespace-nowrap cursor-pointer">
+          <i data-lucide="battery-charging" class="w-3.5 h-3.5 text-amber-600"></i>
+          <span>Baterai bekas</span>
+        </button>
+        <button type="button" data-query="Jadwal truk angkut di wilayah saya?" class="prompt-chip inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-medium bg-slate-100 hover:bg-brand-50 hover:text-brand-800 text-slate-600 transition-colors whitespace-nowrap cursor-pointer">
+          <i data-lucide="truck" class="w-3.5 h-3.5 text-teal-600"></i>
+          <span>Jadwal truk</span>
+        </button>
+        <button type="button" data-query="Di mana bank sampah terdekat?" class="prompt-chip inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-medium bg-slate-100 hover:bg-brand-50 hover:text-brand-800 text-slate-600 transition-colors whitespace-nowrap cursor-pointer">
+          <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Bank sampah</span>
+        </button>
+      </div>
+
+      <!-- Chat Input Form -->
+      <div class="p-3 bg-white border-t border-slate-200 shrink-0">
+        <form id="chat-form" class="flex items-center gap-2">
+          <input 
+            type="text" 
+            id="chat-input" 
+            placeholder="Tanyakan jenis sampah atau jadwal..." 
+            autocomplete="off"
+            class="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+          />
+          <button 
+            type="submit" 
+            class="px-4 py-2 rounded-xl bg-brand-800 hover:bg-brand-700 text-white font-bold text-xs transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+          >
+            <span>Kirim</span>
+            <i data-lucide="send" class="w-3 h-3"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- The Floating Button (FAB): Icon Only on Mobile, Icon + Label on Desktop -->
+    <button 
+      type="button" 
+      id="btn-toggle-pilahai" 
+      class="w-14 h-14 sm:w-auto sm:h-auto p-3 sm:px-5 sm:py-3.5 rounded-2xl bg-brand-800 hover:bg-brand-700 text-white font-bold text-sm shadow-xl hover:shadow-2xl transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 flex items-center justify-center gap-2.5 group pointer-events-auto"
+      title="Buka Chat PilahAI"
+    >
+      <div class="w-7 h-7 sm:w-6 sm:h-6 rounded-lg bg-white/10 flex items-center justify-center">
+        <i data-lucide="bot" class="w-5 h-5 sm:w-4 sm:h-4 text-accent-light"></i>
+      </div>
+      <span class="hidden sm:inline">Tanya PilahAI</span>
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse hidden sm:inline"></span>
+    </button>
+
+  </div>
+
+  <!-- ================= MOBILE FLOATING BOTTOM MENUBAR (< md) ================= -->
+  <!-- Susunan: Pilah, Lokasi (Active), Jadwal, Panduan, Profile -->
+  <nav class="md:hidden fixed bottom-4 inset-x-4 max-w-md mx-auto z-40 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-xl px-2 py-1.5 flex items-center justify-around select-none">
+    
+    <!-- 1. Pilah -->
+    <a 
+      href="index.html" 
+      class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-slate-500 hover:text-brand-800 font-medium transition-all"
+    >
+      <i data-lucide="layers" class="w-5 h-5"></i>
+      <span class="text-[10px] tracking-tight">Pilah</span>
+    </a>
+
+    <!-- 2. Lokasi (Active on cari-lokasi.html) -->
+    <a 
+      href="cari-lokasi.html" 
+      class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-brand-800 font-bold transition-all bg-brand-50 border border-brand-100/60"
+    >
+      <i data-lucide="map-pin" class="w-5 h-5 text-brand-700"></i>
+      <span class="text-[10px] tracking-tight">Lokasi</span>
+    </a>
+
+    <!-- 3. Jadwal -->
+    <a 
+      href="jadwal-angkut.html" 
+      class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-slate-500 hover:text-brand-800 font-medium transition-all"
+    >
+      <i data-lucide="calendar" class="w-5 h-5"></i>
+      <span class="text-[10px] tracking-tight">Jadwal</span>
+    </a>
+
+    <!-- 4. Panduan -->
+    <a 
+      href="panduan.html" 
+      class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-slate-500 hover:text-brand-800 font-medium transition-all"
+    >
+      <i data-lucide="book-open" class="w-5 h-5"></i>
+      <span class="text-[10px] tracking-tight">Panduan</span>
+    </a>
+
+    <!-- 5. Profile -->
+    <button 
+      type="button" 
+      id="btn-mobile-profile" 
+      class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-slate-500 hover:text-brand-800 font-medium transition-all cursor-pointer"
+    >
+      <i data-lucide="user" class="w-5 h-5"></i>
+      <span class="text-[10px] tracking-tight">Profile</span>
+    </button>
+
+  </nav>
+
+  <!-- Scripts -->
+  <script src="../js/app-common.js"></script>
+  <script src="../js/app-facilities.js"></script>
+  <script src="../js/app-pilahai.js"></script>
+</body>
+</html>
