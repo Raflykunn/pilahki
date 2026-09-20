@@ -117,7 +117,7 @@ Pastikan perangkat Anda telah terinstal:
 
 ### 1. Kloning Repositori
 ```bash
-git clone https://github.com/fayyadhmuwaffaq/pilahki.git
+git clone https://github.com/Raflykunn/pilahki.git
 cd pilahki
 ```
 
