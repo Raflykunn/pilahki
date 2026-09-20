@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import {
   HelpCircle,
@@ -8,11 +7,9 @@ import {
   Clock,
   Compass,
   CheckCircle,
-  ChevronDown,
-  ArrowRight
+  ChevronDown
 } from 'lucide-vue-next'
 
-const router = useRouter()
 const { isAuthenticated } = useAuth()
 
 const activeFaqIndex = ref(null)
@@ -85,13 +82,6 @@ const faqs = [
               class="inline-flex items-center justify-center px-8 py-4 rounded-xl font-bold text-white bg-brand-800 hover:bg-brand-700 shadow-md hover:shadow-lg transition-all duration-200 text-base"
             >
               <span>{{ isAuthenticated ? 'Buka Aplikasi PilahKi' : 'Mulai Pilah Sekarang' }}</span>
-            </router-link>
-
-            <router-link
-              to="/pilah"
-              class="inline-flex items-center justify-center px-6 py-4 rounded-xl font-semibold text-brand-800 bg-brand-50 hover:bg-brand-100 transition-all text-base"
-            >
-              <span>Jelajahi Fitur</span>
             </router-link>
           </div>
 
@@ -194,15 +184,14 @@ const faqs = [
           </p>
         </div>
 
-        <!-- Open Features Layout (Editorial) -->
+        <!-- Open Features Layout (Editorial - Informational Only) -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 lg:gap-x-16 gap-y-12 lg:gap-y-16 text-left">
           
           <!-- Fitur 1: Pilah Sampah -->
-          <div class="space-y-3 group cursor-pointer" @click="router.push('/pilah')">
+          <div class="space-y-3">
             <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 01</span>
-            <h3 class="text-xl font-bold text-brand-950 group-hover:text-brand-600 transition-colors flex items-center justify-between">
-              <span>Pilah Sampah</span>
-              <ArrowRight class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-brand-600" />
+            <h3 class="text-xl font-bold text-brand-950">
+              Pilah Sampah
             </h3>
             <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
               Kenali kategori sampah rumah tangga dalam hitungan detik. Dapatkan panduan tepat apakah sampah termasuk <strong>Organik, Anorganik, B3, atau Residu</strong> beserta instruksi penanganannya yang aman sebelum dibuang.
@@ -210,23 +199,21 @@ const faqs = [
           </div>
 
           <!-- Fitur 2: Cari Lokasi -->
-          <div class="space-y-3 group cursor-pointer" @click="router.push('/lokasi')">
+          <div class="space-y-3">
             <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 02</span>
-            <h3 class="text-xl font-bold text-brand-950 group-hover:text-brand-600 transition-colors flex items-center justify-between">
-              <span>Cari Lokasi Fasilitas</span>
-              <ArrowRight class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-brand-600" />
+            <h3 class="text-xl font-bold text-brand-950">
+              Cari Lokasi Fasilitas
             </h3>
             <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
-              Temukan Bank Sampah dan TPS terdekat dari tempat tinggal Anda lewat GPS atau pemilihan wilayah manual, lengkap dengan jam operasional, petunjuk arah rute, dan jenis sampah yang diterima.
+              Temukan Bank Sampah, TPS 3R, dan TPA terdekat dari tempat tinggal Anda lewat GPS atau pemilihan wilayah manual, lengkap dengan jam operasional, petunjuk arah rute, dan jenis sampah yang diterima.
             </p>
           </div>
 
           <!-- Fitur 3: Jadwal Angkut -->
-          <div class="space-y-3 group cursor-pointer" @click="router.push('/jadwal')">
+          <div class="space-y-3">
             <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 03</span>
-            <h3 class="text-xl font-bold text-brand-950 group-hover:text-brand-600 transition-colors flex items-center justify-between">
-              <span>Jadwal Angkut</span>
-              <ArrowRight class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-brand-600" />
+            <h3 class="text-xl font-bold text-brand-950">
+              Jadwal Angkut
             </h3>
             <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
               Pantau jadwal penjemputan sampah rutin di lingkungan RT/RW tempat tinggal Anda. Tidak ada lagi tumpukan sampah berhari-hari di depan rumah karena jadwal pengangkutan yang transparan dan tepat waktu.
@@ -234,11 +221,10 @@ const faqs = [
           </div>
 
           <!-- Fitur 4: Panduan Edukasi -->
-          <div class="space-y-3 group cursor-pointer" @click="router.push('/panduan')">
+          <div class="space-y-3">
             <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 04</span>
-            <h3 class="text-xl font-bold text-brand-950 group-hover:text-brand-600 transition-colors flex items-center justify-between">
-              <span>Panduan Edukasi Warga</span>
-              <ArrowRight class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-brand-600" />
+            <h3 class="text-xl font-bold text-brand-950">
+              Panduan Edukasi Warga
             </h3>
             <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
               Akses artikel informatif, infografis praktis, dan tips gaya hidup minim sampah (<em>zero waste</em>). Pelajari teknik komposting mandiri dari sisa dapur hingga cara tepat mengisolasi limbah B3.
@@ -246,11 +232,10 @@ const faqs = [
           </div>
 
           <!-- Fitur 5: PilahAI -->
-          <div class="space-y-3 group cursor-pointer" @click="router.push('/pilah-ai')">
+          <div class="space-y-3">
             <span class="text-xs font-bold text-brand-600 tracking-wider uppercase">Fitur 05</span>
-            <h3 class="text-xl font-bold text-brand-950 group-hover:text-brand-600 transition-colors flex items-center justify-between">
-              <span>PilahAI Asisten Cerdas</span>
-              <ArrowRight class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-brand-600" />
+            <h3 class="text-xl font-bold text-brand-950">
+              PilahAI Asisten Cerdas
             </h3>
             <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
               Tidak perlu berpindah-pindah menu secara manual. Cukup tanyakan langsung pada chatbot PilahAI yang terintegrasi dengan data pemilahan, fasilitas, dan jadwal di Makassar.
@@ -275,59 +260,23 @@ const faqs = [
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-          
+        <div class="max-w-3xl mx-auto text-left">
           <!-- SDG 11 -->
-          <div class="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-300 flex flex-col justify-between">
+          <div class="bg-white/5 border border-white/10 rounded-3xl p-8 sm:p-10 hover:bg-white/10 transition-all duration-300 flex flex-col justify-between shadow-glow">
             <div>
               <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-2xl mb-6 border border-emerald-500/30">
                 11
               </div>
-              <h3 class="text-xl font-bold mb-2 text-white">Kota & Permukiman Berkelanjutan</h3>
-              <p class="text-sm text-slate-300 leading-relaxed mb-4">
-                Fitur <strong>Cari Lokasi</strong> dan <strong>Jadwal Angkut</strong> mempermudah warga mengakses infrastruktur pengolahan sampah kota, mencegah TPS liar, dan menata sanitasi lingkungan pemukiman.
+              <h3 class="text-2xl font-bold mb-3 text-white">Kota & Permukiman Berkelanjutan</h3>
+              <p class="text-sm sm:text-base text-slate-300 leading-relaxed mb-6">
+                Fitur <strong>Cari Lokasi</strong>, <strong>Pilah Sampah</strong>, dan <strong>Jadwal Angkut</strong> mempermudah warga mengakses infrastruktur pengolahan sampah kota, mencegah timbulan sampah liar, dan menata sanitasi lingkungan pemukiman Kota Makassar secara terpadu.
               </p>
             </div>
-            <div class="pt-4 border-t border-white/10 text-xs font-medium text-emerald-300 flex items-center gap-1.5">
-              <CheckCircle class="w-4 h-4" />
-              <span>Mewujudkan kota bersih & tertata</span>
+            <div class="pt-5 border-t border-white/10 text-xs sm:text-sm font-medium text-emerald-300 flex items-center gap-2">
+              <CheckCircle class="w-5 h-5 shrink-0 text-emerald-400" />
+              <span>Mewujudkan kota bersih, sehat, dan permukiman berkelanjutan</span>
             </div>
           </div>
-
-          <!-- SDG 13 -->
-          <div class="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-300 flex flex-col justify-between">
-            <div>
-              <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-2xl mb-6 border border-emerald-500/30">
-                13
-              </div>
-              <h3 class="text-xl font-bold mb-2 text-white">Penanganan Perubahan Iklim</h3>
-              <p class="text-sm text-slate-300 leading-relaxed mb-4">
-                Fitur <strong>Pilah Sampah</strong> memfasilitasi pengolahan kompos organik rumahan, secara langsung memangkas emisi gas metana (CH₄) berbahaya dari penumpukan sampah busuk di TPA.
-              </p>
-            </div>
-            <div class="pt-4 border-t border-white/10 text-xs font-medium text-emerald-300 flex items-center gap-1.5">
-              <CheckCircle class="w-4 h-4" />
-              <span>Kurangi jejak karbon rumah tangga</span>
-            </div>
-          </div>
-
-          <!-- SDG 4 -->
-          <div class="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-300 flex flex-col justify-between">
-            <div>
-              <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-2xl mb-6 border border-emerald-500/30">
-                04
-              </div>
-              <h3 class="text-xl font-bold mb-2 text-white">Pendidikan & Literasi Lingkungan</h3>
-              <p class="text-sm text-slate-300 leading-relaxed mb-4">
-                Fitur <strong>Panduan Edukasi</strong> dan <strong>PilahAI</strong> mendemokratisasi akses literasi pemilahan sampah dengan bahasa santai yang dapat dipahami segala umur tanpa sekat teknis.
-              </p>
-            </div>
-            <div class="pt-4 border-t border-white/10 text-xs font-medium text-emerald-300 flex items-center gap-1.5">
-              <CheckCircle class="w-4 h-4" />
-              <span>Edukasi inklusif bagi seluruh lapisan warga</span>
-            </div>
-          </div>
-
         </div>
 
       </div>

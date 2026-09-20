@@ -1,96 +1,84 @@
 <script setup>
-import { Heart, Sparkles, MapPin, ExternalLink } from 'lucide-vue-next'
-import { appConfig } from '@/config/app'
+import { useRoute, useRouter } from 'vue-router'
+import { Leaf } from 'lucide-vue-next'
+
+const route = useRoute()
+const router = useRouter()
+
+const scrollToSection = (id) => {
+  if (route.path !== '/') {
+    router.push({ path: '/', hash: `#${id}` })
+    return
+  }
+  const el = document.getElementById(id)
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth' })
+  }
+}
 </script>
 
 <template>
-  <footer class="border-t border-zinc-200/80 bg-zinc-50/50 text-zinc-600 transition-all">
-    <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 gap-8 md:grid-cols-4 lg:grid-cols-5">
-        <!-- Brand Info -->
-        <div class="md:col-span-2 space-y-4">
-          <div class="flex items-center gap-2.5">
-            <img :src="appConfig.logo" :alt="appConfig.name" class="h-9 w-auto object-contain" />
-          </div>
-          <p class="text-sm text-zinc-500 leading-relaxed max-w-sm">
-            {{ appConfig.description }}
-          </p>
-          <div class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/70 px-3 py-1 text-xs text-emerald-800 font-medium">
-            <span class="flex h-2 w-2 rounded-full bg-emerald-600 animate-ping" />
-            <span>Mendukung Gerakan Makassar Bebas Sampah Liar</span>
-          </div>
-        </div>
-
-        <!-- Fitur Navigasi -->
-        <div class="space-y-3">
-          <h4 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">Fitur Utama</h4>
-          <ul class="space-y-2 text-sm">
-            <li>
-              <router-link to="/pilah" class="hover:text-emerald-700 transition-colors">Pilah Sampah</router-link>
-            </li>
-            <li>
-              <router-link to="/lokasi" class="hover:text-emerald-700 transition-colors">Cari Lokasi & TPS</router-link>
-            </li>
-            <li>
-              <router-link to="/jadwal" class="hover:text-emerald-700 transition-colors">Jadwal Angkut</router-link>
-            </li>
-            <li>
-              <router-link to="/panduan" class="hover:text-emerald-700 transition-colors">Panduan Praktis</router-link>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Kategori Pemilahan -->
-        <div class="space-y-3">
-          <h4 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">Kategori Sampah</h4>
-          <ul class="space-y-2 text-sm">
-            <li>
-              <router-link to="/pilah?kategori=organik" class="flex items-center gap-1.5 hover:text-emerald-700 transition-colors">
-                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                <span>Sampah Organik</span>
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/pilah?kategori=anorganik" class="flex items-center gap-1.5 hover:text-emerald-700 transition-colors">
-                <span class="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                <span>Sampah Anorganik</span>
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/pilah?kategori=b3" class="flex items-center gap-1.5 hover:text-emerald-700 transition-colors">
-                <span class="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                <span>Sampah B3 Rumah Tangga</span>
-              </router-link>
-            </li>
-            <li>
-              <router-link to="/pilah?kategori=residu" class="flex items-center gap-1.5 hover:text-emerald-700 transition-colors">
-                <span class="h-1.5 w-1.5 rounded-full bg-zinc-400" />
-                <span>Sampah Residu</span>
-              </router-link>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Bantuan Cerdas -->
-        <div class="space-y-3">
-          <h4 class="text-xs font-semibold uppercase tracking-wider text-zinc-900">Asisten Cerdas</h4>
-          <p class="text-xs text-zinc-500 leading-relaxed">
-            Bingung barang Anda masuk ke mana? Tanyakan ke PilahAI dengan bahasa sehari-hari.
-          </p>
-          <router-link
-            to="/pilah-ai"
-            class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition-colors"
-          >
-            <Sparkles class="h-3.5 w-3.5" />
-            <span>Mulai Chat PilahAI &rarr;</span>
+  <footer class="bg-[#0b1c13] text-slate-400 text-sm py-14 border-t border-brand-900 text-left">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+        
+        <!-- Col 1: Brand Info -->
+        <div class="space-y-4 md:col-span-1">
+          <router-link to="/" class="inline-flex items-center p-2 bg-white rounded-xl shadow-xs">
+            <img src="/img/logo-tulisan.jpeg" alt="Logo PilahKi'" class="h-10 w-auto object-contain" />
           </router-link>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Mulai dari Pilahan, Ciptakan Perubahan. Platform web terpadu edukasi dan pengelolaan sampah rumah tangga berkelanjutan untuk Indonesia yang lebih bersih.
+          </p>
         </div>
+
+        <!-- Col 2: Navigasi (Sesuai Nav) -->
+        <div>
+          <h4 class="text-white font-bold mb-4 text-xs uppercase tracking-wider">Navigasi</h4>
+          <ul class="space-y-2 text-xs">
+            <li><button type="button" @click="scrollToSection('tentang')" class="hover:text-white transition-colors cursor-pointer">Tentang</button></li>
+            <li><button type="button" @click="scrollToSection('masalah')" class="hover:text-white transition-colors cursor-pointer">Tantangan</button></li>
+            <li><button type="button" @click="scrollToSection('fitur')" class="hover:text-white transition-colors cursor-pointer">Fitur</button></li>
+            <li><button type="button" @click="scrollToSection('sdg')" class="hover:text-white transition-colors cursor-pointer">Dampak</button></li>
+            <li><button type="button" @click="scrollToSection('faq')" class="hover:text-white transition-colors cursor-pointer">FAQ</button></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Fitur Unggulan -->
+        <div>
+          <h4 class="text-white font-bold mb-4 text-xs uppercase tracking-wider">Fitur Unggulan</h4>
+          <ul class="space-y-2 text-xs">
+            <li><router-link to="/pilah" class="hover:text-white transition-colors">Pilah Sampah</router-link></li>
+            <li><router-link to="/lokasi" class="hover:text-white transition-colors">Cari Lokasi Fasilitas</router-link></li>
+            <li><router-link to="/jadwal" class="hover:text-white transition-colors">Jadwal Angkut Terpadu</router-link></li>
+            <li><router-link to="/panduan" class="hover:text-white transition-colors">Panduan Edukasi Warga</router-link></li>
+            <li><router-link to="/pilah-ai" class="hover:text-white transition-colors">PilahAI Asisten Cerdas</router-link></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Akses Pengguna -->
+        <div>
+          <h4 class="text-white font-bold mb-4 text-xs uppercase tracking-wider">Akses Pengguna</h4>
+          <ul class="space-y-2 text-xs">
+            <li><router-link to="/login" class="hover:text-white transition-colors">Masuk</router-link></li>
+            <li><router-link to="/register" class="hover:text-white transition-colors">Daftar</router-link></li>
+          </ul>
+          <p class="text-xs text-slate-400 leading-relaxed mt-4">
+            Bersama mewujudkan lingkungan bersih, sehat, dan minim sampah untuk masa depan.
+          </p>
+        </div>
+
       </div>
 
-      <!-- Bottom Separator & Copyright -->
-      <div class="mt-10 border-t border-zinc-200/60 pt-6 text-center text-xs text-zinc-400">
-        <p>&copy; {{ new Date().getFullYear() }} {{ appConfig.name }} {{ appConfig.city }}. Dikembangkan oleh <span class="font-semibold text-zinc-700 tracking-wider">{{ appConfig.author }}</span>.</p>
+      <!-- Bottom Bar -->
+      <div class="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <p>&copy; 2026 Binfinity. Hak Cipta Dilindungi Undang-Undang.</p>
+        <p class="flex items-center gap-1.5">
+          <span>Dibuat dengan semangat keberlanjutan</span>
+          <Leaf class="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+        </p>
       </div>
+
     </div>
   </footer>
 </template>

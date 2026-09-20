@@ -86,7 +86,7 @@ const handleModalAskAi = (prompt) => {
 </script>
 
 <template>
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 md:pb-12 text-left">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 text-left">
     <div class="space-y-6">
       
       <!-- Top Title & Search Controls -->

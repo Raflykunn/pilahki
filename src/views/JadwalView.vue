@@ -4,6 +4,7 @@ import {
   MAKASSAR_DISTRICTS,
   getDistrictSchedule
 } from '@/data/jadwalData'
+import { findNearestMakassarDistrict } from '@/data/lokasiData'
 import {
   Calendar,
   Crosshair,
@@ -15,11 +16,13 @@ import {
   CalendarOff,
   Award,
   CheckCircle2,
-  Info
+  Info,
+  Loader2
 } from 'lucide-vue-next'
 
 const selectedDistrict = ref('Panakkukang')
 const isGpsActive = ref(false)
+const isGpsLoading = ref(false)
 const gpsStatusText = ref('Makassar')
 
 onMounted(() => {
@@ -29,9 +32,18 @@ onMounted(() => {
       const d = JSON.parse(raw)
       if (d.district && MAKASSAR_DISTRICTS.includes(d.district)) {
         selectedDistrict.value = d.district
+        gpsStatusText.value = `Kec. ${d.district}`
       }
     }
   } catch (e) {}
+
+  // Dengarkan event pembaruan domisili global
+  window.addEventListener('pilahki-domicile-changed', (ev) => {
+    if (ev.detail && ev.detail.district && MAKASSAR_DISTRICTS.includes(ev.detail.district)) {
+      selectedDistrict.value = ev.detail.district
+      gpsStatusText.value = `Kec. ${ev.detail.district}`
+    }
+  })
 })
 
 const daysOrder = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
@@ -83,15 +95,51 @@ const handleLiveGps = () => {
     return
   }
 
+  isGpsLoading.value = true
   gpsStatusText.value = 'Mendeteksi...'
+
   navigator.geolocation.getCurrentPosition(
-    (pos) => {
+    async (pos) => {
+      const lat = pos.coords.latitude
+      const lng = pos.coords.longitude
       isGpsActive.value = true
-      gpsStatusText.value = 'GPS Terkunci'
-      // Auto-assign to nearest demo district
-      selectedDistrict.value = 'Panakkukang'
+
+      let detectedDistrict = null
+
+      // Coba reverse geocode untuk mendeteksi kecamatan di Makassar
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 2500)
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&addressdetails=1`,
+          {
+            headers: { 'User-Agent': 'PilahKiApp/1.0' },
+            signal: controller.signal
+          }
+        )
+        clearTimeout(timeoutId)
+        if (res.ok) {
+          const data = await res.json()
+          const addr = data.address || {}
+          const sub = (addr.suburb || addr.city_district || addr.neighbourhood || addr.village || '').toLowerCase()
+          const matched = MAKASSAR_DISTRICTS.find(d => sub.includes(d.toLowerCase()) || d.toLowerCase().includes(sub))
+          if (matched) {
+            detectedDistrict = matched
+          }
+        }
+      } catch (e) {}
+
+      // Jika reverse geocoding offline atau posisi berada di sekitar titik Makassar
+      if (!detectedDistrict) {
+        detectedDistrict = findNearestMakassarDistrict(lat, lng)
+      }
+
+      selectedDistrict.value = detectedDistrict
+      gpsStatusText.value = `Kec. ${detectedDistrict}`
+      isGpsLoading.value = false
     },
     (err) => {
+      isGpsLoading.value = false
       gpsStatusText.value = 'GPS Gagal'
       alert('Tidak dapat mendeteksi lokasi GPS Anda.')
     },
@@ -101,7 +149,7 @@ const handleLiveGps = () => {
 </script>
 
 <template>
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 md:pb-12 text-left">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 text-left">
     <div class="space-y-6">
       
       <!-- Top Title & Live GPS + District Selector -->
@@ -126,11 +174,17 @@ const handleLiveGps = () => {
           <button 
             type="button" 
             @click="handleLiveGps"
-            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-800 hover:bg-brand-700 text-white text-xs font-bold transition-all shadow-xs hover:shadow-md cursor-pointer group"
+            :disabled="isGpsLoading"
+            :class="[
+              'inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-bold transition-all shadow-xs hover:shadow-md cursor-pointer group disabled:opacity-60',
+              isGpsActive ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-brand-800 hover:bg-brand-700'
+            ]"
             title="Deteksi kecamatan otomatis sesuai titik GPS Anda"
           >
-            <Crosshair class="w-4 h-4 text-accent-light group-hover:rotate-45 transition-transform" />
-            <span>Live GPS Saya</span>
+            <Loader2 v-if="isGpsLoading" class="w-4 h-4 animate-spin text-white" />
+            <CheckCircle2 v-else-if="isGpsActive" class="w-4 h-4 text-emerald-200" />
+            <Crosshair v-else class="w-4 h-4 text-accent-light group-hover:rotate-45 transition-transform" />
+            <span>{{ isGpsLoading ? 'Mendeteksi...' : (isGpsActive ? 'Perbarui GPS' : 'Live GPS Saya') }}</span>
           </button>
 
           <div class="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">

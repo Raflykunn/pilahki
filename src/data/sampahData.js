@@ -73,7 +73,7 @@ export const wasteData = [
       "Simpan dalam toples atau wadah plastik kedap yang kering.",
       "Jauhkan dari jangkauan anak-anak dan bahan mudah terbakar."
     ],
-    destination: "Drop Box Limbah B3 Dinas Lingkungan Hidup atau Bank Sampah induk penampung e-waste.",
+    destination: "Fasilitas Pengolahan Limbah Khusus DLH, TPA Tamangapa, atau Bank Sampah induk penampung e-waste.",
     prohibitions: [
       "Dilarang keras membakar atau merusak/membongkar baterai.",
       "Dilarang membuang baterai ke tempat sampah residu umum atau saluran air."
@@ -113,7 +113,7 @@ export const wasteData = [
       "Tuliskan tanda peringatan 'Lampu Bekas - Rawan Pecah'.",
       "Kumpulkan terpisah hingga jadwal penyaluran B3."
     ],
-    destination: "Drop Box E-Waste DLH Kota Makassar atau gerai pengumpulan limbah elektronik.",
+    destination: "Fasilitas Pengolahan DLH Kota Makassar, TPA Tamangapa, atau gerai pengumpulan e-waste.",
     prohibitions: [
       "Jangan memecahkan bohlam secara sengaja karena serbuk merkuri sangat berbahaya bila terhirup."
     ],
@@ -247,10 +247,10 @@ export const wasteData = [
     shortDesc: "Baju robek, kain perca, sprei lama yang tidak terpakai.",
     steps: [
       "Pilah antara yang masih layak pakai dan yang sudah rusak parah.",
-      "Baju layak pakai dapat dicuci bersih untuk didonasikan ke dropbox sandang.",
+      "Baju layak pakai dapat dicuci bersih untuk didonasikan ke pos donasi sandang.",
       "Kain robek dapat dipotong menjadi lap pembersih dapur (kain majun)."
     ],
-    destination: "Bank Sampah Unit yang menerima tekstil atau dropbox donasi pakaian.",
+    destination: "Bank Sampah Unit yang menerima tekstil atau pos donasi pakaian.",
     prohibitions: [
       "Jangan membuang kain ke aliran selokan.",
       "Hindari membakar kain sintetis berbahan poliester."
@@ -307,7 +307,7 @@ export const wasteData = [
       "Obat sirup diencerkan dengan air dan dibuang ke saluran limbah bertahap.",
       "Hilangkan label nama pasien pada botol obat sebelum wadahnya dibuang."
     ],
-    destination: "Drop Box Obat Kedaluwarsa di Puskesmas / Farmasi DLH.",
+    destination: "Pos Khusus Puskesmas / Farmasi DLH atau TPA.",
     prohibitions: [
       "Jangan membuang obat tablet utuh langsung ke tong sampah (rawan disalahgunakan pemulung/anak-anak)."
     ],
@@ -344,7 +344,7 @@ export const wasteData = [
       "Jangan pernah melubangi kaleng aerosol secara paksa.",
       "Kumpulkan terpisah di wadah B3."
     ],
-    destination: "Drop Box Limbah B3 DLH.",
+    destination: "Fasilitas Pengolahan Limbah Khusus DLH atau TPA Tamangapa.",
     prohibitions: [
       "Dilarang keras melempar kaleng aerosol ke api/pembakaran karena akan meledak seketika."
     ],
@@ -362,7 +362,7 @@ export const wasteData = [
       "Gulung kabel dengan rapi dan ikat.",
       "Simpan bersama barang elektronik kecil lainnya di kotak e-waste rumah."
     ],
-    destination: "Dropbox E-Waste Balai Kota Makassar atau Bank Sampah induk.",
+    destination: "Sentra E-Waste DLH Kota Makassar, TPA Tamangapa, atau Bank Sampah induk.",
     prohibitions: [
       "Jangan membuang charger ke tempat sampah basah."
     ],

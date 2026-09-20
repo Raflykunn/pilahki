@@ -261,16 +261,13 @@ const handleRegister = async () => {
         </form>
 
         <!-- Navigasi Bawah -->
-        <div class="mt-6 pt-4 border-t border-slate-100 flex flex-col items-center gap-3 sm:flex-row sm:justify-between text-center sm:text-left text-sm">
+        <div class="mt-6 pt-4 border-t border-slate-100 text-center text-sm">
           <p class="text-slate-600">
             Sudah punya akun? 
             <router-link to="/login" class="font-bold text-brand-800 hover:text-brand-600 hover:underline ml-0.5">
               Masuk
             </router-link>
           </p>
-          <router-link to="/" class="text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors">
-            Kembali ke Beranda
-          </router-link>
         </div>
 
       </div>

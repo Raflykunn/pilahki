@@ -16,7 +16,7 @@ import {
 
 const router = useRouter()
 const route = useRoute()
-const { signInWithEmail, authError } = useAuth()
+const { signInWithEmail, resetPassword, authError } = useAuth()
 
 const email = ref('')
 const password = ref('')
@@ -86,6 +86,9 @@ const handleForgotSubmit = () => {
   isSavingForgot.value = true
 
   setTimeout(() => {
+    if (email.value) {
+      resetPassword(email.value, newPassword.value)
+    }
     isSavingForgot.value = false
     isForgotModalOpen.value = false
     recoveryPin.value = ''
@@ -263,16 +266,13 @@ const handleForgotSubmit = () => {
         </form>
 
         <!-- Navigasi Bawah -->
-        <div class="mt-8 pt-6 border-t border-slate-100 flex flex-col items-center gap-3 sm:flex-row sm:justify-between text-center sm:text-left text-sm">
+        <div class="mt-8 pt-6 border-t border-slate-100 text-center text-sm">
           <p class="text-slate-600">
             Belum punya akun? 
             <router-link to="/register" class="font-bold text-brand-800 hover:text-brand-600 hover:underline ml-0.5">
               Daftar
             </router-link>
           </p>
-          <router-link to="/" class="text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors">
-            Kembali ke Beranda
-          </router-link>
         </div>
 
       </div>

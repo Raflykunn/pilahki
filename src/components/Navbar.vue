@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
+import { useDomicile } from '@/composables/useDomicile'
 import { appConfig } from '@/config/app'
 import {
   Menu,
@@ -14,9 +15,9 @@ import {
 const route = useRoute()
 const router = useRouter()
 const { isAuthenticated, userEmail, signOut } = useAuth()
+const { domicile } = useDomicile()
 
 const isMobileMenuOpen = ref(false)
-const domicile = ref({ city: 'Kota Makassar', district: 'Panakkukang' })
 
 defineEmits(['open-domicile', 'open-profile', 'open-auth'])
 
@@ -55,15 +56,6 @@ const userName = computed(() => {
 
 const userInitial = computed(() => {
   return userName.value.trim().charAt(0).toUpperCase()
-})
-
-onMounted(() => {
-  try {
-    const raw = localStorage.getItem('pilahki_domicile')
-    if (raw) {
-      domicile.value = JSON.parse(raw)
-    }
-  } catch (e) {}
 })
 
 const scrollToSection = (id) => {

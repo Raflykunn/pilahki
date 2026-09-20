@@ -1,9 +1,21 @@
 /**
  * Data Fasilitas Pengelolaan Sampah Kota Makassar
- * Dari prototipe Binfinity (app-facilities.js)
+ * Termasuk Bank Sampah, TPS 3R, dan TPA (Tempat Pemrosesan Akhir)
  */
 
 export const MAKASSAR_CENTER = { lat: -5.1342, lng: 119.4140 }
+
+// Titik Koordinat Pusat Setiap Kecamatan di Makassar (untuk kalkulasi wilayah terdekat)
+export const MAKASSAR_DISTRICT_COORDS = {
+  "Panakkukang": { lat: -5.1488, lng: 119.4445 },
+  "Rappocini": { lat: -5.1680, lng: 119.4350 },
+  "Ujung Pandang": { lat: -5.1350, lng: 119.4100 },
+  "Tamalanrea": { lat: -5.1270, lng: 119.4930 },
+  "Bontoala": { lat: -5.1295, lng: 119.4225 },
+  "Mariso": { lat: -5.1540, lng: 119.4100 },
+  "Manggala": { lat: -5.1650, lng: 119.4850 },
+  "Tamalate": { lat: -5.1850, lng: 119.4120 }
+}
 
 export const jenisFasilitasConfig = {
   bank_sampah: {
@@ -20,12 +32,19 @@ export const jenisFasilitasConfig = {
     accentColor: '#0f766e',
     desc: 'Pusat daur ulang wilayah yang mengolah sampah organik menjadi kompos dan memilah anorganik.'
   },
-  drop_box_b3: {
-    label: 'Drop Box B3',
-    typeName: 'Drop Box B3',
+  tpa: {
+    label: 'TPA',
+    typeName: 'TPA',
     badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
     accentColor: '#d97706',
-    desc: 'Titik penampungan khusus baterai, lampu, obat kedaluwarsa, dan limbah elektronik rumah tangga.'
+    desc: 'Tempat Pemrosesan Akhir (TPA) terpusat untuk pemrosesan sampah residu dan penanganan limbah akhir perkotaan.'
+  },
+  drop_box_b3: { // Alias kompatibilitas
+    label: 'TPA',
+    typeName: 'TPA',
+    badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
+    accentColor: '#d97706',
+    desc: 'Tempat Pemrosesan Akhir (TPA) terpusat untuk pemrosesan sampah residu dan penanganan limbah akhir perkotaan.'
   }
 }
 
@@ -62,18 +81,18 @@ export const makassarFacilities = [
   },
   {
     id: "fac-3",
-    name: "Drop Box Limbah B3 Balai Kota Makassar",
-    type: "drop_box_b3",
-    typeName: "Drop Box B3",
+    name: "TPA Tamangapa Antang Makassar",
+    type: "tpa",
+    typeName: "TPA",
     typeBadge: "bg-amber-50 text-amber-800 border-amber-200",
     accentColor: "#d97706",
-    address: "Kompleks Balai Kota Makassar, Jl. Balai Kota No. 1",
-    district: "Ujung Pandang",
-    lat: -5.1331,
-    lng: 119.4087,
-    operatingHours: "Senin - Jumat: 08.00 - 16.00 WITA",
-    accepted: ["Baterai Bekas", "Lampu Bohlam / TL", "Obat Kedaluwarsa", "E-Waste Kecil"],
-    phone: "0411-3617300"
+    address: "Jl. Tamangapa Raya No. 12, Antang, Manggala",
+    district: "Manggala",
+    lat: -5.1742,
+    lng: 119.4891,
+    operatingHours: "Setiap Hari: 06.00 - 18.00 WITA",
+    accepted: ["Residu Rumah Tangga", "Limbah Residu Kering", "Puing Konstruksi", "Residu Padat"],
+    phone: "0411-491234"
   },
   {
     id: "fac-4",
@@ -107,17 +126,17 @@ export const makassarFacilities = [
   },
   {
     id: "fac-6",
-    name: "Drop Box E-Waste DLH Pantai Losari",
-    type: "drop_box_b3",
-    typeName: "Drop Box B3",
+    name: "TPA Transit & Pengolahan DLH Kota Makassar",
+    type: "tpa",
+    typeName: "TPA",
     typeBadge: "bg-amber-50 text-amber-800 border-amber-200",
     accentColor: "#d97706",
-    address: "Anjungan Pantai Losari, Jl. Penghibur",
-    district: "Ujung Pandang",
-    lat: -5.1448,
-    lng: 119.4069,
-    operatingHours: "Setiap Hari (24 Jam Drop Box Luar)",
-    accepted: ["Baterai Bekas", "Kaleng Aerosol", "Kabel & Charger", "Bohlam Lampu"],
+    address: "Kompleks Pemrosesan Akhir DLH, Tamangapa, Manggala",
+    district: "Manggala",
+    lat: -5.1685,
+    lng: 119.4812,
+    operatingHours: "Setiap Hari: 07.00 - 17.00 WITA",
+    accepted: ["Sampah Residu", "Residu Kemasan", "Sisa Daur Ulang", "Residu Campur"],
     phone: "0411-851234"
   }
 ]
@@ -135,6 +154,135 @@ export function calculateDistance(lat1, lon1, lat2, lon2) {
       Math.sin(dLon / 2)
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
   return R * c
+}
+
+/**
+ * Menghasilkan fasilitas terdekat berdasarkan koordinat pengguna.
+ * Jika pengguna berada di dalam radius 35 km dari Makassar, gunakan data fasilitas riil Makassar.
+ * Jika pengguna menguji dari luar Makassar (misal di kota lain), buat simulasi fasilitas terdekat
+ * realistis di sekitar koordinat pengguna agar peta dan kartu tetap hidup dan terisi.
+ */
+export function getNearbyFacilitiesForCoords(lat, lng, addressInfo = null, districtName = '', cityName = '') {
+  const distToMakassar = calculateDistance(lat, lng, MAKASSAR_CENTER.lat, MAKASSAR_CENTER.lng)
+  
+  // Jika dalam radius 35 km dari Makassar, gunakan fasilitas asli Makassar
+  if (distToMakassar < 35) {
+    return makassarFacilities.map(f => ({ ...f }))
+  }
+
+  // Jika di luar Makassar (mode adaptif lokasi lokal pengujian)
+  const sub = districtName || "Wilayah Anda"
+  const city = cityName || "Kota Anda"
+  const road = addressInfo && addressInfo.road ? addressInfo.road + ", " : ""
+
+  return [
+    {
+      id: "fac-local-1",
+      name: `Bank Sampah Unit ${sub}`,
+      type: "bank_sampah",
+      typeName: "Bank Sampah",
+      typeBadge: "bg-emerald-50 text-emerald-800 border-emerald-200",
+      accentColor: "#133826",
+      address: `${road}${sub}, ${city}`,
+      district: sub,
+      lat: lat + 0.0048,
+      lng: lng + 0.0035,
+      operatingHours: "Sabtu & Minggu: 08.00 - 13.00",
+      accepted: ["Botol Plastik PET", "Kardus & Kertas", "Kaleng Logam", "Minyak Jelantah"],
+      phone: "0812-3456-7890"
+    },
+    {
+      id: "fac-local-2",
+      name: `TPS 3R ${sub} Bersih Mandiri`,
+      type: "tps_3r",
+      typeName: "TPS 3R",
+      typeBadge: "bg-teal-50 text-teal-800 border-teal-200",
+      accentColor: "#0f766e",
+      address: `Kompleks Sanitasi Terpadu ${sub}, ${city}`,
+      district: sub,
+      lat: lat - 0.0062,
+      lng: lng + 0.0045,
+      operatingHours: "Senin - Sabtu: 06.30 - 15.00",
+      accepted: ["Sampah Organik Dapur", "Sampah Daun Kebun", "Plastik Daur Ulang", "Residu"],
+      phone: "0821-9876-5432"
+    },
+    {
+      id: "fac-local-3",
+      name: `TPA Regional ${city}`,
+      type: "tpa",
+      typeName: "TPA",
+      typeBadge: "bg-amber-50 text-amber-800 border-amber-200",
+      accentColor: "#d97706",
+      address: `Pusat Pemrosesan Akhir Lingkungan ${city}`,
+      district: city,
+      lat: lat + 0.0105,
+      lng: lng - 0.0075,
+      operatingHours: "Setiap Hari: 06.00 - 18.00",
+      accepted: ["Residu Rumah Tangga", "Limbah Padat", "Puing Sisa", "Residu Non-Daur Ulang"],
+      phone: "0811-2233-4455"
+    },
+    {
+      id: "fac-local-4",
+      name: `Bank Sampah Induk ${city}`,
+      type: "bank_sampah",
+      typeName: "Bank Sampah",
+      typeBadge: "bg-emerald-50 text-emerald-800 border-emerald-200",
+      accentColor: "#133826",
+      address: `Sentra Daur Ulang Terpadu, ${city}`,
+      district: city,
+      lat: lat - 0.0125,
+      lng: lng - 0.0095,
+      operatingHours: "Senin - Sabtu: 08.30 - 15.30",
+      accepted: ["Kardus Tebal", "Botol Kaca", "Plastik HD/PE", "Kemasan Kaleng"],
+      phone: "0856-7788-9900"
+    },
+    {
+      id: "fac-local-5",
+      name: `TPS 3R ${city} Asri Lestari`,
+      type: "tps_3r",
+      typeName: "TPS 3R",
+      typeBadge: "bg-teal-50 text-teal-800 border-teal-200",
+      accentColor: "#0f766e",
+      address: `Depo Kompos & Daur Ulang Lingkungan, ${city}`,
+      district: city,
+      lat: lat + 0.0145,
+      lng: lng + 0.0115,
+      operatingHours: "Setiap Hari: 06.00 - 14.00",
+      accepted: ["Sisa Makanan", "Sampah Kebun", "Plastik Kemasan", "Anorganik Terpilah"],
+      phone: "0813-1122-3344"
+    },
+    {
+      id: "fac-local-6",
+      name: `TPA Pemrosesan Residu ${city}`,
+      type: "tpa",
+      typeName: "TPA",
+      typeBadge: "bg-amber-50 text-amber-800 border-amber-200",
+      accentColor: "#d97706",
+      address: `Instalasi Akhir Sanitasi ${city}`,
+      district: city,
+      lat: lat - 0.0165,
+      lng: lng + 0.0175,
+      operatingHours: "Setiap Hari: 07.00 - 17.00",
+      accepted: ["Sampah Residu", "Residu Campuran", "Sisa Daur Ulang"],
+      phone: "0819-8877-6655"
+    }
+  ]
+}
+
+// Cari kecamatan Makassar terdekat berdasarkan koordinat (lat, lng)
+export function findNearestMakassarDistrict(lat, lng) {
+  let closestDistrict = "Panakkukang"
+  let minDistance = Infinity
+
+  for (const [district, coords] of Object.entries(MAKASSAR_DISTRICT_COORDS)) {
+    const d = calculateDistance(lat, lng, coords.lat, coords.lng)
+    if (d < minDistance) {
+      minDistance = d
+      closestDistrict = district
+    }
+  }
+
+  return closestDistrict
 }
 
 // Backwards-compatible aliases

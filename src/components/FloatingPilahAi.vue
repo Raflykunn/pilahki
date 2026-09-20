@@ -2,6 +2,7 @@
 import { ref, computed, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
+import { useDomicile } from '@/composables/useDomicile'
 import { sendMessageToGemini, cleanDashes } from '@/services/geminiService'
 import {
   Bot,
@@ -22,22 +23,14 @@ import {
 const router = useRouter()
 const route = useRoute()
 const { userEmail, isAuthenticated } = useAuth()
+const { domicile } = useDomicile()
 
 const isOpen = ref(false)
 const inputQuery = ref('')
 const isLoading = ref(false)
 const messagesContainer = ref(null)
 
-const userDistrict = computed(() => {
-  try {
-    const raw = localStorage.getItem('pilahki_domicile')
-    if (raw) {
-      const d = JSON.parse(raw)
-      return d.district || 'Panakkukang'
-    }
-  } catch (e) {}
-  return 'Panakkukang'
-})
+const userDistrict = computed(() => domicile.value.district || 'Panakkukang')
 
 const userName = computed(() => {
   try {
@@ -195,12 +188,7 @@ defineExpose({
             <Bot class="w-5 h-5 text-accent-light" />
           </div>
           <div>
-            <div class="flex items-center gap-2">
-              <h3 class="text-sm font-bold leading-tight tracking-tight">PilahAI Companion</h3>
-              <span class="px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                Makassar
-              </span>
-            </div>
+            <h3 class="text-sm font-bold leading-tight tracking-tight">PilahAI Companion</h3>
             <div class="flex items-center gap-1.5 text-[11px] text-emerald-200 font-medium mt-0.5">
               <template v-if="isAuthenticated">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -208,7 +196,7 @@ defineExpose({
               </template>
               <template v-else>
                 <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                <span class="text-amber-200 font-semibold">Mode Tamu • Akses Terbatas</span>
+                <span class="text-amber-200 font-semibold">Akses Terbatas</span>
               </template>
             </div>
           </div>
@@ -248,18 +236,17 @@ defineExpose({
         <div class="w-full pt-2 flex flex-col gap-2 max-w-xs">
           <router-link
             :to="{ path: '/login', query: { redirect: route.fullPath } }"
-            class="w-full py-2.5 rounded-xl bg-brand-800 hover:bg-brand-700 text-white font-bold text-xs shadow-xs transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer"
+            class="w-full py-2.5 rounded-xl bg-brand-800 hover:bg-brand-700 text-white font-bold text-xs shadow-xs transition-all text-center cursor-pointer"
             @click="isOpen = false"
           >
-            <span>Masuk ke Akun Warga</span>
-            <ArrowRight class="w-3.5 h-3.5" />
+            Masuk
           </router-link>
           <router-link
             :to="{ path: '/register', query: { redirect: route.fullPath } }"
             class="w-full py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs border border-slate-200 transition-all text-center cursor-pointer"
             @click="isOpen = false"
           >
-            Daftar Akun Baru
+            Daftar
           </router-link>
         </div>
       </div>

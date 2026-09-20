@@ -4,8 +4,8 @@ import { makassarFacilities, jenisFasilitasConfig, daftarFasilitas } from '../da
 import { MAKASSAR_DISTRICTS, schedulesDatabase, wilayahList, jadwalMaster } from '../data/jadwalData.js'
 import { guidesData, kategoriEdukasiList, artikelPanduan, faqPanduan } from '../data/panduanData.js'
 
-const GEMINI_PRIMARY_MODEL = 'gemini-3.5-flash-lite'
-const GEMINI_FALLBACK_MODEL = 'gemini-3.5-flash'
+const GEMINI_PRIMARY_MODEL = 'gemini-2.5-flash'
+const GEMINI_FALLBACK_MODEL = 'gemini-2.0-flash'
 
 function getGeminiApiKey() {
   return import.meta.env.VITE_GEMINI_API_KEY || ''
@@ -118,7 +118,7 @@ export function toolCekKategoriSampah(args) {
 
   return {
     status: 'not_found',
-    pesan: `Sampah "${query}" belum tercatat spesifik di katalog 22 sampah umum Makassar, namun panduan umum: jika sisa makanan/organik masuk Organik (kompos/biopori), jika kardus/botol/plastik bersih masuk Anorganik (Bank Sampah), jika baterai/lampu/kimia masuk Drop Box B3, dan sachet kotor/popok masuk Residu.`
+    pesan: `Sampah "${query}" belum tercatat spesifik di katalog 22 sampah umum Makassar, namun panduan umum: jika sisa makanan/organik masuk Organik (kompos/biopori), jika kardus/botol/plastik bersih masuk Anorganik (Bank Sampah), jika baterai/lampu/kimia memerlukan penanganan khusus, dan sachet kotor/popok/residu padat disalurkan ke TPA.`
   }
 }
 
@@ -132,7 +132,8 @@ export function toolCariFasilitas(args) {
   }
 
   const jenisSampah = (args?.jenisSampah || '').toLowerCase().trim()
-  const rawJenis = (args?.jenisFasilitas || '').toLowerCase().trim().replace(/[\s_]+/g, '-')
+  let rawJenis = (args?.jenisFasilitas || '').toLowerCase().trim().replace(/[\s_]+/g, '-')
+  if (rawJenis === 'drop-box-b3' || rawJenis === 'b3') rawJenis = 'tpa'
 
   let list = makassarFacilities.filter(f => {
     const distMatch = f.district.toLowerCase().includes(inputWilayah) || inputWilayah.includes(f.district.toLowerCase())
@@ -283,7 +284,7 @@ const toolsDefinition = [
       },
       {
         name: 'cariFasilitas',
-        description: 'Mencari lokasi Bank Sampah, TPS 3R, atau Drop Box B3 di Kota Makassar. Otomatis memprioritaskan domisili pengguna saat ini.',
+        description: 'Mencari lokasi Bank Sampah, TPS 3R, atau TPA di Kota Makassar. Otomatis memprioritaskan domisili pengguna saat ini.',
         parameters: {
           type: 'OBJECT',
           properties: {
@@ -293,11 +294,11 @@ const toolsDefinition = [
             },
             jenisSampah: {
               type: 'STRING',
-              description: 'Jenis sampah yang ingin disetor (misal: botol, kardus, jelantah, baterai).'
+              description: 'Jenis sampah yang ingin disetor (misal: botol, kardus, jelantah, baterai, residu).'
             },
             jenisFasilitas: {
               type: 'STRING',
-              description: 'Tipe: bank-sampah, tps-3r, atau drop-box-b3.'
+              description: 'Tipe: bank-sampah, tps-3r, atau tpa.'
             }
           }
         }
@@ -637,7 +638,7 @@ function handleLocalSmartAssistant(messagesHistory) {
   }
 
   // 3. Permintaan Lokasi Fasilitas / Bank Sampah
-  if (lower.includes('lokasi') || lower.includes('bank sampah') || lower.includes('tps') || lower.includes('dropbox') || lower.includes('buang ke mana') || lower.includes('di mana') || lower.includes('setor') || lower.includes('jual sampah')) {
+  if (lower.includes('lokasi') || lower.includes('bank sampah') || lower.includes('tps') || lower.includes('tpa') || lower.includes('tamangapa') || lower.includes('antang') || lower.includes('buang ke mana') || lower.includes('di mana') || lower.includes('setor') || lower.includes('jual sampah')) {
     let targetDistrict = domicile.district
 
     for (const d of MAKASSAR_DISTRICTS) {
@@ -648,9 +649,9 @@ function handleLocalSmartAssistant(messagesHistory) {
     }
 
     let jenisF = ''
-    if (lower.includes('bank sampah')) jenisF = 'bank-sampah'
-    if (lower.includes('b3') || lower.includes('baterai') || lower.includes('lampu')) jenisF = 'drop-box-b3'
-    if (lower.includes('tps 3r') || lower.includes('kompos')) jenisF = 'tps-3r'
+    if (lower.includes('bank sampah')) jenisF = 'bank_sampah'
+    if (lower.includes('tpa') || lower.includes('antang') || lower.includes('tamangapa') || lower.includes('residu')) jenisF = 'tpa'
+    if (lower.includes('tps 3r') || lower.includes('kompos')) jenisF = 'tps_3r'
 
     const res = toolCariFasilitas({ wilayah: targetDistrict, jenisFasilitas: jenisF })
     return {

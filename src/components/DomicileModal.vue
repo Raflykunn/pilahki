@@ -1,6 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { X, MapPin, Check } from 'lucide-vue-next'
+import { ref, watch } from 'vue'
+import { X, MapPin } from 'lucide-vue-next'
+import { useDomicile } from '@/composables/useDomicile'
 
 const props = defineProps({
   isOpen: {
@@ -10,6 +11,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'domicile-updated'])
+const { domicile, setDomicile } = useDomicile()
 
 const districts = [
   "Panakkukang",
@@ -22,20 +24,17 @@ const districts = [
   "Tamalate"
 ]
 
-const city = ref('Kota Makassar')
-const selectedDistrict = ref('Panakkukang')
-const detailAddress = ref('')
+const city = ref(domicile.value.city)
+const selectedDistrict = ref(domicile.value.district)
+const detailAddress = ref(domicile.value.detail)
 
-onMounted(() => {
-  try {
-    const raw = localStorage.getItem('pilahki_domicile')
-    if (raw) {
-      const d = JSON.parse(raw)
-      city.value = d.city || 'Kota Makassar'
-      selectedDistrict.value = d.district || 'Panakkukang'
-      detailAddress.value = d.detail || ''
-    }
-  } catch (e) {}
+// Sinkronkan form saat modal dibuka
+watch(() => props.isOpen, (open) => {
+  if (open) {
+    city.value = domicile.value.city || 'Kota Makassar'
+    selectedDistrict.value = domicile.value.district || 'Panakkukang'
+    detailAddress.value = domicile.value.detail || ''
+  }
 })
 
 const handleSave = () => {
@@ -44,8 +43,7 @@ const handleSave = () => {
     district: selectedDistrict.value,
     detail: detailAddress.value.trim()
   }
-  localStorage.setItem('pilahki_domicile', JSON.stringify(newDomicile))
-  localStorage.removeItem('pilahki_is_new_user')
+  setDomicile(newDomicile)
   emit('domicile-updated', newDomicile)
   emit('close')
 }

@@ -80,7 +80,7 @@ export const guidesData = [
         <li><strong>Isolasi Kontak Listrik:</strong> Rekatkan selotip bening pada kutub baterai bekas sebelum disimpan.</li>
         <li><strong>Kotak Khusus Kering:</strong> Gunakan kotak plastik bertutup berlabel "BAHAYA B3" dan letakkan di tempat tinggi yang tidak terjangkau anak-anak.</li>
         <li><strong>Jangan Dibuang ke Saluran Air:</strong> Pembuangan zat kimia pembersih pekat ke selokan mematikan ekosistem air dan mencemari sumur dangkal warga.</li>
-        <li><strong>Salurkan ke Drop Box Resmi:</strong> Kunjungi Pos Pantau DLH Kota Makassar atau Drop Box Balai Kota setiap kali kotak B3 Anda penuh.</li>
+        <li><strong>Salurkan ke Fasilitas Khusus / TPA:</strong> Kunjungi Pos Pantau DLH Kota Makassar atau fasilitas TPA resmi setiap kali kotak B3 Anda penuh.</li>
       </ul>
     `
   },
