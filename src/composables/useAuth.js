@@ -1,22 +1,12 @@
 import { ref, computed } from 'vue'
 import { supabase } from '../lib/supabase'
 
-const ACCOUNTS_KEY = 'pilahki_registered_accounts'
 const CURRENT_USER_KEY = 'pilahki_user'
 
-function getStoredAccounts() {
-  try {
-    const raw = localStorage.getItem(ACCOUNTS_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch (e) {}
-  return {}
-}
-
-function saveStoredAccounts(accounts) {
-  try {
-    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts))
-  } catch (e) {}
-}
+// Bersihkan data akun plaintext lokal lama demi keamanan
+try {
+  localStorage.removeItem('pilahki_registered_accounts')
+} catch {}
 
 function getInitialUser() {
   try {
@@ -81,6 +71,10 @@ export function useAuth() {
               email: newSession.user.email,
               id: newSession.user.id
             }))
+          } else if (_event === 'SIGNED_OUT') {
+            session.value = null
+            user.value = null
+            localStorage.removeItem(CURRENT_USER_KEY)
           }
         })
       }
@@ -101,68 +95,35 @@ export function useAuth() {
     }
 
     try {
-      let loggedInUser = null
-      let loggedInSession = null
+      if (!supabase) {
+        throw new Error('Koneksi Supabase belum terkonfigurasi.')
+      }
 
-      if (supabase && typeof supabase.auth?.signInWithPassword === 'function') {
-        try {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: normalizedEmail,
-            password: rawPassword
-          })
-          if (!error && data?.user) {
-            loggedInUser = data.user
-            loggedInSession = data.session
-          }
-        } catch (sbErr) {
-          console.warn('[useAuth] Supabase signIn attempt:', sbErr)
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password: rawPassword
+      })
+
+      if (error) {
+        let msg = error.message
+        if (msg?.toLowerCase().includes('invalid login credentials')) {
+          msg = 'Email atau kata sandi yang Anda masukkan salah.'
         }
+        authError.value = msg
+        return { success: false, error: msg }
       }
 
-      const accounts = getStoredAccounts()
-      const localAcc = accounts[normalizedEmail]
+      user.value = data.user
+      session.value = data.session
 
-      if (!loggedInUser && localAcc) {
-        if (localAcc.password === rawPassword) {
-          loggedInUser = {
-            id: localAcc.id,
-            email: localAcc.email,
-            name: localAcc.name,
-            user_metadata: { name: localAcc.name }
-          }
-          loggedInSession = { user: loggedInUser }
-        } else {
-          loading.value = false
-          authError.value = 'Kata sandi yang Anda masukkan salah. Silakan periksa kembali.'
-          return { success: false, error: authError.value }
-        }
-      }
-
-      if (!loggedInUser) {
-        loading.value = false
-        authError.value = 'Akun belum terdaftar. Silakan periksa kembali email Anda atau klik "Daftar" untuk membuat akun baru terlebih dahulu.'
-        return { success: false, error: authError.value }
-      }
-
-      user.value = loggedInUser
-      session.value = loggedInSession
-
-      const finalName = loggedInUser.user_metadata?.name || loggedInUser.name || normalizedEmail.split('@')[0]
+      const finalName = data.user?.user_metadata?.name || normalizedEmail.split('@')[0]
       localStorage.setItem(CURRENT_USER_KEY, JSON.stringify({
         name: finalName,
-        email: loggedInUser.email,
-        id: loggedInUser.id
+        email: data.user?.email,
+        id: data.user?.id
       }))
 
-      accounts[normalizedEmail] = {
-        id: loggedInUser.id,
-        email: normalizedEmail,
-        password: rawPassword,
-        name: finalName
-      }
-      saveStoredAccounts(accounts)
-
-      return { success: true, data: { user: loggedInUser, session: loggedInSession } }
+      return { success: true, data }
     } catch (err) {
       authError.value = err.message || 'Gagal masuk. Silakan periksa email dan kata sandi Anda.'
       return { success: false, error: authError.value }
@@ -192,69 +153,40 @@ export function useAuth() {
     }
 
     try {
-      const accounts = getStoredAccounts()
-
-      if (accounts[normalizedEmail]) {
-        loading.value = false
-        authError.value = 'Email ini sudah terdaftar. Silakan langsung masuk dengan akun Anda.'
-        return { success: false, error: authError.value }
+      if (!supabase) {
+        throw new Error('Koneksi Supabase belum terkonfigurasi.')
       }
 
-      let registeredUser = null
-      let registeredSession = null
-
-      if (supabase && typeof supabase.auth?.signUp === 'function') {
-        try {
-          const { data, error } = await supabase.auth.signUp({
-            email: normalizedEmail,
-            password: rawPassword,
-            options: {
-              data: { name: resolvedName }
-            }
-          })
-          if (error) {
-            if (error.message && error.message.toLowerCase().includes('already registered')) {
-              loading.value = false
-              authError.value = 'Email ini sudah terdaftar di sistem. Silakan langsung masuk.'
-              return { success: false, error: authError.value }
-            }
-          } else if (data?.user) {
-            registeredUser = data.user
-            registeredSession = data.session
-          }
-        } catch (sbErr) {
-          console.warn('[useAuth] Supabase signup exception:', sbErr)
-        }
-      }
-
-      const newUserId = registeredUser?.id || 'usr_' + Date.now()
-      registeredUser = {
-        id: newUserId,
-        email: normalizedEmail,
-        name: resolvedName,
-        user_metadata: { name: resolvedName }
-      }
-      registeredSession = registeredSession || { user: registeredUser }
-
-      accounts[normalizedEmail] = {
-        id: newUserId,
+      const { data, error } = await supabase.auth.signUp({
         email: normalizedEmail,
         password: rawPassword,
-        name: resolvedName,
-        createdAt: new Date().toISOString()
-      }
-      saveStoredAccounts(accounts)
+        options: {
+          data: { name: resolvedName }
+        }
+      })
 
-      user.value = registeredUser
-      session.value = registeredSession
+      if (error) {
+        console.error('[useAuth] Supabase signup error:', error)
+        let msg = error.message
+        if (msg && msg.toLowerCase().includes('already registered')) {
+          msg = 'Email ini sudah terdaftar di sistem. Silakan langsung masuk.'
+        } else if (error.status === 429 || (msg && msg.toLowerCase().includes('rate limit'))) {
+          msg = 'Batas pengiriman email tercapai. Silakan coba beberapa saat lagi.'
+        }
+        authError.value = msg
+        return { success: false, error: msg }
+      }
+
+      user.value = data.user
+      session.value = data.session
 
       localStorage.setItem(CURRENT_USER_KEY, JSON.stringify({
         name: resolvedName,
         email: normalizedEmail,
-        id: newUserId
+        id: data.user?.id
       }))
 
-      return { success: true, data: { user: registeredUser, session: registeredSession } }
+      return { success: true, data }
     } catch (err) {
       authError.value = err.message || 'Gagal mendaftar. Silakan coba beberapa saat lagi.'
       return { success: false, error: authError.value }
@@ -263,14 +195,15 @@ export function useAuth() {
     }
   }
 
-  const resetPassword = (email, newPassword) => {
+  const resetPassword = async (email) => {
     const normalizedEmail = (email || '').trim().toLowerCase()
-    const accounts = getStoredAccounts()
-    if (accounts[normalizedEmail]) {
-      accounts[normalizedEmail].password = newPassword
-      saveStoredAccounts(accounts)
-      return true
-    }
+    if (!normalizedEmail) return false
+    try {
+      if (supabase && typeof supabase.auth?.resetPasswordForEmail === 'function') {
+        const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail)
+        return !error
+      }
+    } catch {}
     return false
   }
 
